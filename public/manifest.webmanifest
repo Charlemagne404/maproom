@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "maproom. — geography, at play",
+  "short_name": "maproom.",
+  "description": "Daily geography puzzles. Find a country, trace a route, and play your way around the world.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5eee5",
+  "theme_color": "#f5eee5",
+  "orientation": "any",
+  "categories": ["games", "education"],
+  "icons": [
+    { "src": "/icons/maproom.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
