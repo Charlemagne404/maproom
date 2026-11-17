@@ -43,6 +43,13 @@ const outlineShapes = madagascar.map((feature) => {
 
 await writeFile(new URL('outline-madagascar.svg', output), `<!-- Generated from the bundled Natural Earth country GeoJSON. -->\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${outlineWidth} ${outlineHeight}" role="img" aria-label="Country outline illustration"><g>${outlineShapes}</g></svg>\n`)
 
+const darkOutlineShapes = madagascar.map((feature) => {
+  const d = outlinePath(feature)
+  return d ? `<path d="${d}" fill="#c6b49e" stroke="#f2e7d9" stroke-width="2" stroke-linejoin="round"/>` : ''
+}).join('\n')
+
+await writeFile(new URL('outline-madagascar-dark.svg', output), `<!-- Generated from the bundled Natural Earth country GeoJSON. -->\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${outlineWidth} ${outlineHeight}" role="img" aria-label="Country outline illustration"><g>${darkOutlineShapes}</g></svg>\n`)
+
 function simplifyGeometry(geometry, projection, tolerance) {
   const line = (coordinates, closed = false) => {
     if (coordinates.length < (closed ? 5 : 3)) return coordinates

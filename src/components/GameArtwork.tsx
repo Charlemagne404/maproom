@@ -6,7 +6,7 @@ export function GameArtwork({ gameId }: { gameId: GameId }) {
     case 'countries':
       return <img className="art-world" src="/illustrations/world-map.svg" alt="" />
     case 'outlines':
-      return <div className="art-outline"><img src="/illustrations/outline-madagascar.svg" alt="" /><span className="art-outline-orbit" /></div>
+      return <div className="art-outline"><img className="art-outline-light" src="/illustrations/outline-madagascar.svg" alt="" /><img className="art-outline-dark" src="/illustrations/outline-madagascar-dark.svg" alt="" /><span className="art-outline-orbit" /></div>
     case 'routes':
       return <div className="art-route"><img src="/illustrations/world-map.svg" alt="" /><svg viewBox="0 0 320 140" aria-hidden="true"><path d="M42 93 C88 30 133 112 179 66 S250 29 282 49" /><circle className="route-origin" cx="42" cy="93" r="8" /><circle cx="111" cy="71" r="5" /><circle cx="179" cy="66" r="5" /><circle cx="232" cy="49" r="5" /><circle className="route-destination" cx="282" cy="49" r="9" /></svg></div>
     case 'flags':

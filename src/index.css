@@ -1,9 +1,20 @@
 :root {
   font-family: 'Nunito Sans', sans-serif;
+  color: #292723;
+  background: #f5eee5;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --paper: #f5eee5;
+  --ink: #292622;
+  --accent: #e57937;
+  --sand: #e5d6c4;
+  --slate: #afa392;
+  --border: #d5c7b7;
+  --muted: #756b61;
+  --water: #292622;
+  --surface: #fffaf3;
   --serif: 'Nunito Sans', sans-serif;
   --sans: 'Nunito Sans', sans-serif;
   --content: 1216px;
@@ -617,6 +628,7 @@ h1, h2 { letter-spacing: -.035em; }
 .art-world { width: 100%; height: 100%; object-fit: contain; }
 .art-outline { width: 100%; height: 100%; position: relative; display: grid; place-items: center; }
 .art-outline img { width: auto; height: 112px; max-width: 100%; object-fit: contain; }
+.art-outline .art-outline-dark { display: none; }
 .art-outline-orbit { position: absolute; width: 124px; height: 78px; border: 1px solid rgba(41,38,34,.3); border-radius: 50%; transform: rotate(-24deg); }
 .art-route, .art-cities { width: 100%; height: 100%; position: relative; display: grid; place-items: center; }
 .art-route > img, .art-cities > img { width: 100%; height: 100%; object-fit: contain; opacity: .55; }

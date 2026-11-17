@@ -1,14 +1,5 @@
-/* Shared Maproom palette. Component colors should resolve through these tokens. */
+/* Additional semantic colors shared by new controls and dark-theme surfaces. */
 :root {
-  --paper: #f5eee5;
-  --ink: #292622;
-  --accent: #e57937;
-  --sand: #e5d6c4;
-  --slate: #afa392;
-  --border: #d5c7b7;
-  --muted: #756b61;
-  --water: #292622;
-  --surface: #fffaf3;
   --surface-soft: #eee1d2;
   --surface-hover: #e8d9c8;
   --surface-raised: #fffaf3;
@@ -32,19 +23,21 @@
 
 html[data-theme='dark'] {
   color-scheme: dark;
+  background: var(--paper);
+  color: var(--ink);
   --paper: #292521;
   --ink: #f2e7d9;
   --accent: #f29a62;
-  --sand: #51483f;
-  --slate: #786d61;
-  --border: #514940;
+  --sand: #554b41;
+  --slate: #796e62;
+  --border: #61574d;
   --muted: #b8aa99;
   --water: #211e1b;
-  --surface: #332e29;
-  --surface-soft: #3a342e;
-  --surface-hover: #494138;
-  --surface-raised: #37322d;
-  --surface-strong: #484139;
+  --surface: #37322c;
+  --surface-soft: #3d3731;
+  --surface-hover: #51473d;
+  --surface-raised: #403a34;
+  --surface-strong: #4d453d;
   --surface-strong-text: #f2e7d9;
   --success: #9fc99f;
   --success-soft: #35483a;
@@ -55,220 +48,245 @@ html[data-theme='dark'] {
   --danger: #efaa91;
   --danger-soft: #4a332f;
   --map-water: #211e1b;
-  --map-land: #63594f;
-  --map-land-hover: #827568;
-  --map-outline: #b5a796;
+  --map-land: #61574d;
+  --map-land-hover: #85796d;
+  --map-outline: #b5a28e;
   --map-wrong: #aa8669;
-  --grid-header: #443d36;
+  --grid-header: #433c35;
+  --map-game-land: #655b50;
+  --map-game-outline: #b9a892;
+  --map-route-land: #5a5047;
+  --map-route-outline: #aa9882;
+  --map-city-land: #62594c;
+  --map-city-outline: #b09e87;
+  --map-neighbour-land: #5d544a;
+  --map-neighbour-outline: #ab9983;
+  --map-outline-shape: #c6b49e;
+  --map-outline-edge: #f2e7d9;
 }
 
-html[data-theme] body { background: var(--paper); color: var(--ink); }
-html[data-theme] .site-header { background: var(--paper); border-color: var(--border); }
-html[data-theme] .nav-link { color: var(--muted); }
-html[data-theme] .nav-link:hover, html[data-theme] .nav-link.is-current { color: var(--ink); }
-html[data-theme] .site-footer { border-color: var(--border); }
-html[data-theme] .eyebrow { color: var(--muted); }
-html[data-theme] .button-dark { background: var(--ink); color: var(--paper); }
-html[data-theme] .button-dark:hover:not(:disabled) { background: var(--surface-hover); color: var(--ink); }
-html[data-theme] .button-outline { border-color: var(--border); color: var(--ink); }
-html[data-theme] .button-outline:hover:not(:disabled) { border-color: var(--ink); background: var(--surface-hover); }
-html[data-theme] .button-text-danger { color: var(--danger); }
-html[data-theme] .button-text-danger:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
-html[data-theme] .search-field,
-html[data-theme] .autocomplete-field,
-html[data-theme] .suggestion-list,
-html[data-theme] .practice-config select,
-html[data-theme] .setting-control select,
-html[data-theme] .flag-settings-panel select,
-html[data-theme] .coordinate-fields input { border-color: var(--border); background: var(--surface); color: var(--ink); }
-html[data-theme] .search-field input,
-html[data-theme] .autocomplete-field > input { color: var(--ink); }
-html[data-theme] .search-field input::placeholder,
-html[data-theme] .autocomplete-field > input::placeholder { color: var(--muted); }
-html[data-theme] .suggestion-option { border-bottom-color: var(--border); color: var(--ink); }
-html[data-theme] .suggestion-option:hover,
-html[data-theme] .suggestion-option:focus-visible { background: var(--surface-hover); }
-html[data-theme] .filter-chip:hover,
-html[data-theme] .favorite-shortcut:hover,
-html[data-theme] .data-shortcut:hover,
-html[data-theme] .game-exit:hover,
-html[data-theme] .mobile-menu-toggle:hover { background: var(--surface-hover); color: var(--ink); }
-html[data-theme] .filter-chip.is-selected,
-html[data-theme] .flag-mode-switch a.is-selected,
-html[data-theme] .mode-switch a.is-selected { background: var(--ink); color: var(--paper); }
-html[data-theme] .filter-chip.is-selected:hover { background: var(--surface-strong); color: var(--surface-strong-text); }
-html[data-theme] .text-link:hover { color: var(--accent); }
-html[data-theme] .game-card:hover { border-color: var(--border); }
-html[data-theme] .empty-state,
-html[data-theme] .stat-card,
-html[data-theme] .result-panel,
-html[data-theme] .completed-daily-result { border-color: var(--border); background: var(--surface); color: var(--ink); }
-html[data-theme] .completed-mark { background: #40513f; color: #c3dfbf; }
-html[data-theme] .continue-strip,
-html[data-theme] .route-hint,
-html[data-theme] .grid-entry-panel,
-html[data-theme] .coordinate-tools { background: var(--surface-soft); color: var(--ink); }
-html[data-theme] .game-card-countries { background: #403a34; color: var(--ink); }
-html[data-theme] .game-card-countries .game-card-copy h2,
-html[data-theme] .game-card-countries .game-card-action { color: var(--ink); }
-html[data-theme] .game-card-outlines { background: #60432f; color: var(--ink); }
-html[data-theme] .game-card-outlines .game-card-action svg { color: var(--accent); }
-html[data-theme] .game-card-routes,
-html[data-theme] .game-card-higher-lower { background: #3b3530; color: var(--ink); }
-html[data-theme] .game-card-flags { background: #37322d; color: var(--ink); }
-html[data-theme] .game-card-grid,
-html[data-theme] .game-card-neighbours { background: #484139; color: var(--ink); }
-html[data-theme] .game-card-grid .game-card-copy h2,
-html[data-theme] .game-card-grid .game-card-action { color: var(--ink); }
-html[data-theme] .game-card-neighbours .game-card-copy h2,
-html[data-theme] .game-card-neighbours .game-card-action { color: var(--ink); }
-html[data-theme] .game-card-cities,
-html[data-theme] .game-card-connections { background: #403a34; color: var(--ink); }
-html[data-theme] .game-card-distance { background: #393a36; color: var(--ink); }
-html[data-theme] .game-card-action { border-color: color-mix(in srgb, var(--ink) 20%, transparent); }
-html[data-theme] .symbol-ground { fill: rgba(179, 154, 128, .2); }
-html[data-theme] .symbol-line { stroke: #a99a87; }
+html[data-theme='dark'] body { background: var(--paper); color: var(--ink); }
+html[data-theme='dark'] .site-header { background: var(--paper); border-color: var(--border); }
+html[data-theme='dark'] .nav-link { color: var(--muted); }
+html[data-theme='dark'] .nav-link:hover, html[data-theme='dark'] .nav-link.is-current { color: var(--ink); }
+html[data-theme='dark'] .site-footer { border-color: var(--border); }
+html[data-theme='dark'] .eyebrow { color: var(--muted); }
+html[data-theme='dark'] .button-dark { background: var(--ink); color: var(--paper); }
+html[data-theme='dark'] .button-dark:hover:not(:disabled) { background: var(--surface-hover); color: var(--ink); }
+html[data-theme='dark'] .button-outline { border-color: var(--border); color: var(--ink); }
+html[data-theme='dark'] .button-outline:hover:not(:disabled) { border-color: var(--ink); background: var(--surface-hover); }
+html[data-theme='dark'] .button-text-danger { color: var(--danger); }
+html[data-theme='dark'] .button-text-danger:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
+html[data-theme='dark'] .search-field,
+html[data-theme='dark'] .autocomplete-field,
+html[data-theme='dark'] .suggestion-list,
+html[data-theme='dark'] .practice-config select,
+html[data-theme='dark'] .setting-control select,
+html[data-theme='dark'] .flag-settings-panel select,
+html[data-theme='dark'] .coordinate-fields input { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme='dark'] .search-field input,
+html[data-theme='dark'] .autocomplete-field > input { color: var(--ink); }
+html[data-theme='dark'] .search-field input::placeholder,
+html[data-theme='dark'] .autocomplete-field > input::placeholder { color: var(--muted); }
+html[data-theme='dark'] .suggestion-option { border-bottom-color: var(--border); color: var(--ink); }
+html[data-theme='dark'] .suggestion-option:hover,
+html[data-theme='dark'] .suggestion-option:focus-visible { background: var(--surface-hover); }
+html[data-theme='dark'] .filter-chip:hover,
+html[data-theme='dark'] .favorite-shortcut:hover,
+html[data-theme='dark'] .data-shortcut:hover,
+html[data-theme='dark'] .game-exit:hover,
+html[data-theme='dark'] .mobile-menu-toggle:hover { background: var(--surface-hover); color: var(--ink); }
+html[data-theme='dark'] .filter-chip.is-selected,
+html[data-theme='dark'] .flag-mode-switch a.is-selected,
+html[data-theme='dark'] .mode-switch a.is-selected { background: var(--ink); color: var(--paper); }
+html[data-theme='dark'] .filter-chip.is-selected:hover { background: var(--surface-strong); color: var(--surface-strong-text); }
+html[data-theme='dark'] .text-link:hover { color: var(--accent); }
+html[data-theme='dark'] .game-card:hover { border-color: var(--border); }
+html[data-theme='dark'] .empty-state,
+html[data-theme='dark'] .stat-card,
+html[data-theme='dark'] .result-panel,
+html[data-theme='dark'] .completed-daily-result { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme='dark'] .completed-mark { background: #40513f; color: #c3dfbf; }
+html[data-theme='dark'] .continue-strip,
+html[data-theme='dark'] .route-hint,
+html[data-theme='dark'] .grid-entry-panel,
+html[data-theme='dark'] .coordinate-tools { background: var(--surface-soft); color: var(--ink); }
+html[data-theme='dark'] .game-card-countries { background: #403a34; color: var(--ink); }
+html[data-theme='dark'] .game-card-countries .game-card-copy h2,
+html[data-theme='dark'] .game-card-countries .game-card-action { color: var(--ink); }
+html[data-theme='dark'] .game-card-outlines { background: #60432f; color: var(--ink); }
+html[data-theme='dark'] .game-card-outlines .game-card-action svg { color: var(--accent); }
+html[data-theme='dark'] .game-card-routes,
+html[data-theme='dark'] .game-card-higher-lower { background: #3b3530; color: var(--ink); }
+html[data-theme='dark'] .game-card-flags { background: #37322d; color: var(--ink); }
+html[data-theme='dark'] .game-card-grid,
+html[data-theme='dark'] .game-card-neighbours { background: #484139; color: var(--ink); }
+html[data-theme='dark'] .game-card-grid .game-card-copy h2,
+html[data-theme='dark'] .game-card-grid .game-card-action { color: var(--ink); }
+html[data-theme='dark'] .game-card-neighbours .game-card-copy h2,
+html[data-theme='dark'] .game-card-neighbours .game-card-action { color: var(--ink); }
+html[data-theme='dark'] .game-card-cities,
+html[data-theme='dark'] .game-card-connections { background: #403a34; color: var(--ink); }
+html[data-theme='dark'] .game-card-distance { background: #393a36; color: var(--ink); }
+html[data-theme='dark'] .game-card-action { border-color: color-mix(in srgb, var(--ink) 20%, transparent); }
+html[data-theme='dark'] .symbol-ground { fill: rgba(179, 154, 128, .2); }
+html[data-theme='dark'] .symbol-line { stroke: #c0ae99; }
+html[data-theme='dark'] .art-outline .art-outline-light { display: none; }
+html[data-theme='dark'] .art-outline .art-outline-dark { display: block; }
+html[data-theme='dark'] .art-outline-orbit { border-color: rgba(242, 231, 217, .42); }
+html[data-theme='dark'] .city-grid-lines { stroke: rgba(242, 231, 217, .24); }
+html[data-theme='dark'] .city-crosshair { stroke: rgba(242, 231, 217, .58); }
 
 /* Geography stays deliberately illustrated: warm dark water, distinct land and clear borders. */
-html[data-theme] .game-map-stage,
-html[data-theme] .outline-map-stage,
-html[data-theme] .map-shell,
-html[data-theme] .flag-display { border-color: var(--border); background: var(--map-water); }
-html[data-theme] .map-water { fill: var(--map-water); }
-html[data-theme] .map-country { fill: var(--map-land); stroke: var(--map-outline); }
-html[data-theme] .map-country:hover,
-html[data-theme] .map-country.is-hovered { fill: var(--map-land-hover); }
-html[data-theme] .map-country.is-wrong { fill: var(--map-wrong); }
-html[data-theme] .map-country:focus-visible { fill: var(--accent); stroke: var(--ink); }
-html[data-theme] .outline-map-stage .map-country { fill: var(--accent); stroke: var(--map-water); }
-html[data-theme] .map-tool,
-html[data-theme] .map-caption { border-color: var(--border); background: var(--surface); color: var(--ink); }
-html[data-theme] .map-tool:hover { background: var(--accent); color: #30251d; }
-html[data-theme] .map-marker circle:first-child { stroke: var(--map-water); }
-html[data-theme] .map-marker-guess circle:first-child { fill: var(--error-soft); }
-html[data-theme] .map-marker-core { fill: var(--ink); }
-html[data-theme] .map-answer-dock,
-html[data-theme] .route-game-dock,
-html[data-theme] .route-map-legend { border-color: var(--border); background: var(--surface); color: var(--ink); }
-html[data-theme] .route-map-legend { color: var(--muted); }
-html[data-theme] .route-pair { background: var(--surface-strong); color: var(--surface-strong-text); }
-html[data-theme] .route-pair strong,
-html[data-theme] .route-distance strong { color: var(--surface-strong-text); }
-html[data-theme] .route-pair .eyebrow,
-html[data-theme] .route-pair-arrow span,
-html[data-theme] .route-distance span { color: var(--muted); }
-html[data-theme] .route-distance { border-color: var(--border); }
-html[data-theme] .route-stops li { background: var(--surface-soft); color: var(--ink); }
-html[data-theme] .route-stops li.is-start { background: var(--surface-strong); color: var(--surface-strong-text); }
-html[data-theme] .route-builder { border-color: var(--border); background: var(--surface-raised); }
-html[data-theme] .country-practice-status,
-html[data-theme] .city-practice-status,
-html[data-theme] .connections-status,
-html[data-theme] .higher-lower-live,
-html[data-theme] .neighbour-live,
-html[data-theme] .distance-live { border-color: var(--border); background: var(--surface-raised); color: var(--muted); }
+html[data-theme='dark'] .game-map-stage,
+html[data-theme='dark'] .outline-map-stage,
+html[data-theme='dark'] .map-shell,
+html[data-theme='dark'] .flag-display { border-color: var(--border); background: var(--map-water); }
+html[data-theme='dark'] .map-water { fill: var(--map-water); }
+html[data-theme='dark'] .game-map-stage { --map-stage-land: var(--map-game-land); --map-stage-outline: var(--map-game-outline); }
+html[data-theme='dark'] .route-map-stage { --map-stage-land: var(--map-route-land); --map-stage-outline: var(--map-route-outline); }
+html[data-theme='dark'] .city-map-stage { --map-stage-land: var(--map-city-land); --map-stage-outline: var(--map-city-outline); }
+html[data-theme='dark'] .neighbour-map .map-shell { --map-stage-land: var(--map-neighbour-land); --map-stage-outline: var(--map-neighbour-outline); }
+html[data-theme='dark'] .map-country { fill: var(--map-stage-land, var(--map-land)); stroke: var(--map-stage-outline, var(--map-outline)); }
+html[data-theme='dark'] .map-country:hover,
+html[data-theme='dark'] .map-country.is-hovered { fill: var(--map-land-hover); }
+html[data-theme='dark'] .map-country.is-active { fill: var(--accent); }
+html[data-theme='dark'] .map-country.is-wrong { fill: var(--error); }
+html[data-theme='dark'] .map-country:focus-visible { fill: var(--accent); stroke: var(--ink); }
+html[data-theme='dark'] .outline-map-stage .map-country { fill: var(--map-outline-shape); stroke: var(--map-outline-edge); stroke-width: 1.4px; }
+html[data-theme='dark'] .outline-map-stage .map-country:hover,
+html[data-theme='dark'] .outline-map-stage .map-country.is-hovered { fill: var(--accent); }
+html[data-theme='dark'] .outline-map-stage .map-country:focus-visible { fill: var(--accent); stroke: var(--map-outline-edge); }
+html[data-theme='dark'] .map-tool,
+html[data-theme='dark'] .map-caption { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme='dark'] .map-tool:hover { background: var(--accent); color: #30251d; }
+html[data-theme='dark'] .map-marker circle:first-child { stroke: var(--map-water); }
+html[data-theme='dark'] .map-marker-guess circle:first-child { fill: var(--error-soft); }
+html[data-theme='dark'] .map-marker-core { fill: var(--ink); }
+html[data-theme='dark'] .map-answer-dock,
+html[data-theme='dark'] .route-game-dock,
+html[data-theme='dark'] .route-map-legend { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme='dark'] .route-map-legend { color: var(--muted); }
+html[data-theme='dark'] .route-pair { background: var(--surface-strong); color: var(--surface-strong-text); }
+html[data-theme='dark'] .route-pair strong,
+html[data-theme='dark'] .route-distance strong { color: var(--surface-strong-text); }
+html[data-theme='dark'] .route-pair .eyebrow,
+html[data-theme='dark'] .route-pair-arrow span,
+html[data-theme='dark'] .route-distance span { color: var(--muted); }
+html[data-theme='dark'] .route-distance { border-color: var(--border); }
+html[data-theme='dark'] .route-stops li { background: var(--surface-soft); color: var(--ink); }
+html[data-theme='dark'] .route-stops li.is-start { background: var(--surface-strong); color: var(--surface-strong-text); }
+html[data-theme='dark'] .route-builder { border-color: var(--border); background: var(--surface-raised); }
+html[data-theme='dark'] .country-practice-status,
+html[data-theme='dark'] .city-practice-status,
+html[data-theme='dark'] .connections-status,
+html[data-theme='dark'] .higher-lower-live,
+html[data-theme='dark'] .neighbour-live,
+html[data-theme='dark'] .distance-live { border-color: var(--border); background: var(--surface-raised); color: var(--muted); }
 
 /* Choices, result feedback and interactive game panels. */
-html[data-theme] .flag-choice,
-html[data-theme] .answer-choice,
-html[data-theme] .connections-tile,
-html[data-theme] .higher-lower-country,
-html[data-theme] .distance-city-choice,
-html[data-theme] .distance-origin,
-html[data-theme] .neighbour-target,
-html[data-theme] .connections-review p { border-color: var(--border); background: var(--surface-raised); color: var(--ink); }
-html[data-theme] .answer-feedback,
-html[data-theme] .inline-notice { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
-html[data-theme] .flag-choice:hover:not(:disabled),
-html[data-theme] .answer-choice:hover:not(:disabled),
-html[data-theme] .connections-tile:not(:disabled):hover,
-html[data-theme] .higher-lower-country:not(:disabled):hover,
-html[data-theme] .distance-city-choice:not(:disabled):hover { border-color: var(--accent); background: var(--surface-hover); }
-html[data-theme] .flag-choice.is-right,
-html[data-theme] .answer-choice.is-right,
-html[data-theme] .higher-lower-country.is-right,
-html[data-theme] .higher-lower-country.is-answer,
-html[data-theme] .distance-city-choice.is-right,
-html[data-theme] .connections-tile.is-solved { border-color: var(--success); background: var(--success-soft); color: var(--success-text); }
-html[data-theme] .flag-choice.is-wrong,
-html[data-theme] .answer-choice.is-wrong,
-html[data-theme] .higher-lower-country.is-wrong,
-html[data-theme] .distance-city-choice.is-wrong { border-color: var(--error); background: var(--error-soft); color: var(--error-text); }
-html[data-theme] .answer-feedback.is-correct,
-html[data-theme] .flag-round .answer-feedback.is-correct { border-color: var(--success); background: var(--success-soft); color: var(--success-text); }
-html[data-theme] .answer-feedback.is-incorrect,
-html[data-theme] .flag-round .answer-feedback.is-incorrect { border-color: var(--error); background: var(--error-soft); color: var(--error-text); }
-html[data-theme] .answer-feedback.is-correct .feedback-icon { color: var(--success); }
-html[data-theme] .answer-feedback.is-incorrect .feedback-icon { color: var(--error); }
-html[data-theme] .map-country.is-correct { fill: var(--success); }
-html[data-theme] .attempt-meter span.is-right { background: var(--success); }
-html[data-theme] .map-country.is-wrong { fill: var(--error); }
-html[data-theme] .grid-corner,
-html[data-theme] .grid-column-label,
-html[data-theme] .grid-row-label { background: var(--grid-header); color: var(--ink); }
-html[data-theme] .geo-grid { background: var(--border); }
-html[data-theme] .grid-cell { border-color: var(--border); background: var(--surface-raised); color: var(--ink); }
-html[data-theme] .grid-cell:has(.grid-cell-trigger:hover) { background: var(--surface-hover); }
-html[data-theme] .grid-cell.is-current { border-color: var(--accent); background: #4b3a2f; }
-html[data-theme] .grid-cell.is-filled { border-color: var(--success); background: var(--success-soft); }
-html[data-theme] .grid-cell-trigger,
-html[data-theme] .grid-cell-trigger[aria-pressed='true'] { color: var(--muted); }
-html[data-theme] .grid-cell-trigger:hover { color: var(--ink); }
-html[data-theme] .flag-display .flag-cover { background: repeating-linear-gradient(135deg, #494138 0 10px, #3c3630 10px 20px); }
-html[data-theme] .flag-frame { background: #fff; }
-html[data-theme] .connections-solved-countries span { border-color: var(--border); background: var(--surface-raised); }
-html[data-theme] .connections-color-0 { background: #4b4033; color: var(--ink); }
-html[data-theme] .connections-color-1 { background: #3d493b; color: var(--ink); }
-html[data-theme] .connections-color-2 { background: #493d46; color: var(--ink); }
-html[data-theme] .connections-color-3 { background: #3d4848; color: var(--ink); }
-html[data-theme] .connections-tile.is-selected { border-color: var(--accent); background: #514034; color: var(--ink); }
-html[data-theme] .connections-tile small,
-html[data-theme] .distance-city-choice .distance-city-result,
-html[data-theme] .distance-origin > code { color: var(--muted); }
-html[data-theme] .higher-lower-value,
-html[data-theme] .higher-lower-country.is-answer .higher-lower-value,
-html[data-theme] .higher-lower-country.is-wrong .higher-lower-value,
-html[data-theme] .higher-lower-response.is-correct,
-html[data-theme] .higher-lower-country.is-answer .higher-lower-outcome,
-html[data-theme] .higher-lower-response.is-incorrect,
-html[data-theme] .higher-lower-country.is-wrong .higher-lower-outcome { color: var(--ink) !important; }
-html[data-theme] .neighbour-selected button { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
-html[data-theme] .question-count { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
-html[data-theme] .mode-switch a.is-selected { background: var(--ink); color: var(--paper); }
-html[data-theme] .game-settings-button:hover,
-html[data-theme] .game-settings-button[aria-expanded='true'] { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
-html[data-theme] .game-settings-panel,
-html[data-theme] .flag-settings-panel,
-html[data-theme] .game-results-dialog,
-html[data-theme] .flag-results-dialog { border-color: var(--border); background: var(--surface); color: var(--ink); }
-html[data-theme] .game-settings-panel .practice-config label,
-html[data-theme] .flag-settings-panel > label:not(.flag-reveal-setting) { color: var(--muted); }
-html[data-theme] .game-results-dialog::backdrop,
-html[data-theme] .flag-results-dialog::backdrop { background: rgba(14, 12, 10, .72); }
-html[data-theme] .game-results-close:hover,
-html[data-theme] .flag-results-close:hover,
-html[data-theme] .game-results-return:hover { background: var(--surface-hover); color: var(--ink); }
-html[data-theme] .results-reopen { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme='dark'] .flag-choice,
+html[data-theme='dark'] .answer-choice,
+html[data-theme='dark'] .connections-tile,
+html[data-theme='dark'] .higher-lower-country,
+html[data-theme='dark'] .distance-city-choice,
+html[data-theme='dark'] .distance-origin,
+html[data-theme='dark'] .neighbour-target,
+html[data-theme='dark'] .connections-review p { border-color: var(--border); background: var(--surface-raised); color: var(--ink); }
+html[data-theme='dark'] .answer-feedback,
+html[data-theme='dark'] .inline-notice { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
+html[data-theme='dark'] .flag-choice:hover:not(:disabled),
+html[data-theme='dark'] .answer-choice:hover:not(:disabled),
+html[data-theme='dark'] .connections-tile:not(:disabled):hover,
+html[data-theme='dark'] .higher-lower-country:not(:disabled):hover,
+html[data-theme='dark'] .distance-city-choice:not(:disabled):hover { border-color: var(--accent); background: var(--surface-hover); }
+html[data-theme='dark'] .flag-choice.is-right,
+html[data-theme='dark'] .answer-choice.is-right,
+html[data-theme='dark'] .higher-lower-country.is-right,
+html[data-theme='dark'] .higher-lower-country.is-answer,
+html[data-theme='dark'] .distance-city-choice.is-right,
+html[data-theme='dark'] .connections-tile.is-solved { border-color: var(--success); background: var(--success-soft); color: var(--success-text); }
+html[data-theme='dark'] .flag-choice.is-wrong,
+html[data-theme='dark'] .answer-choice.is-wrong,
+html[data-theme='dark'] .higher-lower-country.is-wrong,
+html[data-theme='dark'] .distance-city-choice.is-wrong { border-color: var(--error); background: var(--error-soft); color: var(--error-text); }
+html[data-theme='dark'] .answer-feedback.is-correct,
+html[data-theme='dark'] .flag-round .answer-feedback.is-correct { border-color: var(--success); background: var(--success-soft); color: var(--success-text); }
+html[data-theme='dark'] .answer-feedback.is-incorrect,
+html[data-theme='dark'] .flag-round .answer-feedback.is-incorrect { border-color: var(--error); background: var(--error-soft); color: var(--error-text); }
+html[data-theme='dark'] .answer-feedback.is-correct .feedback-icon { color: var(--success); }
+html[data-theme='dark'] .answer-feedback.is-incorrect .feedback-icon { color: var(--error); }
+html[data-theme='dark'] .map-country.is-correct { fill: var(--success); }
+html[data-theme='dark'] .attempt-meter span.is-right { background: var(--success); }
+html[data-theme='dark'] .map-country.is-wrong { fill: var(--error); }
+html[data-theme='dark'] .outline-map-stage .map-country.is-correct { fill: var(--success); }
+html[data-theme='dark'] .outline-map-stage .map-country.is-wrong { fill: var(--error); }
+html[data-theme='dark'] .grid-corner,
+html[data-theme='dark'] .grid-column-label,
+html[data-theme='dark'] .grid-row-label { background: var(--grid-header); color: var(--ink); }
+html[data-theme='dark'] .geo-grid { background: var(--border); }
+html[data-theme='dark'] .grid-cell { border-color: var(--border); background: var(--surface-raised); color: var(--ink); }
+html[data-theme='dark'] .grid-cell:has(.grid-cell-trigger:hover) { background: var(--surface-hover); }
+html[data-theme='dark'] .grid-cell.is-current { border-color: var(--accent); background: #4b3a2f; }
+html[data-theme='dark'] .grid-cell.is-filled { border-color: var(--success); background: var(--success-soft); }
+html[data-theme='dark'] .grid-cell-trigger,
+html[data-theme='dark'] .grid-cell-trigger[aria-pressed='true'] { color: var(--muted); }
+html[data-theme='dark'] .grid-cell-trigger:hover { color: var(--ink); }
+html[data-theme='dark'] .flag-display .flag-cover { background: repeating-linear-gradient(135deg, #494138 0 10px, #3c3630 10px 20px); }
+html[data-theme='dark'] .flag-frame { background: #fff; }
+html[data-theme='dark'] .connections-solved-countries span { border-color: var(--border); background: var(--surface-raised); }
+html[data-theme='dark'] .connections-color-0 { background: #4b4033; color: var(--ink); }
+html[data-theme='dark'] .connections-color-1 { background: #3d493b; color: var(--ink); }
+html[data-theme='dark'] .connections-color-2 { background: #493d46; color: var(--ink); }
+html[data-theme='dark'] .connections-color-3 { background: #3d4848; color: var(--ink); }
+html[data-theme='dark'] .connections-tile.is-selected { border-color: var(--accent); background: #514034; color: var(--ink); }
+html[data-theme='dark'] .connections-tile small,
+html[data-theme='dark'] .distance-city-choice .distance-city-result,
+html[data-theme='dark'] .distance-origin > code { color: var(--muted); }
+html[data-theme='dark'] .higher-lower-value,
+html[data-theme='dark'] .higher-lower-country.is-answer .higher-lower-value,
+html[data-theme='dark'] .higher-lower-country.is-wrong .higher-lower-value,
+html[data-theme='dark'] .higher-lower-response.is-correct,
+html[data-theme='dark'] .higher-lower-country.is-answer .higher-lower-outcome,
+html[data-theme='dark'] .higher-lower-response.is-incorrect,
+html[data-theme='dark'] .higher-lower-country.is-wrong .higher-lower-outcome { color: var(--ink) !important; }
+html[data-theme='dark'] .neighbour-selected button { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
+html[data-theme='dark'] .question-count { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
+html[data-theme='dark'] .mode-switch a.is-selected { background: var(--ink); color: var(--paper); }
+html[data-theme='dark'] .game-settings-button:hover,
+html[data-theme='dark'] .game-settings-button[aria-expanded='true'] { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
+html[data-theme='dark'] .game-settings-panel,
+html[data-theme='dark'] .flag-settings-panel,
+html[data-theme='dark'] .game-results-dialog,
+html[data-theme='dark'] .flag-results-dialog { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme='dark'] .game-settings-panel .practice-config label,
+html[data-theme='dark'] .flag-settings-panel > label:not(.flag-reveal-setting) { color: var(--muted); }
+html[data-theme='dark'] .game-results-dialog::backdrop,
+html[data-theme='dark'] .flag-results-dialog::backdrop { background: rgba(14, 12, 10, .72); }
+html[data-theme='dark'] .game-results-close:hover,
+html[data-theme='dark'] .flag-results-close:hover,
+html[data-theme='dark'] .game-results-return:hover { background: var(--surface-hover); color: var(--ink); }
+html[data-theme='dark'] .results-reopen { border-color: var(--border); background: var(--surface); color: var(--ink); }
 
 /* Supporting pages, charts and app feedback. */
-html[data-theme] .trend-chart { border-color: var(--border); background: var(--surface-raised); }
-html[data-theme] .trend-bar.is-empty { background: var(--sand); }
-html[data-theme] .game-stat-list,
-html[data-theme] .history-list,
-html[data-theme] .game-stat-row,
-html[data-theme] .history-row { border-color: var(--border); }
-html[data-theme] .game-stat-name,
-html[data-theme] .game-stat-row:hover,
-html[data-theme] .prose p:not(.lead),
-html[data-theme] .prose a { color: var(--ink); }
-html[data-theme] .storage-banner { background: var(--danger-soft); color: var(--danger); }
-html[data-theme] .form-message { color: var(--success-text); }
-html[data-theme] .form-message-error { color: var(--danger); }
-html[data-theme] .notice-warning { border-color: var(--error); background: var(--error-soft); color: var(--error-text); }
-html[data-theme] .notice-success { border-left-color: var(--success); }
-html[data-theme] .flag-round .answer-feedback.is-correct .feedback-icon { color: var(--success); }
-html[data-theme] .flag-live-status strong,
-html[data-theme] .coordinate-fields label { color: var(--ink); }
+html[data-theme='dark'] .trend-chart { border-color: var(--border); background: var(--surface-raised); }
+html[data-theme='dark'] .trend-bar.is-empty { background: var(--sand); }
+html[data-theme='dark'] .game-stat-list,
+html[data-theme='dark'] .history-list,
+html[data-theme='dark'] .game-stat-row,
+html[data-theme='dark'] .history-row { border-color: var(--border); }
+html[data-theme='dark'] .game-stat-name,
+html[data-theme='dark'] .game-stat-row:hover,
+html[data-theme='dark'] .prose p:not(.lead),
+html[data-theme='dark'] .prose a { color: var(--ink); }
+html[data-theme='dark'] .storage-banner { background: var(--danger-soft); color: var(--danger); }
+html[data-theme='dark'] .form-message { color: var(--success-text); }
+html[data-theme='dark'] .form-message-error { color: var(--danger); }
+html[data-theme='dark'] .notice-warning { border-color: var(--error); background: var(--error-soft); color: var(--error-text); }
+html[data-theme='dark'] .notice-success { border-left-color: var(--success); }
+html[data-theme='dark'] .flag-round .answer-feedback.is-correct .feedback-icon { color: var(--success); }
+html[data-theme='dark'] .flag-live-status strong,
+html[data-theme='dark'] .coordinate-fields label { color: var(--ink); }
 
 /* Settings has the same quiet, tactile controls as the game. */
 .settings-page { width: min(900px, 100%); margin-inline: auto; padding-top: 43px; }
@@ -308,8 +326,21 @@ html[data-theme] .coordinate-fields label { color: var(--ink); }
 .data-settings, .install-section { border-bottom: 1px solid var(--border); }
 
 @media (max-width: 680px) {
-  .primary-nav { position: fixed; inset: 60px 0 auto; width: auto; max-height: calc(100dvh - 60px); overflow-y: auto; grid-column: 1 / -1; justify-self: stretch; justify-content: flex-start; margin: 0; border-bottom-color: var(--border); box-shadow: 0 14px 20px rgba(17, 15, 13, .14); }
-  .primary-nav .nav-link { width: 100%; border-bottom-color: var(--border); }
+  html[data-theme='dark'] .primary-nav {
+    position: fixed;
+    inset: 60px 0 auto;
+    width: auto;
+    max-height: calc(100dvh - 60px);
+    overflow-y: auto;
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    justify-content: flex-start;
+    margin: 0;
+    border-bottom-color: var(--border);
+    box-shadow: 0 14px 20px rgba(17, 15, 13, .14);
+  }
+  html[data-theme='dark'] .primary-nav .nav-link { border-bottom-color: var(--border); }
+  html[data-theme='dark'] .primary-nav .nav-link { width: 100%; }
   .settings-page { padding-top: 28px; }
   .settings-page > .page-heading { align-items: flex-start; margin-bottom: 19px; }
   .settings-page > .page-heading h1 { font-size: 2.5rem; }
