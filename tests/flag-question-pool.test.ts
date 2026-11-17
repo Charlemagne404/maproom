@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { Country } from '../src/geography/types'
-import { flagAnswerChoices, flagCountryPool, practiceQuestionSequence, shuffleFlagPool } from '../src/games/flags/questionPool'
+import { adaptiveFlagQuestionSequence, flagAnswerChoices, flagCountryPool, practiceQuestionSequence, shuffleFlagPool } from '../src/games/flags/questionPool'
 
 const catalog = JSON.parse(readFileSync(join(process.cwd(), 'public', 'data', 'countries.json'), 'utf8')) as { countries: Country[] }
 
@@ -63,6 +63,28 @@ describe('flag practice question pools', () => {
     expect(new Set(choices.map((choice) => choice.iso3)).size).toBe(4)
     expect(choices.some((choice) => choice.iso3 === 'EEE')).toBe(false)
     expect(choices.every((choice) => pool.some((country) => country.iso3 === choice.iso3))).toBe(true)
+  })
+
+  it('prefers same-continent distractors when the region has enough different flags', () => {
+    const answer = { iso3: 'AAA', flagCode: 'aa', continent: 'Africa' } as Country
+    const pool = [
+      answer,
+      { iso3: 'BBB', flagCode: 'bb', continent: 'Africa' } as Country,
+      { iso3: 'CCC', flagCode: 'cc', continent: 'Africa' } as Country,
+      { iso3: 'DDD', flagCode: 'dd', continent: 'Africa' } as Country,
+      { iso3: 'EEE', flagCode: 'ee', continent: 'Europe' } as Country,
+    ]
+    const choices = flagAnswerChoices(pool, answer, randomFrom(18))
+    expect(choices).toHaveLength(4)
+    expect(choices.every((country) => country.continent === 'Africa')).toBe(true)
+  })
+
+  it('puts missed flags first in review practice and avoids repeats within the round', () => {
+    const pool = ['AAA', 'BBB', 'CCC', 'DDD', 'EEE', 'FFF'].map((iso3) => ({ iso3, flagCode: iso3.toLowerCase() } as Country))
+    const sequence = adaptiveFlagQuestionSequence(pool, ['AAA', 'DDD'], 5, randomFrom(91))
+    expect(sequence).toHaveLength(5)
+    expect(sequence.slice(0, 2).map((country) => country.iso3).sort()).toEqual(['AAA', 'DDD'])
+    expect(new Set(sequence.map((country) => country.iso3)).size).toBe(5)
   })
 
   it('does not repeat between reshuffled practice decks unless the eligible pool has one country', () => {

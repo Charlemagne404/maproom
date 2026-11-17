@@ -1,0 +1,166 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { describe, expect, it } from 'vitest'
+import type { City, Country } from '../src/geography/types'
+import { buildAdjacency, dailyPuzzleId, dailyPuzzleSeed, generateRoutePuzzle, gridCandidates, gridAnswerScore, seededShuffle, validGridPresets } from '../src/puzzles/engine'
+import { generateConnectionsPuzzle } from '../src/puzzles/connections'
+import { countryMeasure, makeHigherLowerQuestions, type CountryMeasure } from '../src/puzzles/higherLower'
+import { makeNeighbourQuestions, scoreNeighbourAnswer } from '../src/puzzles/neighbours'
+import { makeDistanceQuestions } from '../src/puzzles/distance'
+import { greatCircleKm } from '../src/puzzles/engine'
+
+const dataDir = join(process.cwd(), 'public', 'data')
+const countries = (JSON.parse(readFileSync(join(dataDir, 'countries.json'), 'utf8')) as { countries: Country[] }).countries
+const cities = (JSON.parse(readFileSync(join(dataDir, 'cities.json'), 'utf8')) as { cities: City[] }).cities
+const countriesByCode = new Map(countries.map((country) => [country.iso3, country]))
+
+function dateAt(offset: number): string {
+  const date = new Date('2026-01-01T12:00:00Z')
+  date.setUTCDate(date.getUTCDate() + offset)
+  return date.toISOString().slice(0, 10)
+}
+
+function hasUniqueAnswerAssignment(cells: Country[][]): boolean {
+  const ordered = [...cells].sort((left, right) => left.length - right.length)
+  const used = new Set<string>()
+  function fill(index: number): boolean {
+    if (index === ordered.length) return true
+    for (const country of ordered[index]!) {
+      if (used.has(country.iso3)) continue
+      used.add(country.iso3)
+      if (fill(index + 1)) return true
+      used.delete(country.iso3)
+    }
+    return false
+  }
+  return fill(0)
+}
+
+describe('expanded daily and practice puzzle builders', () => {
+  it('builds a broad, solvable grid library and varies daily boards across a year', () => {
+    expect(dailyPuzzleId('grid', '2026-11-17')).toBe('grid:2026-11-17:v2')
+    expect(dailyPuzzleId('flags', '2026-11-17')).toBe('flags:2026-11-17:v1')
+    const presets = validGridPresets(countries)
+    expect(presets.length).toBeGreaterThan(50)
+    const regionLabels = new Set(presets.flatMap((preset) => preset.columns.map((column) => column.label)))
+    expect(regionLabels.has('North America · continent')).toBe(true)
+    expect(regionLabels.has('North America · subregion')).toBe(true)
+    for (const preset of presets) {
+      expect(preset.columns).toHaveLength(3)
+      expect(preset.rows).toHaveLength(3)
+      expect(new Set(preset.columns.map((column) => column.label)).size).toBe(3)
+      const cells = preset.rows.flatMap((row) => preset.columns.map((column) => gridCandidates(countries, row, column)))
+      expect(cells.every((cell) => cell.length >= 2 && cell.length <= 90)).toBe(true)
+      expect(hasUniqueAnswerAssignment(cells)).toBe(true)
+    }
+    const selected = Array.from({ length: 365 }, (_, index) => {
+      const date = dateAt(index)
+      return seededShuffle(presets, `${dailyPuzzleSeed('grid', date)}:preset`)[0]?.id
+    })
+    expect(new Set(selected).size).toBeGreaterThan(50)
+    expect(gridAnswerScore(2)).toBeGreaterThan(gridAnswerScore(20))
+    expect(gridAnswerScore(0)).toBe(0)
+  })
+
+  it('generates deterministic Connections boards with four exact, non-overlapping groups', () => {
+    const signatures = new Set<string>()
+    for (let day = 0; day < 30; day += 1) {
+      const seed = dailyPuzzleSeed('connections', dateAt(day))
+      const puzzle = generateConnectionsPuzzle(countries, seed)
+      const again = generateConnectionsPuzzle(countries, seed)
+      expect(puzzle.groups).toEqual(again.groups)
+      expect(puzzle.tiles.map((country) => country.iso3)).toEqual(again.tiles.map((country) => country.iso3))
+      expect(puzzle.groups).toHaveLength(4)
+      expect(puzzle.tiles).toHaveLength(16)
+      expect(new Set(puzzle.tiles.map((country) => country.iso3)).size).toBe(16)
+      const assigned = puzzle.groups.flatMap((group) => group.countryCodes)
+      expect(assigned).toHaveLength(16)
+      expect(new Set(assigned).size).toBe(16)
+      expect(puzzle.groups.every((group) => group.countryCodes.length === 4 && group.label && group.explanation)).toBe(true)
+      signatures.add(puzzle.groups.map((group) => group.id).sort().join('|'))
+    }
+    expect(signatures.size).toBeGreaterThan(5)
+  })
+
+  it('creates strict higher-or-lower comparisons from available country facts', () => {
+    for (const measure of ['population', 'area', 'density'] as CountryMeasure[]) {
+      for (let day = 0; day < 20; day += 1) {
+        const questions = makeHigherLowerQuestions(countries, measure, `higher:${dateAt(day)}`, 8, 'standard')
+        expect(questions).toHaveLength(8)
+        for (const question of questions) {
+          expect(countryMeasure(question.left, measure)).not.toBeNull()
+          expect(countryMeasure(question.right, measure)).not.toBeNull()
+          expect(question.answer === 'left' ? question.leftValue > question.rightValue : question.rightValue > question.leftValue).toBe(true)
+        }
+        expect(new Set(questions.map((question) => [question.left.iso3, question.right.iso3].sort().join(':'))).size).toBe(8)
+      }
+    }
+  })
+
+  it('supports regional close-call comparisons without fabricating missing facts', () => {
+    for (const measure of ['population', 'area', 'density'] as CountryMeasure[]) {
+      const questions = makeHigherLowerQuestions(countries.filter((country) => country.continent === 'Europe'), measure, `europe-close:${measure}`, 10, 'close')
+      expect(questions.length).toBeGreaterThan(0)
+      for (const question of questions) {
+        expect(question.left.continent).toBe('Europe')
+        expect(question.right.continent).toBe('Europe')
+        expect(countryMeasure(question.left, measure)).not.toBeNull()
+        expect(countryMeasure(question.right, measure)).not.toBeNull()
+        const ratio = Math.max(question.leftValue, question.rightValue) / Math.min(question.leftValue, question.rightValue)
+        expect(ratio).toBeGreaterThanOrEqual(1.01)
+        expect(ratio).toBeLessThanOrEqual(1.45)
+      }
+    }
+  })
+
+  it('builds scoped border routes within requested difficulty and uses real adjacency', () => {
+    const adjacency = buildAdjacency(countries)
+    for (const [difficulty, minimum, maximum] of [['short', 2, 4], ['standard', 3, 6], ['long', 5, 8]] as const) {
+      for (let day = 0; day < 20; day += 1) {
+        const puzzle = generateRoutePuzzle(countries, `europe:${difficulty}:${day}`, { continent: 'Europe', difficulty })
+        expect(countriesByCode.get(puzzle.start)?.continent).toBe('Europe')
+        expect(countriesByCode.get(puzzle.end)?.continent).toBe('Europe')
+        expect(puzzle.shortest.length - 1).toBeGreaterThanOrEqual(minimum)
+        expect(puzzle.shortest.length - 1).toBeLessThanOrEqual(maximum)
+        for (let index = 1; index < puzzle.shortest.length; index += 1) {
+          expect(adjacency.get(puzzle.shortest[index - 1]!)).toContain(puzzle.shortest[index])
+        }
+      }
+    }
+  })
+
+  it('uses reciprocal land borders and penalizes missing or incorrect neighbors fairly', () => {
+    const questions = makeNeighbourQuestions(countries, 'neighbour-test', 20)
+    expect(questions).toHaveLength(20)
+    for (const question of questions) {
+      expect(question.neighbourCodes.length).toBeGreaterThanOrEqual(2)
+      expect(new Set(question.neighbourCodes).size).toBe(question.neighbourCodes.length)
+      for (const code of question.neighbourCodes) expect(countriesByCode.get(code)?.borders).toContain(question.country.iso3)
+    }
+    expect(scoreNeighbourAnswer(['A', 'B'], ['A', 'B'])).toMatchObject({ points: 1000, exact: true, missed: 0, extra: 0 })
+    expect(scoreNeighbourAnswer(['A', 'B'], ['A', 'C'])).toMatchObject({ points: 400, exact: false, matched: 1, missed: 1, extra: 1 })
+    const dense = makeNeighbourQuestions(countries, 'neighbour-dense', 20, 'Europe', 'dense')
+    expect(dense.length).toBeGreaterThan(0)
+    expect(dense.every((question) => question.country.continent === 'Europe' && question.neighbourCodes.length >= 5)).toBe(true)
+  })
+
+  it('generates solvable city comparisons with correct geodesic and coordinate answers', () => {
+    for (const measure of ['distance', 'latitude', 'longitude'] as const) {
+      const questions = makeDistanceQuestions(cities, countriesByCode, `distance:${measure}`, 15, { measure, minimumPopulation: 100_000, difficulty: 'standard' })
+      expect(questions).toHaveLength(15)
+      for (const question of questions) {
+        expect(question.origin.id).not.toBe(question.left.id)
+        expect(question.origin.id).not.toBe(question.right.id)
+        expect(question.left.id).not.toBe(question.right.id)
+        expect(question.leftDistanceKm).toBeCloseTo(greatCircleKm(question.origin, question.left), 5)
+        expect(question.rightDistanceKm).toBeCloseTo(greatCircleKm(question.origin, question.right), 5)
+        const leftValue = measure === 'distance' ? question.leftDistanceKm : measure === 'latitude' ? question.left.lat : question.left.lon
+        const rightValue = measure === 'distance' ? question.rightDistanceKm : measure === 'latitude' ? question.right.lat : question.right.lon
+        expect(question.answer === 'left' ? (measure === 'distance' ? leftValue < rightValue : leftValue > rightValue) : (measure === 'distance' ? rightValue < leftValue : rightValue > leftValue)).toBe(true)
+      }
+      const closeRegional = makeDistanceQuestions(cities, countriesByCode, `distance:close:europe:${measure}`, 10, { scope: 'Europe', measure, minimumPopulation: 100_000, difficulty: 'close' })
+      expect(closeRegional.length).toBeGreaterThan(0)
+      expect(closeRegional.every((question) => countriesByCode.get(question.left.countryIso3)?.continent === 'Europe' && countriesByCode.get(question.right.countryIso3)?.continent === 'Europe')).toBe(true)
+    }
+  })
+})

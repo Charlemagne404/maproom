@@ -614,11 +614,17 @@ h1, h2 { letter-spacing: -.035em; }
 .game-card-outlines { background: var(--accent); color: var(--ink); }
 .game-card-outlines .game-card-action svg { color: var(--ink); }
 .game-card-routes { background: #e9d8c5; }
-.game-card-flags, .game-card-grid, .game-card-cities { grid-column: span 4; }
+.game-card-flags, .game-card-grid, .game-card-cities, .game-card-connections, .game-card-higher-lower, .game-card-neighbours, .game-card-distance { grid-column: span 4; }
 .game-card-flags { background: #fffaf3; }
 .game-card-grid { background: #3a342e; color: var(--paper); }
 .game-card-grid .game-card-action { color: var(--paper); }
 .game-card-cities { background: var(--sand); }
+.game-card-connections { background: #efe4d6; }
+.game-card-higher-lower { background: #e9d8c5; }
+.game-card-neighbours { background: #3a342e; color: var(--paper); }
+.game-card-neighbours .game-card-copy h2 { color: var(--paper); }
+.game-card-neighbours .game-card-action svg { color: #f0a06e; }
+.game-card-distance { background: #e3e8e5; }
 .art-world { width: 100%; height: 100%; object-fit: contain; }
 .art-outline { width: 100%; height: 100%; position: relative; display: grid; place-items: center; }
 .art-outline img { width: auto; height: 112px; max-width: 100%; object-fit: contain; }
@@ -835,9 +841,10 @@ h1, h2 { letter-spacing: -.035em; }
 .grid-scoring-note svg { color: var(--accent); }
 .grid-game-body > .result-panel { grid-area: result; }
 
-.cities-game-body:has(.city-map-stage) { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, .65fr); grid-template-areas: "config config" "question question" "map answer" "map tools" "map feedback" "note note" "result result"; align-content: start; align-items: start; gap: 0 22px; }
+.cities-game-body:has(.city-map-stage) { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, .65fr); grid-template-areas: "config config" "question question" "status status" "map answer" "map tools" "map feedback" "note note" "result result"; align-content: start; align-items: start; gap: 0 22px; }
 .cities-game-body > .practice-config { grid-area: config; }
 .cities-game-body > .question-toolbar { grid-area: question; }
+.cities-game-body > .city-practice-status { grid-area: status; }
 .city-map-stage { grid-area: map; align-self: start; }
 .city-map-stage .geo-map { aspect-ratio: 1.7 / 1; }
 .cities-game-body > .answer-form { grid-area: answer; }
@@ -861,7 +868,7 @@ h1, h2 { letter-spacing: -.035em; }
 @media (max-width: 980px) {
   .game-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .game-card-countries { grid-column: span 6; }
-  .game-card-outlines, .game-card-routes, .game-card-flags, .game-card-grid, .game-card-cities { grid-column: span 3; }
+  .game-card-outlines, .game-card-routes, .game-card-flags, .game-card-grid, .game-card-cities, .game-card-connections, .game-card-higher-lower, .game-card-neighbours, .game-card-distance { grid-column: span 3; }
   .map-game-body, .outline-game-body, .route-game-body, .cities-game-body:has(.city-map-stage) { grid-template-columns: minmax(0, 1.3fr) minmax(245px, .7fr); gap: 0 16px; }
   .route-pair { grid-template-columns: minmax(0, 1fr) 88px minmax(0, 1fr); }
   .route-distance { grid-column: auto; padding: 0 0 0 10px; border-top: 0; border-left: 1px solid #62584e; }
@@ -886,7 +893,7 @@ h1, h2 { letter-spacing: -.035em; }
   .game-card-link { min-height: 180px; padding: 12px 12px 11px; }
   .game-card-countries { grid-column: span 2; min-height: 201px; }
   .game-card-countries .game-card-link { min-height: 201px; padding: 12px 15px 11px; }
-  .game-card-outlines, .game-card-routes, .game-card-flags, .game-card-grid, .game-card-cities { grid-column: span 1; }
+  .game-card-outlines, .game-card-routes, .game-card-flags, .game-card-grid, .game-card-cities, .game-card-connections, .game-card-higher-lower, .game-card-neighbours, .game-card-distance { grid-column: span 1; }
   .game-card-art { height: 83px; margin: 2px 3px 2px; }
   .game-card-countries .game-card-art { height: 101px; margin: 0 4px 2px; }
   .game-card-copy h2 { font-size: clamp(1.02rem, 4.4vw, 1.32rem); }
@@ -923,7 +930,7 @@ h1, h2 { letter-spacing: -.035em; }
   .game-page-heading .eyebrow { font-size: .53rem; }
   .mode-switch a { min-height: 40px; padding: 5px 10px; font-size: .64rem; }
   .app-frame-game .map-game-body { grid-template: "config" "question" "map" "answer" "feedback" "source" / minmax(0, 1fr); }
-  .map-game-body { grid-template-columns: minmax(0, 1fr); grid-template-areas: "config" "question" "map" "answer" "feedback" "source"; grid-template-rows: auto auto auto auto auto auto; gap: 0; }
+  .map-game-body { grid-template-columns: minmax(0, 1fr); grid-template-areas: "config" "question" "status" "map" "answer" "feedback" "source"; grid-template-rows: auto auto auto auto auto auto auto; gap: 0; }
   .map-game-body > .question-toolbar { margin-bottom: 7px; }
   .map-game-body > .game-map-stage { width: 100%; }
   .geo-map { aspect-ratio: 1.55 / 1; }
@@ -939,8 +946,8 @@ h1, h2 { letter-spacing: -.035em; }
   .outline-prompt h2 { font-size: 1.35rem; }
   .outline-map-stage .geo-map { aspect-ratio: 1.35 / 1; }
   .outline-game-body > .answer-form { margin-top: 8px; }
-  .app-frame-game .route-game-body { grid-template: "pair" "rule" "map" "builder" "input" "hint" "feedback" / minmax(0, 1fr); }
-  .route-game-body { grid-template-columns: minmax(0, 1fr); grid-template-areas: "pair" "rule" "map" "builder" "input" "hint" "feedback"; grid-template-rows: auto auto auto auto auto auto auto; gap: 0; }
+  .app-frame-game .route-game-body { grid-template: "toolbar" "pair" "rule" "map" "builder" "input" "hint" "feedback" / minmax(0, 1fr); }
+  .route-game-body { grid-template-columns: minmax(0, 1fr); grid-template-areas: "toolbar" "pair" "rule" "map" "builder" "input" "hint" "feedback"; grid-template-rows: auto auto auto auto auto auto auto auto; gap: 0; }
   .route-pair { grid-template-columns: minmax(0, 1fr) 55px minmax(0, 1fr); gap: 6px; padding: 7px 9px; }
   .route-pair strong { font-size: 1rem; }
   .route-pair-arrow span { font-size: .5rem; }
@@ -980,7 +987,7 @@ h1, h2 { letter-spacing: -.035em; }
   .grid-entry-prompt small { margin-top: 2px; font-size: .6rem; }
   .grid-scoring-note { margin-top: 6px; font-size: .59rem; }
   .app-frame-game .cities-game-body:has(.city-map-stage) { grid-template: "config" "question" "map" "answer" "tools" "feedback" "note" "result" / minmax(0, 1fr); }
-  .cities-game-body:has(.city-map-stage) { grid-template-columns: minmax(0, 1fr); grid-template-areas: "config" "question" "map" "answer" "tools" "feedback" "note" "result"; gap: 0; }
+  .cities-game-body:has(.city-map-stage) { grid-template-columns: minmax(0, 1fr); grid-template-areas: "config" "question" "status" "map" "answer" "tools" "feedback" "note" "result"; gap: 0; }
   .city-map-stage .geo-map { aspect-ratio: 1.55 / 1; }
   .cities-game-body > .answer-form, .coordinate-tools { margin-top: 8px; }
   .coordinate-tools { padding: 8px; }

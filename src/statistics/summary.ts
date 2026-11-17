@@ -1,5 +1,5 @@
 import type { GameId, GameResult } from '../geography/types'
-import { dateInTimeZone } from '../puzzles/engine'
+import { dateInTimeZone, GAME_IDS } from '../puzzles/engine'
 
 export interface GameSummary {
   gameId: GameId
@@ -30,7 +30,7 @@ export function calculateStatistics(history: GameResult[], timeZone = 'Europe/St
   const totalQuestions = completed.reduce((sum, result) => sum + result.total, 0)
   const dailyDates = [...new Set(completed.filter((result) => result.mode === 'daily').map((result) => result.date))].sort().reverse()
   const today = dateInTimeZone(now, timeZone)
-  const byGame = (['countries', 'outlines', 'routes', 'flags', 'grid', 'cities'] as GameId[]).map((gameId) => {
+  const byGame = GAME_IDS.map((gameId) => {
     const results = completed.filter((result) => result.gameId === gameId)
     const correct = results.reduce((sum, result) => sum + result.correct, 0)
     const total = results.reduce((sum, result) => sum + result.total, 0)

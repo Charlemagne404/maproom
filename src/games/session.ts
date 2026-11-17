@@ -22,7 +22,7 @@ export function useGameSession(gameId: GameId, mode: GameMode, date: string, see
     saved.current = false
   }, [puzzleId])
 
-  async function save(score: number, correct: number, total: number, detail?: Record<string, unknown>) {
+  const save = useCallback(async (score: number, correct: number, total: number, detail?: Record<string, unknown>) => {
     if (saved.current) return
     saved.current = true
     const identity = session.current ?? createSessionIdentity()
@@ -47,7 +47,7 @@ export function useGameSession(gameId: GameId, mode: GameMode, date: string, see
       saved.current = false
       setSaveErrorState({ puzzleId, message: error instanceof Error ? error.message : 'This result could not be saved.' })
     }
-  }
+  }, [completeGame, date, gameId, mode, puzzleId])
 
   return { puzzleId, save, saveError, resetSession }
 }

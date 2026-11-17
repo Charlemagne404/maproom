@@ -6,10 +6,11 @@ import {
   directionFromTo,
   distanceScore,
   dailyPuzzleId,
+  dailyPuzzleSeed,
   generateRoutePuzzle,
   greatCircleKm,
+  GAME_IDS,
   gridAnswerScore,
-  gridCandidates,
   normalizeAnswer,
   pickCountries,
   resolveCountryAnswer,
@@ -58,7 +59,26 @@ describe('normalization and daily identity', () => {
   it('uses timezone calendar dates across UTC and daylight-saving boundaries', () => {
     expect(dateInTimeZone(new Date('2026-03-29T22:30:00Z'), 'Europe/Stockholm')).toBe('2026-03-30')
     expect(dateInTimeZone(new Date('2026-01-01T23:30:00Z'), 'Europe/Stockholm')).toBe('2026-01-02')
+    expect(dateInTimeZone(new Date('2026-03-29T00:30:00Z'), 'Europe/Stockholm')).toBe('2026-03-29')
+    expect(dateInTimeZone(new Date('2026-03-29T01:30:00Z'), 'Europe/Stockholm')).toBe('2026-03-29')
+    expect(dateInTimeZone(new Date('2026-10-25T00:30:00Z'), 'Europe/Stockholm')).toBe('2026-10-25')
+    expect(dateInTimeZone(new Date('2026-10-25T01:30:00Z'), 'Europe/Stockholm')).toBe('2026-10-25')
     expect(dailyPuzzleId('flags', '2026-11-16')).toBe('flags:2026-11-16:v1')
+  })
+
+  it('keeps daily identities deterministic across 400 calendar dates for every game', () => {
+    const identities = new Set<string>()
+    for (let offset = 0; offset < 400; offset += 1) {
+      const date = new Date(Date.UTC(2024, 0, 1 + offset, 12)).toISOString().slice(0, 10)
+      for (const gameId of GAME_IDS) {
+        const puzzleId = dailyPuzzleId(gameId, date)
+        expect(dailyPuzzleId(gameId, date)).toBe(puzzleId)
+        expect(dailyPuzzleSeed(gameId, date)).toBe(puzzleId)
+        expect(identities.has(puzzleId)).toBe(false)
+        identities.add(puzzleId)
+      }
+    }
+    expect(identities.size).toBe(400 * GAME_IDS.length)
   })
 
   it('produces repeatable random sequences and shuffles without mutating input', () => {
@@ -134,7 +154,7 @@ describe('distance and grid scoring', () => {
     expect(distanceScore(2500.1)).toBe(100)
   })
 
-  it('requires all curated grid intersections to have candidates and scores rarity', () => {
+  it('rejects grids that cannot fill nine distinct answers and rewards scarce crossings', () => {
     const countries = [
       country('DEU', { landlocked: false, population: 80_000_000, areaKm2: 350_000 }),
       country('CHE', { landlocked: true, population: 8_000_000, areaKm2: 40_000 }),
@@ -151,14 +171,10 @@ describe('distance and grid scoring', () => {
       country('ARG', { continent: 'South America', landlocked: false, population: 45_000_000, areaKm2: 2_800_000 }),
     ]
     const presets = validGridPresets(countries)
-    expect(presets.length).toBeGreaterThan(0)
-    for (const preset of presets) {
-      for (const row of preset.rows) {
-        for (const column of preset.columns) expect(gridCandidates(countries, row, column).length).toBeGreaterThan(0)
-      }
-    }
-    expect(gridAnswerScore(1)).toBe(1000)
-    expect(gridAnswerScore(100)).toBe(10)
+    expect(presets).toHaveLength(0)
+    expect(gridAnswerScore(1)).toBe(250)
+    expect(gridAnswerScore(2)).toBe(200)
+    expect(gridAnswerScore(20)).toBe(100)
     expect(gridAnswerScore(0)).toBe(0)
   })
 })

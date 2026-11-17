@@ -94,7 +94,7 @@ export interface CityData {
   cities: City[]
 }
 
-export type GameId = 'countries' | 'outlines' | 'routes' | 'flags' | 'grid' | 'cities'
+export type GameId = 'countries' | 'outlines' | 'routes' | 'flags' | 'grid' | 'cities' | 'connections' | 'higher-lower' | 'neighbours' | 'distance'
 export type GameMode = 'daily' | 'practice'
 
 export interface GameResult {

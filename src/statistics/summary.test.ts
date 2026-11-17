@@ -54,4 +54,13 @@ describe('calculateStatistics', () => {
     expect(empty.bestDailyStreak).toBe(0)
     expect(empty.trend.every((point) => point.score === null)).toBe(true)
   })
+
+  it('includes new game families in per-game accuracy and personal bests', () => {
+    const connections = { ...result('2026-03-30', 900, 4, 4), id: 'connections:2026-03-30', gameId: 'connections' as const }
+    const distance = { ...result('2026-03-30', 540, 5, 10), id: 'distance:practice', gameId: 'distance' as const, mode: 'practice' as const }
+    const summary = calculateStatistics([connections, distance], 'Europe/Stockholm', new Date('2026-03-30T12:00:00Z'))
+
+    expect(summary.byGame.find((item) => item.gameId === 'connections')).toMatchObject({ played: 1, correct: 4, total: 4, accuracy: 1, bestScore: 900 })
+    expect(summary.byGame.find((item) => item.gameId === 'distance')).toMatchObject({ played: 1, correct: 5, total: 10, accuracy: 0.5, bestScore: 540 })
+  })
 })

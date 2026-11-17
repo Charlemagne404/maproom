@@ -1,5 +1,6 @@
 import { openDB, type IDBPDatabase } from 'idb'
 import type { AppState, GameId, GameResult, UserSettings } from '../geography/types'
+import { GAME_IDS } from '../puzzles/engine'
 
 const DB_NAME = 'maproom-progress'
 const DB_VERSION = 1
@@ -173,7 +174,7 @@ function isExport(value: unknown): value is PersistedData & { format: string; ve
 }
 
 function isGameId(value: unknown): value is GameId {
-  return ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities'].includes(String(value))
+  return GAME_IDS.includes(String(value) as GameId)
 }
 
 function isGameResult(value: unknown): value is GameResult {

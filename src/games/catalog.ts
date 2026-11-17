@@ -1,4 +1,4 @@
-import { Compass, Flag, Globe2, Grid3X3, Map, Route, type LucideIcon } from 'lucide-react'
+import { ArrowDownUp, Compass, Flag, Globe2, Grid3X3, Map, MapPin, Route, Shuffle, type LucideIcon } from 'lucide-react'
 import type { GameId } from '../geography/types'
 
 export interface GameInfo {
@@ -19,6 +19,10 @@ export const games: GameInfo[] = [
   { id: 'flags', title: 'Flag study', shortTitle: 'Flags', category: 'Flags', description: 'Match a flag to its country, or the other way around.', action: 'Play flags', icon: Flag, path: '/games/flags' },
   { id: 'grid', title: 'Geography grid', shortTitle: 'Geography grid', category: 'Geography puzzles', description: 'Fill each crossing with a country that fits both clues.', action: 'Open the grid', icon: Grid3X3, path: '/games/grid' },
   { id: 'cities', title: 'Capitals & cities', shortTitle: 'Cities', category: 'Cities & capitals', description: 'Name a capital, place a city, or read the coordinates.', action: 'Explore cities', icon: Globe2, path: '/games/cities' },
+  { id: 'connections', title: 'Geography Connections', shortTitle: 'Connections', category: 'Logic & connections', description: 'Find four defensible ways to group sixteen places.', action: 'Find the links', icon: Shuffle, path: '/games/connections' },
+  { id: 'higher-lower', title: 'Higher or Lower', shortTitle: 'Higher or Lower', category: 'Country games', description: 'Compare countries using sourced population, area and density facts.', action: 'Make a comparison', icon: ArrowDownUp, path: '/games/higher-lower' },
+  { id: 'neighbours', title: 'Neighbour Challenge', shortTitle: 'Neighbours', category: 'Map games', description: 'Complete every land border around a country.', action: 'Find the borders', icon: Map, path: '/games/neighbours' },
+  { id: 'distance', title: 'Distance & Direction', shortTitle: 'Distance & Direction', category: 'Cities & capitals', description: 'Use real coordinates to compare cities across the world.', action: 'Compare places', icon: MapPin, path: '/games/distance' },
 ]
 
 export const categories = ['All games', ...new Set(games.map((game) => game.category))]

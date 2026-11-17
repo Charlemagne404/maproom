@@ -16,7 +16,11 @@ export function GeographyGridGame({ data, mode, date, seed }: { data: GeographyD
   if (!presets.length) return <InlineNotice title="A validated grid is unavailable" tone="warning">The current country facts do not fill every square for these grid sets.</InlineNotice>
   const preset = presets.find((item) => item.id === presetId) ?? daily ?? presets[0]
   const roundSeed = mode === 'daily' ? `${seed}:${preset.id}` : `${seed}:${preset.id}:${round}`
-  return <GridRound key={`${preset.id}:${roundSeed}`} data={data} mode={mode} date={date} seed={roundSeed} preset={preset} presets={presets} onPreset={setPresetId} onReplay={() => setRound((value) => value + 1)} />
+  return <GridRound key={`${preset.id}:${roundSeed}`} data={data} mode={mode} date={date} seed={roundSeed} preset={preset} presets={presets} onPreset={setPresetId} onReplay={() => {
+    const current = presets.findIndex((item) => item.id === preset.id)
+    setPresetId(presets[(current + 1) % presets.length]!.id)
+    setRound((value) => value + 1)
+  }} />
 }
 
 function GridRound({ data, mode, date, seed, preset, presets, onPreset, onReplay }: {
@@ -88,7 +92,7 @@ function GridRound({ data, mode, date, seed, preset, presets, onPreset, onReplay
         <div className="question-toolbar-tools">
           {mode === 'practice' && <GameSettingsMenu><div className="practice-config">
             <label><span>Grid set</span><select value={preset.id} onChange={(event) => onPreset(event.target.value)}>{presets.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
-            <span className="practice-config-note">Each country can be used once.</span>
+          <span className="practice-config-note">Each distinct board has nine valid, unique answers. Replay cycles to a fresh set.</span>
           </div></GameSettingsMenu>}
           <div className="question-count"><strong>{filled}</strong><span>of 9</span></div>
         </div>
@@ -131,7 +135,7 @@ function GridRound({ data, mode, date, seed, preset, presets, onPreset, onReplay
           {errors[activeKey] && <div className="grid-cell-error" role="alert">{errors[activeKey]}</div>}
         </div>
       })()}
-      <div className="grid-scoring-note"><CircleHelp size={15} /><span>Less common answers are worth more. Current points: <strong>{score.toLocaleString()}</strong></span></div>
+      <div className="grid-scoring-note"><CircleHelp size={15} /><span>Rarer, valid intersections score more; no popularity estimates are used. Current points: <strong>{score.toLocaleString()}</strong></span></div>
       <GameResultsDialog complete={finished} gameId="grid" mode={mode} score={score} correct={filled} total={9} title="Every crossing has a place." message="All nine squares filled with distinct countries." saveError={saveError} onReplay={mode === 'practice' ? onReplay : undefined} />
     </div>
   )

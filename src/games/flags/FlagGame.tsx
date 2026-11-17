@@ -6,24 +6,31 @@ import { GameResultsDialog } from '../../components/GameResults'
 import { GameSettingsMenu } from '../../components/GameControls'
 import type { Country, GeographyData, GameMode } from '../../geography/types'
 import { seededShuffle } from '../../puzzles/engine'
+import { useAppData } from '../../app/useAppData'
+import { missedCountryCodes } from '../../statistics/mistakes'
 import { useGameSession } from '../session'
-import { flagAnswerChoices, flagCountryPool, practiceQuestionSequence, shuffleFlagPool, type PracticeQuestionCount } from './questionPool'
+import { adaptiveFlagQuestionSequence, flagAnswerChoices, flagCountryPool, type PracticeQuestionCount } from './questionPool'
 
 type Direction = 'flag-to-country' | 'country-to-flag'
 type AnswerStyle = 'choices' | 'typed'
 
 export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
+  const { state } = useAppData()
   const [round, setRound] = useState(0)
   const [continent, setContinent] = useState('All regions')
   const [direction, setDirection] = useState<Direction>('flag-to-country')
   const [answerStyle, setAnswerStyle] = useState<AnswerStyle>('choices')
   const [questionCount, setQuestionCount] = useState<PracticeQuestionCount>('10')
   const [progressive, setProgressive] = useState(false)
+  const [reviewMissed, setReviewMissed] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const missedCodes = useMemo(() => missedCountryCodes(state.history, 'flags'), [state.history])
   const continents = useMemo(() => [...new Set(data.countries.filter((country) => country.flagCode).map((country) => country.continent).filter(Boolean) as string[])].sort(), [data.countries])
   const scopeOptions = ['All regions', ...continents]
   // The daily seed string remains unchanged; practice settings get their own session identity.
-  const roundSeed = `${seed}:${round}:${continent}:${direction}:${answerStyle}:${progressive}`
+  const roundSeed = mode === 'daily'
+    ? `${seed}:${round}:${continent}:${direction}:${answerStyle}:${progressive}`
+    : `${seed}:${round}:${continent}:${direction}:${answerStyle}:${progressive}:${reviewMissed}`
   const sessionSeed = mode === 'daily' ? roundSeed : `${roundSeed}:${questionCount}`
 
   function restartRound() {
@@ -36,12 +43,13 @@ export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode
     {direction === 'flag-to-country' && <label><span>Answer style</span><select value={answerStyle} onChange={(event) => setAnswerStyle(event.target.value as AnswerStyle)}><option value="choices">Multiple choice</option><option value="typed">Type a name</option></select></label>}
     <label><span>Questions</span><select value={questionCount} onChange={(event) => setQuestionCount(event.target.value as PracticeQuestionCount)}><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="infinite">Infinite</option></select></label>
     <label className="flag-reveal-setting"><input type="checkbox" checked={progressive} onChange={(event) => setProgressive(event.target.checked)} /><span>Reveal after wrong guesses</span></label>
+    {missedCodes.length > 0 && <label className="flag-reveal-setting"><input type="checkbox" checked={reviewMissed} onChange={(event) => setReviewMissed(event.target.checked)} /><span>Review previously missed flags first</span></label>}
   </div></GameSettingsMenu> : null
 
   return (
     <div className="game-body flag-game-body">
       <FlagRound
-        key={`${round}:${continent}:${direction}:${answerStyle}:${progressive}:${questionCount}`}
+        key={`${round}:${continent}:${direction}:${answerStyle}:${progressive}:${reviewMissed}:${questionCount}`}
         data={data}
         mode={mode}
         date={date}
@@ -52,6 +60,8 @@ export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode
         answerStyle={answerStyle}
         questionCount={questionCount}
         progressive={progressive}
+        reviewMissed={reviewMissed}
+        missedCodes={missedCodes}
         settingsControl={settingsControl}
         onPlayAgain={restartRound}
       />
@@ -59,7 +69,7 @@ export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode
   )
 }
 
-function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, answerStyle, questionCount, progressive, settingsControl, onPlayAgain }: {
+function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, answerStyle, questionCount, progressive, reviewMissed, missedCodes, settingsControl, onPlayAgain }: {
   data: GeographyData
   mode: GameMode
   date: string
@@ -70,6 +80,8 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, an
   answerStyle: AnswerStyle
   questionCount: PracticeQuestionCount
   progressive: boolean
+  reviewMissed: boolean
+  missedCodes: string[]
   settingsControl: ReactNode
   onPlayAgain: () => void
 }) {
@@ -77,9 +89,7 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, an
   const dailyQuestions = useMemo(() => seededShuffle(pool, `${dailySeed}:question-order`).slice(0, 8), [pool, dailySeed])
   const [practiceQuestions, setPracticeQuestions] = useState<Country[]>(() => {
     if (mode !== 'practice') return []
-    return questionCount === 'infinite'
-      ? shuffleFlagPool(pool)
-      : practiceQuestionSequence(pool, Number(questionCount))
+    return adaptiveFlagQuestionSequence(pool, reviewMissed ? missedCodes : [], questionCount === 'infinite' ? 40 : Number(questionCount))
   })
   const questions = mode === 'daily' ? dailyQuestions : practiceQuestions
   const infinitePractice = mode === 'practice' && questionCount === 'infinite'
@@ -93,6 +103,7 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, an
   const [score, setScore] = useState(0)
   const [resolvedCount, setResolvedCount] = useState(0)
   const [wrongCount, setWrongCount] = useState(0)
+  const [missedQuestions, setMissedQuestions] = useState<string[]>([])
   const [reveal, setReveal] = useState(0)
   const [input, setInput] = useState('')
   const mounted = useRef(false)
@@ -135,7 +146,7 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, an
     if (completionStarted.current) return
     completionStarted.current = true
     setFinished(true)
-    const detail = { continent, direction, answerStyle, progressive, ...(mode === 'practice' ? { questionCount } : {}) }
+    const detail = { continent, direction, answerStyle, progressive, missedCountries: missedQuestions, ...(mode === 'practice' ? { questionCount, reviewMissed } : {}) }
     void save(score, correct, total, detail)
   }
 
@@ -149,7 +160,7 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, an
       if (index < questions.length - 1) {
         setIndex((value) => value + 1)
       } else {
-        setPracticeQuestions(shuffleFlagPool(pool, Math.random, question))
+        setPracticeQuestions(adaptiveFlagQuestionSequence(pool, reviewMissed ? missedCodes : [], 40, Math.random, question))
         setIndex(0)
       }
       setQuestionNumber((value) => value + 1)
@@ -204,6 +215,7 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, an
       setMessage('Not quite. A little more of the flag is revealed; try once more.')
       return
     }
+    setMissedQuestions((current) => current.includes(question.iso3) ? current : [...current, question.iso3])
     setResolvedCount((value) => value + 1)
     setLocked(true)
     setMessage(`The answer is ${question.name}.`)

@@ -17,6 +17,7 @@ interface GeoMapProps {
   markers?: Array<{ point: Coordinates; kind: 'guess' | 'answer'; label: string }>
   routePoints?: Coordinates[]
   projection?: 'equal-earth' | 'mercator'
+  rotationDegrees?: number
   ariaLabel?: string
   className?: string
   compact?: boolean
@@ -33,6 +34,7 @@ export function GeoMap({
   markers = [],
   routePoints = [],
   projection: projectionName = 'equal-earth',
+  rotationDegrees = 0,
   ariaLabel = 'Interactive world map',
   className = '',
   compact = false,
@@ -52,6 +54,15 @@ export function GeoMap({
     const base = projectionName === 'mercator' ? geoMercator() : geoEqualEarth()
     return base.fitExtent(EDGE, collection)
   }, [collection, projectionName])
+  const rotationTransform = useMemo(() => {
+    const radians = rotationDegrees * Math.PI / 180
+    const contentWidth = WIDTH - 32
+    const contentHeight = HEIGHT - 28
+    const boundsWidth = Math.abs(Math.cos(radians)) * contentWidth + Math.abs(Math.sin(radians)) * contentHeight
+    const boundsHeight = Math.abs(Math.sin(radians)) * contentWidth + Math.abs(Math.cos(radians)) * contentHeight
+    const fit = Math.min(1, contentWidth / boundsWidth, contentHeight / boundsHeight)
+    return `translate(${WIDTH / 2} ${HEIGHT / 2}) rotate(${rotationDegrees}) scale(${fit}) translate(${-WIDTH / 2} ${-HEIGHT / 2})`
+  }, [rotationDegrees])
   const path = useMemo(() => geoPath(projection), [projection])
   const markerPoints = useMemo(() => markers.map((marker) => ({ ...marker, screen: projection([marker.point.lon, marker.point.lat]) })), [markers, projection])
   const routePath = useMemo(() => {
@@ -117,7 +128,7 @@ export function GeoMap({
         onPointerLeave={() => setHovered(null)}
       >
         <rect width={WIDTH} height={HEIGHT} className="map-water" />
-        <g transform={`translate(${pan.x} ${pan.y}) translate(${WIDTH / 2} ${HEIGHT / 2}) scale(${zoom}) translate(${-WIDTH / 2} ${-HEIGHT / 2})`}>
+        <g transform={`translate(${pan.x} ${pan.y}) translate(${WIDTH / 2} ${HEIGHT / 2}) scale(${zoom}) translate(${-WIDTH / 2} ${-HEIGHT / 2}) ${rotationTransform}`}>
           {features.map((feature, index) => {
             const code = mapKey(feature)
             const isActive = active.has(code)

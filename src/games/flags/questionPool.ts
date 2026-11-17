@@ -35,11 +35,21 @@ export function practiceQuestionSequence<T>(values: readonly T[], count: number,
   return questions
 }
 
+export function adaptiveFlagQuestionSequence<T extends Country>(values: readonly T[], missedCodes: readonly string[], count: number, random: () => number = Math.random, previous?: T): T[] {
+  if (values.length === 0 || count <= 0) return []
+  const reviewed = shuffleFlagPool(values.filter((value) => missedCodes.includes(value.iso3)), random, previous)
+  const first = reviewed.slice(0, Math.min(count, reviewed.length))
+  if (first.length === count) return first
+  const remaining = values.filter((value) => !first.includes(value))
+  return [...first, ...practiceQuestionSequence(remaining.length ? remaining : values, count - first.length, random)]
+}
+
 export function flagAnswerChoices(pool: readonly Country[], answer: Country, random: () => number = Math.random, count = 4): Country[] {
-  const distractors = shuffleFlagPool(
-    pool.filter((country) => country.iso3 !== answer.iso3 && country.flagCode !== answer.flagCode),
-    random,
-  ).slice(0, count - 1)
+  const candidates = pool.filter((country) => country.iso3 !== answer.iso3 && country.flagCode !== answer.flagCode)
+  const regional = candidates.filter((country) => country.continent === answer.continent)
+  const selected = shuffleFlagPool(regional, random).slice(0, count - 1)
+  const fallback = shuffleFlagPool(candidates.filter((country) => !selected.includes(country)), random).slice(0, count - 1 - selected.length)
+  const distractors = [...selected, ...fallback]
   if (distractors.length < count - 1) return []
   return shuffleFlagPool([answer, ...distractors], random)
 }

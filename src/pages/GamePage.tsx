@@ -1,12 +1,12 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState, type ComponentType, type LazyExoticComponent } from 'react'
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useAppData } from '../app/useAppData'
 import { InlineNotice, LoadingState } from '../components/Kit'
 import { CompletedPuzzle } from '../components/GameResults'
-import type { GameMode } from '../geography/types'
+import type { GameId, GameMode } from '../geography/types'
 import { loadGeography } from '../geography/data'
-import { dailyPuzzleId } from '../puzzles/engine'
+import { dailyPuzzleSeed } from '../puzzles/engine'
 import { usePuzzleDate } from '../hooks/usePuzzleDate'
 import { getGame } from '../games/catalog'
 
@@ -16,6 +16,25 @@ const BorderRouteGame = lazy(() => import('../games/border-route/BorderRouteGame
 const FlagGame = lazy(() => import('../games/flags/FlagGame').then((module) => ({ default: module.FlagGame })))
 const GeographyGridGame = lazy(() => import('../games/connections-grid/GeographyGridGame').then((module) => ({ default: module.GeographyGridGame })))
 const CitiesGame = lazy(() => import('../games/cities/CitiesGame').then((module) => ({ default: module.CitiesGame })))
+const ConnectionsGame = lazy(() => import('../games/connections/ConnectionsGame').then((module) => ({ default: module.ConnectionsGame })))
+const HigherLowerGame = lazy(() => import('../games/higher-lower/HigherLowerGame').then((module) => ({ default: module.HigherLowerGame })))
+const NeighbourGame = lazy(() => import('../games/neighbours/NeighbourGame').then((module) => ({ default: module.NeighbourGame })))
+const DistanceGame = lazy(() => import('../games/distance/DistanceGame').then((module) => ({ default: module.DistanceGame })))
+
+type GeographyGameProps = { data: Awaited<ReturnType<typeof loadGeography>>; mode: GameMode; date: string; seed: string }
+type GeographyGameComponent = LazyExoticComponent<ComponentType<GeographyGameProps>>
+const gameComponents: Partial<Record<GameId, GeographyGameComponent>> = {
+  countries: CountryIdentificationGame,
+  outlines: OutlineGame,
+  routes: BorderRouteGame,
+  flags: FlagGame,
+  grid: GeographyGridGame,
+  cities: CitiesGame,
+  connections: ConnectionsGame,
+  'higher-lower': HigherLowerGame,
+  neighbours: NeighbourGame,
+  distance: DistanceGame,
+}
 
 export function GamePage() {
   const { gameId: rawGameId } = useParams()
@@ -67,7 +86,7 @@ export function GamePage() {
   if (!data || !ready) return <div className="page game-page"><LoadingState label="Setting up the map…" /></div>
 
   const existing = mode === 'daily'
-    ? state.history.find((result) => result.puzzleId === dailyPuzzleId(game.id, date) && result.completed)
+    ? state.history.find((result) => result.gameId === game.id && result.mode === 'daily' && result.date === date && result.completed)
     : undefined
   const showCompleted = mode === 'daily' && Boolean(existing) && startedRouteKey !== routeKey
 
@@ -102,15 +121,8 @@ function GameExperience({ gameId, mode, date, data }: {
   data: Awaited<ReturnType<typeof loadGeography>>
 }) {
   const [seed] = useState(() => mode === 'daily' ? `${gameId}:${date}:v1` : `${gameId}:practice:${crypto.randomUUID?.() ?? Math.random()}`)
-  let Game: typeof CountryIdentificationGame | typeof OutlineGame | typeof BorderRouteGame | typeof FlagGame | typeof GeographyGridGame | typeof CitiesGame
-  switch (gameId) {
-    case 'countries': Game = CountryIdentificationGame; break
-    case 'outlines': Game = OutlineGame; break
-    case 'routes': Game = BorderRouteGame; break
-    case 'flags': Game = FlagGame; break
-    case 'grid': Game = GeographyGridGame; break
-    case 'cities': Game = CitiesGame; break
-    default: return null
-  }
-  return <div className={`game-playfield game-playfield-${gameId}`}><Suspense fallback={<LoadingState label="Opening this game…" />}><Game key={seed} data={data} mode={mode} date={date} seed={seed} /></Suspense></div>
+  const Game = gameComponents[gameId]
+  if (!Game) return null
+  const gameSeed = mode === 'daily' ? dailyPuzzleSeed(gameId, date) : seed
+  return <div className={`game-playfield game-playfield-${gameId}`}><Suspense fallback={<LoadingState label="Opening this game…" />}><Game key={gameSeed} data={data} mode={mode} date={date} seed={gameSeed} /></Suspense></div>
 }

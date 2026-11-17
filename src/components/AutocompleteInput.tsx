@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { ArrowUpRight, Search } from 'lucide-react'
 import { normalizeAnswer } from '../puzzles/engine'
 
@@ -35,6 +35,7 @@ export function AutocompleteInput({
   autoFocus?: boolean
 }) {
   const [open, setOpen] = useState(false)
+  const blurTimer = useRef<number | null>(null)
   const matches = useMemo(() => {
     const needle = normalizeAnswer(value)
     if (!needle) return []
@@ -43,6 +44,10 @@ export function AutocompleteInput({
         .some((text) => normalizeAnswer(text).includes(needle)))
       .slice(0, 7)
   }, [suggestions, value])
+
+  useEffect(() => () => {
+    if (blurTimer.current !== null) window.clearTimeout(blurTimer.current)
+  }, [])
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -68,8 +73,18 @@ export function AutocompleteInput({
           id={id}
           value={value}
           onChange={(event) => { onChange(event.target.value); setOpen(true) }}
-          onFocus={() => setOpen(true)}
-          onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+          onFocus={() => {
+            if (blurTimer.current !== null) window.clearTimeout(blurTimer.current)
+            blurTimer.current = null
+            setOpen(true)
+          }}
+          onBlur={() => {
+            if (blurTimer.current !== null) window.clearTimeout(blurTimer.current)
+            blurTimer.current = window.setTimeout(() => {
+              blurTimer.current = null
+              setOpen(false)
+            }, 120)
+          }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoComplete="off"

@@ -12,6 +12,7 @@ import { useAppData } from '../../app/useAppData'
 import { useGameSession } from '../session'
 
 type CityTask = 'capitals' | 'locate' | 'identify'
+type PracticeCount = '10' | '20' | '50' | 'infinite'
 type CapitalDirection = 'country-to-capital' | 'capital-to-country'
 type AnswerStyle = 'choices' | 'typed'
 interface Question {
@@ -28,6 +29,9 @@ export function CitiesGame({ data, mode, date, seed }: { data: GeographyData; mo
   const [continent, setContinent] = useState('All regions')
   const [direction, setDirection] = useState<CapitalDirection>('country-to-capital')
   const [answerStyle, setAnswerStyle] = useState<AnswerStyle>('typed')
+  const [minimumPopulation, setMinimumPopulation] = useState(50_000)
+  const [questionCount, setQuestionCount] = useState<PracticeCount>('10')
+  const [timed, setTimed] = useState(false)
   const [round, setRound] = useState(0)
 
   useEffect(() => {
@@ -42,26 +46,32 @@ export function CitiesGame({ data, mode, date, seed }: { data: GeographyData; mo
   if (loadError) return <InlineNotice title="The city gazetteer could not open" tone="warning">{loadError}</InlineNotice>
   if (!cityData) return <LoadingState label="Opening the city gazetteer…" />
   return <CitiesRound
-    key={`${round}:${task}:${continent}:${direction}:${answerStyle}`}
+    key={`${round}:${task}:${continent}:${direction}:${answerStyle}:${minimumPopulation}:${questionCount}:${timed}`}
     data={data}
     cities={cityData.cities}
     mode={mode}
     date={date}
-    seed={`${seed}:${round}:${task}:${continent}:${direction}:${answerStyle}`}
+    seed={mode === 'daily' ? `${seed}:${round}:${task}:${continent}:${direction}:${answerStyle}` : `${seed}:${round}:${task}:${continent}:${direction}:${answerStyle}:${minimumPopulation}:${questionCount}:${timed}`}
     task={task}
     continent={continent}
     direction={direction}
     answerStyle={answerStyle}
+    minimumPopulation={minimumPopulation}
+    questionCount={questionCount}
+    timed={timed}
     continents={continents}
     onTask={setTask}
     onContinent={setContinent}
     onDirection={setDirection}
     onAnswerStyle={setAnswerStyle}
+    onMinimumPopulation={setMinimumPopulation}
+    onQuestionCount={setQuestionCount}
+    onTimed={setTimed}
     onNextRound={() => setRound((value) => value + 1)}
   />
 }
 
-function CitiesRound({ data, cities, mode, date, seed, task, continent, direction, answerStyle, continents, onTask, onContinent, onDirection, onAnswerStyle, onNextRound }: {
+function CitiesRound({ data, cities, mode, date, seed, task, continent, direction, answerStyle, minimumPopulation, questionCount, timed, continents, onTask, onContinent, onDirection, onAnswerStyle, onMinimumPopulation, onQuestionCount, onTimed, onNextRound }: {
   data: GeographyData
   cities: City[]
   mode: GameMode
@@ -71,19 +81,28 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
   continent: string
   direction: CapitalDirection
   answerStyle: AnswerStyle
+  minimumPopulation: number
+  questionCount: PracticeCount
+  timed: boolean
   continents: string[]
   onTask: (task: CityTask) => void
   onContinent: (continent: string) => void
   onDirection: (direction: CapitalDirection) => void
   onAnswerStyle: (style: AnswerStyle) => void
+  onMinimumPopulation: (value: number) => void
+  onQuestionCount: (value: PracticeCount) => void
+  onTimed: (value: boolean) => void
   onNextRound: () => void
 }) {
   const { state } = useAppData()
   const [index, setIndex] = useState(0)
+  const [cycle, setCycle] = useState(0)
   const [locked, setLocked] = useState(false)
   const [finished, setFinished] = useState(false)
   const [correct, setCorrect] = useState(0)
   const [score, setScore] = useState(0)
+  const [resolved, setResolved] = useState(0)
+  const [seconds, setSeconds] = useState(60)
   const [message, setMessage] = useState('')
   const [input, setInput] = useState('')
   const [selected, setSelected] = useState('')
@@ -91,6 +110,8 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
   const [guess, setGuess] = useState<Coordinates | null>(null)
   const [latitude, setLatitude] = useState('')
   const [longitude, setLongitude] = useState('')
+  const infinitePractice = mode === 'practice' && questionCount === 'infinite'
+  const requestedCount = mode === 'daily' ? 6 : questionCount === 'infinite' ? 40 : Number(questionCount)
   const { save, saveError } = useGameSession('cities', mode, date, seed)
 
   const filteredCities = useMemo(() => cities.filter((city) => {
@@ -108,11 +129,11 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
       return seededShuffle([...capitalQuestions, ...locationQuestions, ...identificationQuestions], `${seed}:daily-order`)
     }
     if (task === 'capitals') {
-      return seededShuffle(capitals, `${seed}:capital-practice`).slice(0, 8).map((country) => ({ kind: 'capitals', country, direction }))
+      return seededShuffle(capitals, `${seed}:capital-practice:${cycle}`).slice(0, requestedCount).map((country) => ({ kind: 'capitals', country, direction }))
     }
-    const pool = filteredCities.filter((city) => city.population >= 25_000 || city.capital)
-    return seededShuffle(pool, `${seed}:${task}`).slice(0, 6).map((city) => ({ kind: task, city }))
-  }, [mode, data.countries, cities, seed, capitals, task, direction, filteredCities])
+    const pool = filteredCities.filter((city) => city.population >= minimumPopulation || city.capital)
+    return seededShuffle(pool, `${seed}:${task}:${cycle}`).slice(0, requestedCount).map((city) => ({ kind: task, city }))
+  }, [mode, data.countries, cities, seed, capitals, task, direction, filteredCities, minimumPopulation, requestedCount, cycle])
 
   const question = questions[index]
   const countrySuggestions: Suggestion[] = useMemo(() => data.countries.map((country) => ({ value: country.iso3, label: country.name, detail: country.continent ?? undefined, aliases: country.aliases })), [data.countries])
@@ -126,10 +147,9 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
     const others = seededShuffle(pool, `${seed}:capital-options:${index}`).slice(0, 3)
     return seededShuffle([question.country, ...others], `${seed}:capital-choice-order:${index}`)
   }, [question, capitals, seed, index])
-  if (!question) return <InlineNotice title="No city questions are available" tone="warning">Choose another region or task and try again.</InlineNotice>
-
   function setCorrectAnswer(points: number, text: string) {
     setCorrect((value) => value + 1)
+    setResolved((value) => value + 1)
     setScore((value) => value + points)
     setQuestionCorrect(true)
     setLocked(true)
@@ -144,7 +164,8 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
     if (code === correctCode) setCorrectAnswer(100, 'Correct. That is the country and capital pair.')
       else {
         setQuestionCorrect(false)
-      setLocked(true)
+        setResolved((value) => value + 1)
+        setLocked(true)
         setMessage(question.direction === 'capital-to-country' ? `The answer is ${question.country?.name}.` : `The listed capital is ${question.country?.capital}.`)
     }
   }
@@ -158,6 +179,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
       if (accepted) setCorrectAnswer(100, `Correct. ${question.country.name} has ${question.country.capital} as its listed capital.`)
       else {
         setQuestionCorrect(false)
+        setResolved((value) => value + 1)
         setLocked(true)
         setMessage(`The listed capital is ${question.country.capital}.`)
       }
@@ -166,6 +188,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
       if (country?.iso3 === question.country.iso3) setCorrectAnswer(100, `Correct. ${question.country.capital} is the capital of ${country.name}.`)
       else {
         setQuestionCorrect(false)
+        setResolved((value) => value + 1)
         setLocked(true)
         setMessage(`The answer is ${question.country.name}.`)
       }
@@ -181,6 +204,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
     if (isMatch) setCorrectAnswer(100, `Correct. ${question.city.name} is in ${data.countriesByCode.get(question.city.countryIso3)?.name}.`)
     else {
       setQuestionCorrect(false)
+      setResolved((value) => value + 1)
       setLocked(true)
       setMessage(`The marked city is ${question.city.name}, ${data.countriesByCode.get(question.city.countryIso3)?.name}.`)
     }
@@ -206,6 +230,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
     const points = distanceScore(km)
     setGuess(point)
     setLocked(true)
+    setResolved((value) => value + 1)
     setScore((value) => value + points)
     setQuestionCorrect(km <= 250)
     if (km <= 250) setCorrect((value) => value + 1)
@@ -225,9 +250,36 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
       setLongitude('')
       return
     }
+    if (infinitePractice) {
+      setCycle((value) => value + 1)
+      setIndex(0)
+      setLocked(false)
+      setMessage('')
+      setInput('')
+      setSelected('')
+      setQuestionCorrect(false)
+      setGuess(null)
+      setLatitude('')
+      setLongitude('')
+      return
+    }
     setFinished(true)
-    await save(score, correct, questions.length, { task, continent, direction, answerStyle, questions: questions.map((item) => ({ kind: item.kind, country: item.country?.iso3, city: item.city?.id })) })
+    await save(score, correct, resolved, { task, continent, direction, answerStyle, minimumPopulation, questionCount, questions: questions.map((item) => ({ kind: item.kind, country: item.country?.iso3, city: item.city?.id })) })
   }
+
+  useEffect(() => {
+    if (mode !== 'practice' || !timed || finished) return
+    const timer = window.setTimeout(() => {
+      if (seconds <= 1) {
+        setSeconds(0)
+        setFinished(true)
+        if (resolved > 0) void save(score, correct, resolved, { task, continent, direction, answerStyle, minimumPopulation, questionCount, timed })
+      } else setSeconds((value) => value - 1)
+    }, 1000)
+    return () => window.clearTimeout(timer)
+  }, [mode, timed, finished, seconds, resolved, score, correct, save, task, continent, direction, answerStyle, minimumPopulation, questionCount])
+
+  if (!question) return <div className="game-body"><InlineNotice title="No city questions are available" tone="warning">Choose another region, a lower population threshold or a different task.</InlineNotice></div>
 
   const modeLabel = mode === 'daily' ? 'A little of everything' : task === 'capitals' ? 'Capitals' : task === 'locate' ? 'City location' : 'City identification'
   const prompt = question.kind === 'capitals'
@@ -239,16 +291,20 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
   return (
     <div className="game-body cities-game-body">
       <div className="question-toolbar">
-        <div><span className="eyebrow">{modeLabel}</span><h2>{prompt}</h2><p>Question {index + 1} of {questions.length}{question.city?.population ? ` · population ${question.city.population.toLocaleString()}` : ''}</p></div>
+        <div><span className="eyebrow">{modeLabel}</span><h2>{prompt}</h2><p>{infinitePractice ? `Question ${resolved + 1}` : `Question ${index + 1} of ${questions.length}`}{question.city?.population ? ` · population ${question.city.population.toLocaleString()}` : ''}</p></div>
         <div className="question-toolbar-tools">
           {mode === 'practice' && <GameSettingsMenu><div className="practice-config cities-config">
             <label><span>Practice task</span><select value={task} onChange={(event) => onTask(event.target.value as CityTask)}><option value="capitals">Capitals</option><option value="locate">City location</option><option value="identify">City identification</option></select></label>
-            {task !== 'capitals' && <label><span>Region</span><select value={continent} onChange={(event) => onContinent(event.target.value)}><option>All regions</option>{continents.map((item) => <option key={item}>{item}</option>)}</select></label>}
+            <label><span>Region</span><select value={continent} onChange={(event) => onContinent(event.target.value)}><option>All regions</option>{continents.map((item) => <option key={item}>{item}</option>)}</select></label>
             {task === 'capitals' && <><label><span>Direction</span><select value={direction} onChange={(event) => onDirection(event.target.value as CapitalDirection)}><option value="country-to-capital">Country → capital</option><option value="capital-to-country">Capital → country</option></select></label><label><span>Answer style</span><select value={answerStyle} onChange={(event) => onAnswerStyle(event.target.value as AnswerStyle)}><option value="typed">Type a name</option><option value="choices">Multiple choice</option></select></label></>}
+            {task !== 'capitals' && <label><span>City population from</span><select value={minimumPopulation} onChange={(event) => onMinimumPopulation(Number(event.target.value))}><option value={50000}>50,000</option><option value={100000}>100,000</option><option value={250000}>250,000</option><option value={1000000}>1 million</option></select></label>}
+            <label><span>Questions</span><select value={questionCount} onChange={(event) => onQuestionCount(event.target.value as PracticeCount)}><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="infinite">Infinite</option></select></label>
+            <label className="flag-reveal-setting"><input type="checkbox" checked={timed} onChange={(event) => onTimed(event.target.checked)} /><span>60-second round</span></label>
           </div></GameSettingsMenu>}
-          <div className="question-count"><strong>{index + 1}</strong><span>of {questions.length}</span></div>
+          <div className="question-count"><strong>{infinitePractice ? resolved + 1 : index + 1}</strong><span>{infinitePractice ? 'question' : `of ${questions.length}`}</span></div>
         </div>
       </div>
+      {mode === 'practice' && <div className="city-practice-status"><span><strong>{score.toLocaleString()}</strong> points · <strong>{correct}</strong> accurate answers</span><span>{timed ? `${seconds}s left` : task === 'locate' ? 'Closer markers earn more points' : '100 points per correct answer'}</span>{infinitePractice && resolved > 0 && <button className="button button-outline" type="button" disabled={locked} onClick={() => { setFinished(true); void save(score, correct, resolved, { task, continent, direction, answerStyle, minimumPopulation, questionCount, timed }) }}>End session</button>}</div>}
       {question.kind === 'capitals' && (mode === 'daily' || answerStyle === 'choices') ? <div className="capital-choice-grid" role="group" aria-label="Choose the correct country or capital">
         {(question.direction === 'country-to-capital' ? capitalChoices.map((country) => ({ code: country.iso3, label: country.capital ?? 'Capital unavailable', detail: country.name })) : countryChoicesFromCapitals(capitals, question.country?.iso3 ?? '', seed, index)).map((choice) => <button className={`answer-choice${selected === choice.code ? (choice.code === question.country?.iso3 ? ' is-right' : ' is-wrong') : ''}`} type="button" key={choice.code} disabled={locked} onClick={() => submitCountry(choice.code)}><span>{choice.label}</span><small>{choice.detail}</small></button>)}
       </div> : null}
@@ -263,7 +319,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
       </>}
       {message && <div className={`answer-feedback${locked ? (questionCorrect ? ' is-correct' : ' is-incorrect') : ''}`} role="status"><span className="feedback-icon">{questionCorrect ? <Check size={17} /> : <MoveUpRight size={16} />}</span><span>{message}</span>{locked && !finished && <button className="button button-dark" type="button" onClick={() => void nextQuestion()}>{index === questions.length - 1 ? 'See result' : 'Next place'}</button>}</div>}
       {mode === 'daily' && !finished && <div className="daily-mix-note"><ArrowRight size={14} /> Today includes capitals, city names and map placement.</div>}
-      <GameResultsDialog complete={finished} gameId="cities" mode={mode} score={score} correct={correct} total={questions.length} title="City round complete." message="Places have a way of sticking." saveError={saveError} onReplay={mode === 'practice' ? onNextRound : undefined} replayLabel="New city round" />
+      <GameResultsDialog complete={finished} gameId="cities" mode={mode} score={score} correct={correct} total={infinitePractice ? resolved : questions.length} title={timed && seconds === 0 ? 'Time is up.' : 'City round complete.'} message="Places have a way of sticking." saveError={saveError} onReplay={mode === 'practice' ? onNextRound : undefined} replayLabel="New city round" />
     </div>
   )
 }

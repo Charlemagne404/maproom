@@ -3,21 +3,29 @@ import { ArrowRight, Lightbulb, Route as RouteIcon } from 'lucide-react'
 import { AutocompleteInput, type Suggestion } from '../../components/AutocompleteInput'
 import { GeoMap } from '../../components/GeoMap'
 import { InlineNotice } from '../../components/Kit'
+import { GameSettingsMenu } from '../../components/GameControls'
 import { GameResultsDialog } from '../../components/GameResults'
 import type { GeographyData, GameMode } from '../../geography/types'
-import { buildAdjacency, generateRoutePuzzle, resolveCountryAnswer, validateRouteStep } from '../../puzzles/engine'
+import { buildAdjacency, generateRoutePuzzle, resolveCountryAnswer, validateRouteStep, type RouteDifficulty } from '../../puzzles/engine'
 import { useAppData } from '../../app/useAppData'
 import { useGameSession } from '../session'
 
 export function BorderRouteGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const [round, setRound] = useState(0)
-  const roundSeed = mode === 'daily' ? seed : `${seed}:${round}`
-  return <RouteRound key={round} data={data} mode={mode} date={date} seed={roundSeed} onReplay={() => setRound((value) => value + 1)} />
+  const [scope, setScope] = useState('World')
+  const [difficulty, setDifficulty] = useState<RouteDifficulty>('standard')
+  const continents = useMemo(() => [...new Set(data.countries.filter((country) => country.hasGeometry && country.continent).map((country) => country.continent as string))].filter((value) => value !== 'Antarctic').sort(), [data.countries])
+  const scopes = useMemo(() => ['World', ...continents.filter((continent) => {
+    const regionalCountries = data.countries.filter((country) => country.continent === continent)
+    return [...buildAdjacency(regionalCountries).values()].some((neighbors) => neighbors.length > 0)
+  })], [continents, data.countries])
+  const roundSeed = mode === 'daily' ? seed : `${seed}:${round}:${scope}:${difficulty}`
+  return <RouteRound key={roundSeed} data={data} mode={mode} date={date} seed={roundSeed} scope={scope} scopes={scopes} difficulty={difficulty} onScope={setScope} onDifficulty={setDifficulty} onReplay={() => setRound((value) => value + 1)} />
 }
 
-function RouteRound({ data, mode, date, seed, onReplay }: { data: GeographyData; mode: GameMode; date: string; seed: string; onReplay: () => void }) {
+function RouteRound({ data, mode, date, seed, scope, scopes, difficulty, onScope, onDifficulty, onReplay }: { data: GeographyData; mode: GameMode; date: string; seed: string; scope: string; scopes: string[]; difficulty: RouteDifficulty; onScope: (scope: string) => void; onDifficulty: (difficulty: RouteDifficulty) => void; onReplay: () => void }) {
   const { state } = useAppData()
-  const puzzle = useMemo(() => generateRoutePuzzle(data.countries, `${seed}:route`), [data.countries, seed])
+  const puzzle = useMemo(() => generateRoutePuzzle(data.countries, `${seed}:route`, mode === 'practice' ? { continent: scope, difficulty } : undefined), [data.countries, seed, mode, scope, difficulty])
   const adjacency = useMemo(() => buildAdjacency(data.countries), [data.countries])
   const start = data.countriesByCode.get(puzzle.start)
   const end = data.countriesByCode.get(puzzle.end)
@@ -77,6 +85,11 @@ function RouteRound({ data, mode, date, seed, onReplay }: { data: GeographyData;
 
   return (
     <div className="game-body route-game-body">
+      {mode === 'practice' && <div className="question-toolbar route-practice-toolbar"><div><span className="eyebrow">Border route practice</span><h2>Connect the countries by land</h2></div><div className="question-toolbar-tools"><GameSettingsMenu><div className="practice-config">
+        <label><span>Geographic scope</span><select value={scope} onChange={(event) => onScope(event.target.value)}>{scopes.map((item) => <option key={item}>{item}</option>)}</select></label>
+        <label><span>Route length</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as RouteDifficulty)}><option value="short">Short · 2–4 borders</option><option value="standard">Standard · 3–6 borders</option><option value="long">Long · 5–8 borders</option></select></label>
+        <span className="practice-config-note">All routes use recorded land borders and are solvable.</span>
+      </div></GameSettingsMenu></div></div>}
       <div className="route-pair">
         <div><span className="eyebrow">Start here</span><strong>{start.name}</strong></div>
         <div className="route-pair-arrow"><RouteIcon size={19} /><span>across land</span></div>

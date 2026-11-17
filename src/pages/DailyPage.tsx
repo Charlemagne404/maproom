@@ -5,6 +5,8 @@ import { GameCard, LoadingState } from '../components/Kit'
 import { usePuzzleDate, formatPuzzleDate } from '../hooks/usePuzzleDate'
 import { games } from '../games/catalog'
 
+const pageLoadedAt = new Date()
+
 export function DailyPage() {
   const { state, toggleFavorite } = useAppData()
   const date = usePuzzleDate(state.settings.timeZone)
@@ -19,15 +21,15 @@ export function DailyPage() {
   return (
     <div className="page daily-page">
       <section className="welcome-hero" aria-label="Welcome">
-        <h1>{stockholmGreeting()}</h1>
+        <h1>{stockholmGreeting(pageLoadedAt, state.settings.timeZone)}</h1>
         <time dateTime={date}>{dateLabel}</time>
       </section>
       <section className="daily-puzzles" aria-labelledby="daily-puzzles-heading">
         <div className="daily-section-heading">
           <h2 id="daily-puzzles-heading">Today’s puzzles</h2>
-          <div className="daily-progress" aria-label={`${dailyCount} of 6 daily puzzles complete`}>
-            <div className="daily-progress-label"><span>{dailyCount} / 6</span><span>complete</span></div>
-            <div className="progress-track"><span style={{ width: `${dailyCount / 6 * 100}%` }} /></div>
+          <div className="daily-progress" aria-label={`${dailyCount} of ${games.length} daily puzzles complete`}>
+            <div className="daily-progress-label"><span>{dailyCount} / {games.length}</span><span>complete</span></div>
+            <div className="progress-track"><span style={{ width: `${dailyCount / games.length * 100}%` }} /></div>
           </div>
         </div>
         <section className="game-grid daily-grid" aria-label="Daily games">
@@ -56,8 +58,8 @@ export function DailyPage() {
   )
 }
 
-function stockholmGreeting(now = new Date()) {
-  const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Stockholm', hour: 'numeric', hourCycle: 'h23' }).format(now))
+function stockholmGreeting(now = new Date(), timeZone = 'Europe/Stockholm') {
+  const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone, hour: 'numeric', hourCycle: 'h23' }).format(now))
   if (hour < 12) return 'Good morning'
   if (hour < 18) return 'Good afternoon'
   return 'Good evening'

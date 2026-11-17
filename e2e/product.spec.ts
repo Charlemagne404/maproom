@@ -7,10 +7,14 @@ interface CountryRecord {
   iso3: string
   name: string
   continent: string | null
+  subregion: string | null
   landlocked: boolean
+  hasGeometry: boolean
+  borders: string[]
   population: number | null
   areaKm2: number | null
   capital: string | null
+  capitalCoordinates?: { lat: number; lon: number } | null
 }
 
 interface CityRecord {
@@ -20,6 +24,7 @@ interface CityRecord {
   population: number
   lat: number
   lon: number
+  capital?: boolean
 }
 
 async function openGame(page: Page, id: string, mode: 'daily' | 'practice' = 'practice') {
@@ -59,6 +64,61 @@ async function cityData(page: Page): Promise<CityRecord[]> {
   const response = await page.request.get(new URL('/data/cities.json', page.url()).toString())
   expect(response.ok()).toBe(true)
   return (await response.json()).cities as CityRecord[]
+}
+
+function solveConnectionsBoard(countries: CountryRecord[], tileNames: string[]) {
+  const byName = new Map(countries.map((country) => [country.name, country]))
+  const tiles = tileNames.map((name) => byName.get(name)).filter((country): country is CountryRecord => country !== undefined)
+  expect(tiles).toHaveLength(16)
+  const tileCodes = new Set(tiles.map((country) => country.iso3))
+  const groups = new Map<string, string[]>()
+  const add = (matches: (country: CountryRecord) => boolean) => {
+    const codes = tiles.filter(matches).map((country) => country.iso3)
+    if (codes.length === 4) groups.set(codes.slice().sort().join('|'), codes)
+  }
+  const subregions = [...new Set(tiles.map((country) => country.subregion).filter((value): value is string => Boolean(value)))]
+  for (const subregion of subregions) {
+    add((country) => country.subregion === subregion)
+    add((country) => country.subregion === subregion && country.landlocked)
+    add((country) => country.subregion === subregion && country.borders.length === 0)
+  }
+  const populationBands: Array<(value: number) => boolean> = [
+    (value) => value < 1_000_000,
+    (value) => value >= 1_000_000 && value < 5_000_000,
+    (value) => value >= 5_000_000 && value < 25_000_000,
+    (value) => value >= 25_000_000 && value < 100_000_000,
+    (value) => value >= 100_000_000,
+  ]
+  populationBands.forEach((matches) => add((country) => country.population !== null && matches(country.population)))
+  const areaBands: Array<(value: number) => boolean> = [
+    (value) => value < 10_000,
+    (value) => value >= 10_000 && value < 100_000,
+    (value) => value >= 100_000 && value < 500_000,
+    (value) => value >= 500_000 && value < 2_000_000,
+    (value) => value >= 2_000_000,
+  ]
+  areaBands.forEach((matches) => add((country) => country.areaKm2 !== null && country.areaKm2 > 0 && matches(country.areaKm2)))
+  const initial = (value: string | null) => value?.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toUpperCase()[0] ?? ''
+  for (const letter of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+    add((country) => initial(country.name) === letter)
+    add((country) => initial(country.capital) === letter)
+  }
+  const candidates = [...groups.values()].map((codes) => codes.filter((code) => tileCodes.has(code)))
+  function search(remaining: Set<string>, selected: string[][]): string[][] | null {
+    if (remaining.size === 0) return selected
+    const first = remaining.values().next().value as string
+    for (const group of candidates) {
+      if (!group.includes(first) || !group.every((code) => remaining.has(code))) continue
+      const next = new Set(remaining)
+      group.forEach((code) => next.delete(code))
+      const solution = search(next, [...selected, group])
+      if (solution) return solution
+    }
+    return null
+  }
+  const solution = search(tileCodes, [])
+  expect(solution, 'Connections tiles should have four defensible category groupings').not.toBeNull()
+  return solution!
 }
 
 async function shellGeometry(page: Page) {
@@ -156,7 +216,7 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await page.goto('/')
   await expect(page.locator('.welcome-hero h1')).toBeVisible()
   await expect(page.locator('.daily-section-heading h2')).toHaveText('Today’s puzzles')
-  await expect(page.locator('.daily-grid .game-card')).toHaveCount(6)
+  await expect(page.locator('.daily-grid .game-card')).toHaveCount(10)
   await expect(page.locator('.game-card-action span')).toHaveCount(0)
   await expect(page.locator('.header-tools .data-shortcut')).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Data sources', exact: true })).toBeVisible()
@@ -199,7 +259,7 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await expect(page.locator('.skip-link')).toBeFocused()
 
   await page.goto('/explore')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(6)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(10)
   const flagCard = page.locator('.game-card').filter({ hasText: 'Flag study' })
   const favorite = flagCard.locator('.favorite-button')
   await favorite.click()
@@ -216,8 +276,9 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await page.getByRole('button', { name: 'All games' }).click()
   await page.getByRole('button', { name: /Favorites/ }).click()
   await page.getByLabel('Search games').fill('capitals')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(1)
-  await expect(page.locator('.explore-grid .game-card')).toContainText('Capitals & cities')
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(2)
+  await expect(page.locator('.explore-grid .game-card').filter({ hasText: 'Capitals & cities' })).toHaveCount(1)
+  await expect(page.locator('.explore-grid .game-card').filter({ hasText: 'Distance & Direction' })).toHaveCount(1)
 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
@@ -243,7 +304,7 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   expect(widths.body).toBeLessThanOrEqual(widths.viewport)
 
   await page.setViewportSize({ width: 320, height: 740 })
-  for (const route of ['/', '/explore', '/settings', '/data', '/games/countries?mode=daily', '/games/grid?mode=daily']) {
+  for (const route of ['/', '/explore', '/settings', '/data', '/games/countries?mode=daily', '/games/grid?mode=daily', '/games/connections?mode=daily', '/games/higher-lower?mode=daily', '/games/neighbours?mode=daily', '/games/distance?mode=daily']) {
     await page.goto(route)
     await expect(page.locator('main h1').first()).toBeVisible()
     const narrowWidths = await page.evaluate(() => ({ viewport: window.innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }))
@@ -384,6 +445,27 @@ test('country outlines reveal the answer after six valid guesses and save the re
   await expect(page.locator('.game-results-dialog h2')).not.toBeEmpty()
 })
 
+test('country outlines load first-level regional silhouettes on demand', async ({ page }) => {
+  await openGame(page, 'outlines')
+  await page.getByRole('button', { name: 'Game settings' }).click()
+  await page.getByLabel('Practice scope').selectOption('Subdivisions')
+  await expect(page.locator('.outline-map-stage')).toBeVisible({ timeout: 30_000 })
+
+  await page.getByRole('button', { name: 'Game settings' }).click()
+  await page.getByRole('group', { name: 'Game settings' }).getByLabel('Country').selectOption('SWE')
+  await expect(page.locator('.outline-map-stage')).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByLabel('Name the subdivision shown')).toBeVisible()
+  await expect(page.getByText(/Subdivision data:/)).toBeVisible()
+
+  const answer = page.getByLabel('Name the subdivision shown')
+  await answer.fill('a')
+  await expect(page.getByRole('option').first()).toBeVisible()
+  await page.getByRole('option').first().click()
+  await page.getByRole('button', { name: 'Guess' }).click()
+  await expect(page.locator('.answer-feedback')).toBeVisible()
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/outlines-subdivision-desktop.png' })
+})
+
 test('border route accepts an actual shortest path and scores it', async ({ page }) => {
   await openGame(page, 'routes')
   await expect(page.locator('.route-map-legend')).toContainText('Start')
@@ -391,8 +473,9 @@ test('border route accepts an actual shortest path and scores it', async ({ page
   await expect(page.locator('.route-map-legend')).toContainText('Route')
   await page.getByRole('button', { name: 'Hint' }).click()
   const shortestRoute = (await page.locator('.route-hint strong').innerText()).split(' → ')
-  expect(shortestRoute.length).toBeGreaterThanOrEqual(3)
-  expect(shortestRoute.length).toBeLessThanOrEqual(6)
+  const shortestHops = shortestRoute.length - 1
+  expect(shortestHops).toBeGreaterThanOrEqual(3)
+  expect(shortestHops).toBeLessThanOrEqual(6)
   for (let index = 1; index < shortestRoute.length; index += 1) {
     await submitText(page, '#route-country', shortestRoute[index])
     if (index < shortestRoute.length - 1) await expect(page.locator('.route-stops li')).toHaveCount(index + 2)
@@ -735,22 +818,37 @@ test('geography grid accepts nine distinct countries from real category intersec
   expect(columns).toHaveLength(3)
 
   function matches(category: string, country: CountryRecord): boolean {
+    if (category.endsWith(' · continent')) return country.continent === category.slice(0, -' · continent'.length)
+    if (category.endsWith(' · subregion')) return country.subregion === category.slice(0, -' · subregion'.length)
     if (category === 'Landlocked') return country.landlocked
     if (category === 'Has a coastline') return !country.landlocked
+    if (category === 'Has a land neighbour') return country.borders.length > 0
+    if (category === 'No land neighbours') return country.borders.length === 0
+    if (category === 'Capital coordinates recorded') return country.capitalCoordinates !== null
+    if (category === 'Population density over 100/km²') return country.population !== null && Boolean(country.areaKm2) && country.population / country.areaKm2! >= 100
+    if (category === 'Population density under 20/km²') return country.population !== null && Boolean(country.areaKm2) && country.population / country.areaKm2! < 20
     if (category.startsWith('Population over ')) {
       const millions = Number(category.match(/[\d.]+/)?.[0])
       return (country.population ?? 0) >= millions * 1_000_000
+    }
+    if (category.startsWith('Population under ')) {
+      const millions = Number(category.match(/[\d.]+/)?.[0])
+      return country.population !== null && country.population < millions * 1_000_000
     }
     if (category.startsWith('Area over ')) {
       const area = Number(category.match(/[\d,]+/)?.[0].replaceAll(',', ''))
       return (country.areaKm2 ?? 0) >= area
     }
-    return country.continent === category
+    if (category.startsWith('Area under ')) {
+      const area = Number(category.match(/[\d,]+/)?.[0].replaceAll(',', ''))
+      return country.areaKm2 !== null && country.areaKm2 < area
+    }
+    return country.continent === category || country.subregion === category
   }
 
   const cells = rows.flatMap((row, rowIndex) => columns.map((column, columnIndex) => ({
     key: `${rowIndex}:${columnIndex}`,
-    candidates: countries.filter((country) => matches(row, country) && matches(column, country)).sort((left, right) => left.name.localeCompare(right.name)),
+    candidates: countries.filter((country) => country.hasGeometry && matches(row, country) && matches(column, country)).sort((left, right) => left.name.localeCompare(right.name)),
   }))).sort((left, right) => left.candidates.length - right.candidates.length)
   const assigned = new Map<string, typeof countries[number]>()
 
@@ -782,9 +880,9 @@ test('geography grid accepts nine distinct countries from real category intersec
 test('captures the redesigned desktop game stages and key mobile screens', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 960 })
   await page.goto('/')
-  await expect(page.locator('.daily-grid .game-card')).toHaveCount(6)
+  await expect(page.locator('.daily-grid .game-card')).toHaveCount(10)
   await page.goto('/explore')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(6)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(10)
   await page.screenshot({ path: 'artifacts/qa/product-consistency/explore-desktop.png', fullPage: true })
 
   for (const [route, name] of [['/statistics', 'statistics'], ['/settings', 'settings'], ['/data', 'data'], ['/about', 'about'], ['/privacy', 'privacy']] as const) {
@@ -793,13 +891,13 @@ test('captures the redesigned desktop game stages and key mobile screens', async
     await page.screenshot({ path: `artifacts/qa/product-consistency/${name}-desktop.png`, fullPage: true })
   }
 
-  for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities']) {
+  for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
     await openGame(page, id, 'daily')
     await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-desktop.png` })
   }
 
   await page.setViewportSize({ width: 1280, height: 800 })
-  for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities']) {
+  for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
     await openGame(page, id, 'daily')
     await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-laptop.png` })
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
@@ -807,7 +905,7 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   }
 
   await page.setViewportSize({ width: 1024, height: 768 })
-  for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities']) {
+  for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
     await openGame(page, id, 'daily')
     await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-tablet.png` })
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
@@ -821,7 +919,7 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   }
 
   await page.setViewportSize({ width: 390, height: 844 })
-  for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities']) {
+  for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
     await openGame(page, id, 'daily')
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `${id} mobile width overflow`).toBeLessThanOrEqual(0)
@@ -869,17 +967,154 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   }
 })
 
+test('Geography Connections accepts four valid attribute groups and replays', async ({ page }) => {
+  await openGame(page, 'connections')
+  const countries = await countryData(page)
+  const countryByCode = new Map(countries.map((country) => [country.iso3, country]))
+  const tileNames = await page.locator('.connections-tile:not(.is-solved)').allTextContents()
+  const groups = solveConnectionsBoard(countries, tileNames)
+  for (const [index, group] of groups.entries()) {
+    for (const [tileIndex, code] of group.entries()) {
+      const country = countryByCode.get(code)
+      expect(country, `connection tile ${code}`).toBeDefined()
+      const tile = page.getByRole('button', { name: country!.name, exact: true })
+      if (index === 0 && tileIndex === 0) {
+        await tile.focus()
+        await page.keyboard.press('Enter')
+      } else await tile.click()
+    }
+    await page.getByRole('button', { name: 'Check group' }).click()
+    await expect(page.locator('.connections-tile.is-solved')).toHaveCount((index + 1) * 4)
+  }
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-summary')).toHaveText('4 / 4 correct · 100% accuracy')
+  await expect(page.locator('.game-results-score')).toContainText('1,000')
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/connections-results-desktop.png' })
+  await page.getByRole('button', { name: 'Play another set' }).click()
+  await expect(page.locator('.connections-tile')).toHaveCount(16)
+  await expect(page.locator('.game-results-dialog')).toBeHidden()
+})
+
+test('Higher or Lower supports fixed and infinite keyboard practice', async ({ page }) => {
+  await openGame(page, 'higher-lower')
+  for (let index = 0; index < 10; index += 1) {
+    await page.keyboard.press(index % 2 ? 'ArrowRight' : 'ArrowLeft')
+    await expect(page.locator('.answer-feedback')).not.toContainText('Choose the country with the higher')
+    if (index < 9) await page.getByRole('button', { name: 'Next comparison' }).click()
+  }
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-summary')).toContainText('/ 10 correct')
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/higher-lower-results-desktop.png' })
+
+  await page.getByRole('button', { name: 'Compare more countries' }).click()
+  await page.getByRole('button', { name: 'Game settings' }).click()
+  await page.getByLabel('Questions').selectOption('infinite')
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('ArrowLeft')
+  await expect(page.locator('.answer-feedback')).not.toContainText('Choose the country with the higher')
+  await page.getByRole('button', { name: 'Next comparison' }).click()
+  await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.question-count strong')).toHaveText('3')
+  await page.getByRole('button', { name: 'End session' }).click()
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-summary')).toContainText('/ 2 correct')
+})
+
+test('Neighbour Challenge evaluates the complete neighbor set without answer leakage', async ({ page }) => {
+  await openGame(page, 'neighbours')
+  const countries = await countryData(page)
+  const countryByCode = new Map(countries.map((country) => [country.iso3, country]))
+  const targetName = await page.locator('.neighbour-target strong').innerText()
+  const target = countries.find((country) => country.name === targetName)
+  expect(target).toBeDefined()
+  const nonNeighbour = countries.find((country) => country.hasGeometry && country.iso3 !== target!.iso3 && !target!.borders.includes(country.iso3))
+  expect(nonNeighbour).toBeDefined()
+  const answerInput = page.getByLabel('Add a country')
+  await answerInput.fill(nonNeighbour!.name)
+  const incorrectOption = page.locator('.suggestion-option').filter({ has: page.getByText(nonNeighbour!.name, { exact: true }) }).first()
+  await expect(incorrectOption).toBeVisible()
+  await incorrectOption.click()
+  await page.getByRole('button', { name: `${nonNeighbour!.name} ×` }).click()
+
+  for (let index = 0; index < 5; index += 1) {
+    const currentName = await page.locator('.neighbour-target strong').innerText()
+    const current = countries.find((country) => country.name === currentName)
+    expect(current).toBeDefined()
+    for (const code of current!.borders) {
+      const neighbor = countryByCode.get(code)
+      expect(neighbor, `neighbor ${code} of ${current!.name}`).toBeDefined()
+      await answerInput.fill(neighbor!.name)
+      const option = page.locator('.suggestion-option').filter({ has: page.getByText(neighbor!.name, { exact: true }) }).first()
+      await expect(option).toBeVisible()
+      await option.click()
+    }
+    await page.getByRole('button', { name: 'Check neighbors' }).click()
+    await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
+    if (index < 4) await page.getByRole('button', { name: 'Next country' }).click()
+  }
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-summary')).toHaveText('5 / 5 correct · 100% accuracy')
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/neighbours-results-desktop.png' })
+  await page.getByRole('button', { name: 'Find more neighbours' }).click()
+  const keyboardCountry = page.locator('.neighbour-map .geo-map path[role="button"]').first()
+  await keyboardCountry.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('.neighbour-selected button')).toHaveCount(1)
+})
+
+test('Distance & Direction uses coordinate comparisons, keyboard controls and local results', async ({ page }) => {
+  await openGame(page, 'distance')
+  for (let index = 0; index < 10; index += 1) {
+    await page.keyboard.press(index % 2 ? '2' : '1')
+    await expect(page.locator('.answer-feedback')).not.toContainText('Use the coordinates and scale')
+    if (index < 9) await page.getByRole('button', { name: 'Next comparison' }).click()
+  }
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-summary')).toContainText('/ 10 correct')
+  await expect(page.locator('.game-results-message')).toContainText('Haversine')
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/distance-results-desktop.png' })
+  await page.locator('.game-results-dialog').getByRole('link', { name: 'Statistics' }).click()
+  await expect(page.locator('.history-result').first()).toContainText('/ 10 correct')
+})
+
+test('all four new games accept touch input in the mobile layout', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
+  const page = await context.newPage()
+  try {
+    await openGame(page, 'connections')
+    await page.locator('.connections-tile').first().tap()
+    await expect(page.locator('.connections-tile').first()).toHaveAttribute('aria-pressed', 'true')
+
+    await openGame(page, 'higher-lower')
+    await page.locator('.higher-lower-country').first().tap()
+    await expect(page.locator('.answer-feedback')).not.toContainText('Choose the country with the higher')
+
+    await openGame(page, 'neighbours')
+    await page.locator('.neighbour-map .geo-map path[role="button"]').first().tap()
+    await expect(page.locator('.neighbour-selected button')).toHaveCount(1)
+
+    await openGame(page, 'distance')
+    await page.locator('.distance-city-choice').first().tap()
+    await expect(page.locator('.answer-feedback')).not.toContainText('Use the coordinates and scale')
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    expect(overflow).toBeLessThanOrEqual(0)
+  } finally {
+    await context.close()
+  }
+})
+
 test('capitals and cities include typed capitals, coordinate placement and city identification', async ({ page }) => {
   await openGame(page, 'cities')
+  await setGameSetting(page, 'Questions', '10')
   const countries = await countryData(page)
-  for (let index = 0; index < 8; index += 1) {
+  for (let index = 0; index < 10; index += 1) {
     const prompt = await page.locator('.question-toolbar h2').innerText()
     const name = prompt.replace(/^What is the capital of /, '').replace(/\?$/, '')
     const country = countries.find((item) => item.name === name)
     expect(country?.capital).toBeTruthy()
     await submitText(page, '#capital-answer', country!.capital!)
     await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-    await page.getByRole('button', { name: index === 7 ? 'See result' : 'Next place' }).click()
+    await page.getByRole('button', { name: index === 9 ? 'See result' : 'Next place' }).click()
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
 
@@ -911,9 +1146,13 @@ test('capitals and cities include typed capitals, coordinate placement and city 
   countryName = prompt.replace(/^Which city is marked in /, '').replace(/\?$/, '')
   cityCountry = countries.find((item) => item.name === countryName)
   expect(cityCountry).toBeTruthy()
-  const candidate = cities.find((item) => item.countryIso3 === cityCountry?.iso3)
+  const candidate = cities.find((item) => item.countryIso3 === cityCountry?.iso3 && (item.population >= 50_000 || item.capital))
   expect(candidate).toBeTruthy()
-  await submitText(page, '#city-identify-answer', candidate!.name)
+  const cityInput = page.locator('#city-identify-answer')
+  await cityInput.fill(candidate!.name)
+  await expect(page.getByRole('option', { name: new RegExp(candidate!.name) }).first()).toBeVisible()
+  await page.getByRole('option', { name: new RegExp(candidate!.name) }).first().click()
+  await page.getByRole('button', { name: 'Identify' }).click()
   await expect(page.locator('.answer-feedback')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Next place' })).toBeVisible()
 })
@@ -966,5 +1205,5 @@ test('the production service worker reopens cached routes when offline', async (
   await page.context().setOffline(true)
   await page.goto('/explore')
   await expect(page.getByRole('heading', { name: 'Explore' })).toBeVisible()
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(6)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(10)
 })
