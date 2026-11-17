@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-11-16T20:43:02.789Z",
   "countryCatalogCount": 255,
-  "countryGeometryFeatureCount": 260,
+  "countryGeometryFeatureCount": 259,
   "countryCodesWithGeometry": 255,
   "admin1CountriesIndexed": 198,
   "admin1CountriesIncluded": 198,
@@ -16,6 +16,6 @@
     "Population uses World Bank 2023 annual estimates where an ISO3 match exists; area values come from the country catalog. Neither figure is a live statistical feed.",
     "Explicit parent-territory links split detached overseas components into separate Extended entries while preserving domestic archipelagos. Disputed records without a resolved parent remain separate."
   ],
-  "outlineGeometryFeatureCount": 271,
+  "outlineGeometryFeatureCount": 269,
   "countriesWithoutGeometry": []
 }

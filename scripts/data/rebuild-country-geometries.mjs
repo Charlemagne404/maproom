@@ -94,7 +94,11 @@ sources.splice(sources.findIndex((source) => source.name.startsWith('Natural Ear
   license: 'Public domain',
   licenseUrl: 'https://www.naturalearthdata.com/about/terms-of-use/',
   attribution: 'Made with Natural Earth.',
-  transformations: ['Preserved detailed Polygon and MultiPolygon rings for country silhouettes', 'Separated named territory components from their parent countries'],
+  transformations: [
+    'Preserved detailed Polygon and MultiPolygon rings for country silhouettes',
+    'Separated named territory components from their parent countries',
+    'Merged Natural Earth Northern Cyprus and Cyprus U.N. Buffer Zone geometries into the geographic Cyprus island outline',
+  ],
 })
 const manifest = {
   ...manifestFile,

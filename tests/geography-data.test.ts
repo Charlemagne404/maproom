@@ -207,6 +207,30 @@ describe('bundled geography data', () => {
     expect(bounds(outlineCollection.features, 'PHL')[3] - bounds(outlineCollection.features, 'PHL')[1]).toBeGreaterThan(15)
   })
 
+  it('uses the entire Cyprus island outline and keeps Akrotiri and Dhekelia separate', () => {
+    for (const [layer, features] of [['world', collection.features], ['outline', outlineCollection.features]] as const) {
+      const cyprusFeatures = features.filter((feature) => feature.properties.iso3 === 'CYP')
+      expect(cyprusFeatures, `${layer} has one dissolved Cyprus outline`).toHaveLength(1)
+      const cyprus = cyprusFeatures[0]!
+      const contains = (iso3: string, lat: number, lon: number) => features
+        .filter((feature) => feature.properties.iso3 === iso3)
+        .some((feature) => geoContains(feature as unknown as GeoJSON.Feature, [lon, lat]))
+      const coordinates = coordinatePairs(cyprus.geometry.coordinates)
+      expect(Math.max(...coordinates.map(([, latitude]) => latitude)), `${layer} reaches the northern coast`).toBeGreaterThan(35.6)
+      expect(Math.max(...coordinates.map(([longitude]) => longitude)), `${layer} reaches the Karpas peninsula`).toBeGreaterThan(34.5)
+      expect(geoContains(cyprus as unknown as GeoJSON.Feature, [33.6, 35.3])).toBe(true)
+      expect(geoContains(cyprus as unknown as GeoJSON.Feature, [33.94, 35.12])).toBe(true)
+    }
+
+    const outlineContains = (iso3: string, lat: number, lon: number) => outlineCollection.features
+      .filter((feature) => feature.properties.iso3 === iso3)
+      .some((feature) => geoContains(feature as unknown as GeoJSON.Feature, [lon, lat]))
+    for (const [code, lat, lon] of [['WSB', 34.631818, 32.934038], ['ESB', 35.017794, 33.792986]] as const) {
+      expect(outlineContains('CYP', lat, lon), `Detailed Cyprus outline excludes ${code}`).toBe(false)
+      expect(outlineContains(code, lat, lon), `${code} retains its separate outline`).toBe(true)
+    }
+  })
+
   it('keeps Standard, ordinary Extended, and special geographic catalogue records distinct', () => {
     expect(standardCountryCount()).toBe(195)
     const standard = eligibleCountries(catalog.countries, 'standard')

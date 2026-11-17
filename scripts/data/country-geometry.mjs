@@ -1,7 +1,11 @@
 import { geoCentroid, geoDistance } from 'd3-geo'
+import { merge } from 'topojson-client'
+import { topology } from 'topojson-server'
 import { territoryRelations, excludedParentRelations } from './territory-relations.mjs'
 
 const toRadians = (degrees) => degrees * Math.PI / 180
+// Natural Earth's admin-0 split follows control, while this game asks for the geographic island.
+const naturalEarthCyprusIslandParts = new Map([['CYN', 'CYP'], ['CNM', 'CYP']])
 
 export function normalizeNaturalEarthGeometry(collection, countries) {
   const countriesByIso3 = new Map(countries.map((country) => [country.cca3, country]))
@@ -22,7 +26,7 @@ export function normalizeNaturalEarthGeometry(collection, countries) {
       ?? [properties.ADMIN, properties.NAME_EN, properties.NAME, properties.NAME_LONG]
         .map((name) => countriesByName.get(normalize(name)))
         .find(Boolean)
-    const sourceIso3 = sourceCountry?.cca3 ?? null
+    const sourceIso3 = naturalEarthCyprusIslandParts.get(properties.ADM0_A3) ?? sourceCountry?.cca3 ?? null
     const geometry = sourceFeature.geometry
     if (!geometry || !['Polygon', 'MultiPolygon'].includes(geometry.type)) continue
     const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates
@@ -59,7 +63,28 @@ export function normalizeNaturalEarthGeometry(collection, countries) {
       })
     }
   }
-  return { features: output, assignments }
+  return { features: dissolveCyprusIslandFeatures(output), assignments }
+}
+
+function dissolveCyprusIslandFeatures(features) {
+  const cyprusFeatures = features.filter((feature) => feature.properties.iso3 === 'CYP')
+  if (cyprusFeatures.length < 2) return features
+
+  const cyprusTopology = topology({
+    cyprus: {
+      type: 'GeometryCollection',
+      geometries: cyprusFeatures.map((feature) => feature.geometry),
+    },
+  })
+  const geometry = merge(cyprusTopology, cyprusTopology.objects.cyprus.geometries)
+  const primaryFeature = cyprusFeatures.find((feature) => feature.properties.mapUnit === 'Cyprus') ?? cyprusFeatures[0]
+  const mergedFeature = { ...primaryFeature, id: 'CYP-island-geography', geometry }
+  const firstCyprusIndex = features.findIndex((feature) => feature.properties.iso3 === 'CYP')
+
+  return features.flatMap((feature, index) => {
+    if (index === firstCyprusIndex) return [mergedFeature]
+    return feature.properties.iso3 === 'CYP' ? [] : [feature]
+  })
 }
 
 function nearestBundledTerritory(polygon, parentIso3, countriesByIso3) {

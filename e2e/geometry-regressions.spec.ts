@@ -147,6 +147,22 @@ async function answerCorrectly(page: Page, country: Country) {
   await expect(page.locator('.answer-feedback')).toContainText(`That’s ${country.name}.`)
 }
 
+test('renders the entire Cyprus island as one outline', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 })
+  await page.goto('/settings')
+  await setTheme(page, 'light')
+  const fixture = await loadFixture(page)
+  const { seed, groups } = await startFreeplay(page, fixture, {
+    code: 'CYP', pool: 'standard', difficulty: 'medium', scope: 'World',
+  })
+  expect(outlineQuestionAt(groups, `${seed}:country:standard:World:medium`)?.code).toBe('CYP')
+  const path = page.locator('.outline-map-stage .geo-map path')
+  await expect(path).toHaveCount(1)
+  const shape = await path.getAttribute('d')
+  expect(shape).not.toMatch(/NaN|Infinity|undefined/)
+  await page.screenshot({ path: `${outputDirectory}/outline-cyprus-whole-island.png` })
+})
+
 test('plays curated silhouettes across difficulties, territories, islands, and the Date Line', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 960 })
   await page.goto('/settings')
