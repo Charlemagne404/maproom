@@ -1,9 +1,10 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { RotateCcw } from 'lucide-react'
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useAppData } from '../app/useAppData'
 import { InlineNotice, LoadingState } from '../components/Kit'
-import type { GameMode, GameResult } from '../geography/types'
+import { CompletedPuzzle } from '../components/GameResults'
+import type { GameMode } from '../geography/types'
 import { loadGeography } from '../geography/data'
 import { dailyPuzzleId } from '../puzzles/engine'
 import { usePuzzleDate } from '../hooks/usePuzzleDate'
@@ -19,12 +20,15 @@ const CitiesGame = lazy(() => import('../games/cities/CitiesGame').then((module)
 export function GamePage() {
   const { gameId: rawGameId } = useParams()
   const game = getGame(rawGameId)
+  const location = useLocation()
   const [params] = useSearchParams()
   const mode: GameMode = params.get('mode') === 'daily' ? 'daily' : 'practice'
   const { state, ready } = useAppData()
   const date = usePuzzleDate(state.settings.timeZone)
   const [data, setData] = useState<Awaited<ReturnType<typeof loadGeography>> | null>(null)
   const [error, setError] = useState('')
+  const [startedRouteKey, setStartedRouteKey] = useState('')
+  const routeKey = `${game?.id ?? rawGameId}:${mode}:${date ?? ''}:${location.key}`
 
   useEffect(() => {
     let active = true
@@ -34,6 +38,29 @@ export function GamePage() {
     return () => { active = false }
   }, [])
 
+  useEffect(() => {
+    let inputTimer: number | undefined
+    function markStarted(event: Event) {
+      const target = event.target
+      if (!(target instanceof Element) || !target.closest('.game-playfield')) return
+      if (event.type === 'input') {
+        window.clearTimeout(inputTimer)
+        inputTimer = window.setTimeout(() => setStartedRouteKey(routeKey), 0)
+      } else {
+        setStartedRouteKey(routeKey)
+      }
+    }
+    document.addEventListener('pointerdown', markStarted, true)
+    document.addEventListener('keydown', markStarted, true)
+    document.addEventListener('input', markStarted, true)
+    return () => {
+      window.clearTimeout(inputTimer)
+      document.removeEventListener('pointerdown', markStarted, true)
+      document.removeEventListener('keydown', markStarted, true)
+      document.removeEventListener('input', markStarted, true)
+    }
+  }, [routeKey])
+
   if (!game) return <div className="page"><InlineNotice title="Game not found">Choose a game from the <Link to="/explore">library</Link>.</InlineNotice></div>
   if (!date) return <div className="page game-page"><LoadingState label="Setting this puzzle’s date…" /></div>
   if (error) return <div className="page game-page"><InlineNotice title="The atlas could not open" tone="warning">{error}</InlineNotice></div>
@@ -42,17 +69,28 @@ export function GamePage() {
   const existing = mode === 'daily'
     ? state.history.find((result) => result.puzzleId === dailyPuzzleId(game.id, date) && result.completed)
     : undefined
+  const showCompleted = mode === 'daily' && Boolean(existing) && startedRouteKey !== routeKey
 
   return (
-    <div className="page game-page">
-      {game.id !== 'flags' && <div className="game-page-heading">
-        <h1>{game.title}</h1>
-        <div className="mode-switch" aria-label="Game mode">
-          <Link to={`${game.path}?mode=daily`} className={mode === 'daily' ? 'is-selected' : ''}>Daily</Link>
-          <Link to={`${game.path}?mode=practice`} className={mode === 'practice' ? 'is-selected' : ''}>Practice</Link>
-        </div>
-      </div>}
-      {existing ? <CompletedDailyResult gameTitle={game.title} result={existing} /> : <GameExperience key={`${game.id}:${mode}:${date}`} gameId={game.id} mode={mode} date={date} data={data} />}
+    <div className={`page game-page game-page-${game.id}`}>
+      <h1 className="visually-hidden">{game.title}</h1>
+      <GameContextToolbar game={game} mode={mode} />
+      {showCompleted && existing
+        ? <CompletedPuzzle gameTitle={game.title} result={existing} />
+        : <GameExperience key={`${game.id}:${mode}:${date}`} gameId={game.id} mode={mode} date={date} data={data} />}
+    </div>
+  )
+}
+
+function GameContextToolbar({ game, mode }: { game: NonNullable<ReturnType<typeof getGame>>; mode: GameMode }) {
+  return (
+    <div className="game-context-bar">
+      <Link className="game-context-back" to="/explore"><ArrowLeft size={15} aria-hidden="true" /><span>All games</span></Link>
+      <span className="game-context-title">{game.title}</span>
+      <nav className="mode-switch" aria-label={`${game.title} mode`}>
+        <Link to={`${game.path}?mode=daily`} className={mode === 'daily' ? 'is-selected' : ''} aria-current={mode === 'daily' ? 'page' : undefined}>Daily</Link>
+        <Link to={`${game.path}?mode=practice`} className={mode === 'practice' ? 'is-selected' : ''} aria-current={mode === 'practice' ? 'page' : undefined}>Practice</Link>
+      </nav>
     </div>
   )
 }
@@ -75,16 +113,4 @@ function GameExperience({ gameId, mode, date, data }: {
     default: return null
   }
   return <div className={`game-playfield game-playfield-${gameId}`}><Suspense fallback={<LoadingState label="Opening this game…" />}><Game key={seed} data={data} mode={mode} date={date} seed={seed} /></Suspense></div>
-}
-
-function CompletedDailyResult({ gameTitle, result }: { gameTitle: string; result: GameResult }) {
-  return (
-    <div className="result-panel already-complete">
-      <span className="eyebrow">Daily puzzle complete</span>
-      <h2>You’ve already played today.</h2>
-      <p>{gameTitle} · {result.correct} of {result.total} correct</p>
-      <div className="result-score">{result.score.toLocaleString()}<small>points</small></div>
-      <div className="result-actions"><Link className="button button-dark" to="/statistics">See your statistics</Link><Link className="button button-outline" to={`${getGame(result.gameId)?.path ?? '/explore'}?mode=practice`}><RotateCcw size={15} /> Play practice</Link></div>
-    </div>
-  )
 }

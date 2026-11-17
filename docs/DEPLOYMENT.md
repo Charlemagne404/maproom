@@ -2,9 +2,9 @@
 
 ## Observed production state
 
-The existing site is served from `/srv/maproom/current`, which resolves to `/srv/maproom/releases/1.1.0-cb626ad2bedd`. A read-only request to `https://maproom.continental-hub.com/` returned HTTP 200 on 2026-11-16 at 22:36 UTC.
+The existing site is served from `/srv/maproom/current`. A read-only check on 2026-11-17 found it resolving to `/srv/maproom/releases/1.2.0-dac85cc7b547`; `/srv/maproom/releases/1.1.0-cb626ad2bedd` also remains present for rollback. No service or release files were changed during this refinement.
 
-The local refinement is package version 1.2.0. It is a candidate only. This work did not switch `/srv/maproom/current`, reload Caddy, or change the public application. The 1.1.0 release remains active.
+The local refinement is package version 1.2.0 and is a candidate only. This work did not switch `/srv/maproom/current`, reload Caddy, or change the public application. Production remains on the already active `1.2.0-dac85cc7b547` release.
 
 ## Build and review
 
@@ -17,7 +17,7 @@ npm test
 npm run e2e
 ```
 
-`npm run e2e` builds the static application before running the single-worker browser suite. Captured review images are in `artifacts/qa/refinement-ii/`. `dist/` is the candidate build; it is not an activation or a production backup.
+`npm run e2e` builds the static application before running the single-worker browser suite. Captured review images are in `artifacts/qa/product-consistency/`. `dist/` is the candidate build; it is not an activation or a production backup.
 
 ## Operator handoff
 
@@ -37,4 +37,4 @@ Releases remain under `/srv/maproom/releases/` and are not pruned automatically.
 
 ## Activation boundary
 
-Version 1.2.0 has been built and reviewed locally; it has not been activated. Production remains on 1.1.0. No unrelated production service was changed.
+The 1.2.0 product consistency candidate has been built and reviewed locally; it has not been activated. Production remains on the pre-existing `1.2.0-dac85cc7b547` release, with 1.1.0 retained for rollback. No unrelated production service was changed.

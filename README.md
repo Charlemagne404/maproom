@@ -30,13 +30,13 @@ npm run preview
 
 ## Self-hosting
 
-The production files are served by the existing Caddy instance. The live site currently points to `/srv/maproom/releases/1.1.0-cb626ad2bedd`; the public homepage returned HTTP 200 on 2026-11-16. The refinement builds locally as version 1.2.0 and remains an unactivated candidate until the operator runs the prepared handoff:
+The production files are served by the existing Caddy instance. A read-only check on 2026-11-17 found `/srv/maproom/current` resolving to `/srv/maproom/releases/1.2.0-dac85cc7b547`; the previous `/srv/maproom/releases/1.1.0-cb626ad2bedd` release remains available for rollback. The product consistency refinement builds locally as version 1.2.0 and remains an unactivated candidate until the operator runs the prepared handoff:
 
 ```sh
 sudo /home/charlie/maproom/scripts/finalize-deployment.sh
 ```
 
-The script validates Caddy before any configuration change, keeps a timestamped Caddyfile backup if needed, atomically changes `/srv/maproom/current`, and checks the origin and public URL. This workspace has not activated the 1.2.0 candidate. See [deployment](docs/DEPLOYMENT.md) and [operations](docs/OPERATIONS.md) for the current boundary and rollback details.
+The script validates Caddy before any configuration change, keeps a timestamped Caddyfile backup if needed, atomically changes `/srv/maproom/current`, and checks the origin and public URL. This workspace has not activated the refinement candidate or changed production. See [deployment](docs/DEPLOYMENT.md) and [operations](docs/OPERATIONS.md) for the current boundary and rollback details.
 
 ## Data and privacy
 

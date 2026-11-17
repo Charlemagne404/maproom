@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Check, MapPin, MoveUpRight } from 'lucide-react'
 import { AutocompleteInput, type Suggestion } from '../../components/AutocompleteInput'
+import { GameResultsDialog } from '../../components/GameResults'
+import { GameSettingsMenu } from '../../components/GameControls'
 import { GeoMap } from '../../components/GeoMap'
 import { InlineNotice, LoadingState } from '../../components/Kit'
 import { loadCities } from '../../geography/data'
@@ -236,12 +238,17 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
 
   return (
     <div className="game-body cities-game-body">
-      {mode === 'practice' && <div className="practice-config cities-config">
-        <label><span>Practice task</span><select value={task} onChange={(event) => onTask(event.target.value as CityTask)}><option value="capitals">Capitals</option><option value="locate">City location</option><option value="identify">City identification</option></select></label>
-        {task !== 'capitals' && <label><span>Region</span><select value={continent} onChange={(event) => onContinent(event.target.value)}><option>All regions</option>{continents.map((item) => <option key={item}>{item}</option>)}</select></label>}
-        {task === 'capitals' && <><label><span>Direction</span><select value={direction} onChange={(event) => onDirection(event.target.value as CapitalDirection)}><option value="country-to-capital">Country → capital</option><option value="capital-to-country">Capital → country</option></select></label><label><span>Answer style</span><select value={answerStyle} onChange={(event) => onAnswerStyle(event.target.value as AnswerStyle)}><option value="typed">Type a name</option><option value="choices">Multiple choice</option></select></label></>}
-      </div>}
-      <div className="question-toolbar"><div><span className="eyebrow">{modeLabel}</span><h2>{prompt}</h2><p>Question {index + 1} of {questions.length}{question.city?.population ? ` · population ${question.city.population.toLocaleString()}` : ''}</p></div><div className="question-count"><strong>{index + 1}</strong><span>of {questions.length}</span></div></div>
+      <div className="question-toolbar">
+        <div><span className="eyebrow">{modeLabel}</span><h2>{prompt}</h2><p>Question {index + 1} of {questions.length}{question.city?.population ? ` · population ${question.city.population.toLocaleString()}` : ''}</p></div>
+        <div className="question-toolbar-tools">
+          {mode === 'practice' && <GameSettingsMenu><div className="practice-config cities-config">
+            <label><span>Practice task</span><select value={task} onChange={(event) => onTask(event.target.value as CityTask)}><option value="capitals">Capitals</option><option value="locate">City location</option><option value="identify">City identification</option></select></label>
+            {task !== 'capitals' && <label><span>Region</span><select value={continent} onChange={(event) => onContinent(event.target.value)}><option>All regions</option>{continents.map((item) => <option key={item}>{item}</option>)}</select></label>}
+            {task === 'capitals' && <><label><span>Direction</span><select value={direction} onChange={(event) => onDirection(event.target.value as CapitalDirection)}><option value="country-to-capital">Country → capital</option><option value="capital-to-country">Capital → country</option></select></label><label><span>Answer style</span><select value={answerStyle} onChange={(event) => onAnswerStyle(event.target.value as AnswerStyle)}><option value="typed">Type a name</option><option value="choices">Multiple choice</option></select></label></>}
+          </div></GameSettingsMenu>}
+          <div className="question-count"><strong>{index + 1}</strong><span>of {questions.length}</span></div>
+        </div>
+      </div>
       {question.kind === 'capitals' && (mode === 'daily' || answerStyle === 'choices') ? <div className="capital-choice-grid" role="group" aria-label="Choose the correct country or capital">
         {(question.direction === 'country-to-capital' ? capitalChoices.map((country) => ({ code: country.iso3, label: country.capital ?? 'Capital unavailable', detail: country.name })) : countryChoicesFromCapitals(capitals, question.country?.iso3 ?? '', seed, index)).map((choice) => <button className={`answer-choice${selected === choice.code ? (choice.code === question.country?.iso3 ? ' is-right' : ' is-wrong') : ''}`} type="button" key={choice.code} disabled={locked} onClick={() => submitCountry(choice.code)}><span>{choice.label}</span><small>{choice.detail}</small></button>)}
       </div> : null}
@@ -254,9 +261,9 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
         <div className="game-map-stage city-map-stage"><GeoMap features={data.features} onPointSelect={recordLocation} markers={guess ? [{ point: guess, kind: 'guess', label: 'Your marker' }, { point: question.city, kind: 'answer', label: 'City location' }] : []} ariaLabel="World map. Click or tap to place a city marker." showHoverLabels={state.settings.mapLabels} /></div>
         <div className="coordinate-tools"><div className="coordinate-fields"><label>Latitude<input type="number" min="-90" max="90" step="0.01" value={latitude} onChange={(event) => setLatitude(event.target.value)} placeholder="e.g. 59.33" /></label><label>Longitude<input type="number" min="-180" max="180" step="0.01" value={longitude} onChange={(event) => setLongitude(event.target.value)} placeholder="e.g. 18.07" /></label></div><button className="button button-dark" type="button" disabled={locked || (!latitude && !longitude)} onClick={submitLocation}><MapPin size={15} /> Place marker</button><span className="coordinate-help">Click the map, or enter coordinates for a keyboard-accessible answer.</span></div>
       </>}
-      {message && <div className={`answer-feedback${locked ? (questionCorrect ? ' is-correct' : ' is-incorrect') : ''}`} role="status"><span className="feedback-icon">{questionCorrect ? <Check size={17} /> : <MoveUpRight size={16} />}</span><span>{message}</span>{locked && <button className="button button-dark" type="button" onClick={() => void nextQuestion()}>{index === questions.length - 1 ? 'See result' : 'Next place'}</button>}</div>}
-      {finished && <div className="result-panel"><span className="eyebrow">City round complete</span><h2>Places have a way of sticking.</h2><p>{correct} of {questions.length} answers correct or within 250 km.</p><div className="result-score">{score.toLocaleString()}<small>points</small></div><div className="result-actions"><a className="button button-dark" href="/statistics">See statistics</a>{mode === 'daily' ? <a className="button button-outline" href="/games/cities?mode=practice">Explore more cities</a> : <button className="button button-outline" type="button" onClick={onNextRound}>New city round</button>}</div>{saveError && <div className="form-message form-message-error" role="alert">{saveError}</div>}</div>}
+      {message && <div className={`answer-feedback${locked ? (questionCorrect ? ' is-correct' : ' is-incorrect') : ''}`} role="status"><span className="feedback-icon">{questionCorrect ? <Check size={17} /> : <MoveUpRight size={16} />}</span><span>{message}</span>{locked && !finished && <button className="button button-dark" type="button" onClick={() => void nextQuestion()}>{index === questions.length - 1 ? 'See result' : 'Next place'}</button>}</div>}
       {mode === 'daily' && !finished && <div className="daily-mix-note"><ArrowRight size={14} /> Today includes capitals, city names and map placement.</div>}
+      <GameResultsDialog complete={finished} gameId="cities" mode={mode} score={score} correct={correct} total={questions.length} title="City round complete." message="Places have a way of sticking." saveError={saveError} onReplay={mode === 'practice' ? onNextRound : undefined} replayLabel="New city round" />
     </div>
   )
 }

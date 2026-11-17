@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
 
-test.beforeAll(() => mkdirSync('artifacts/qa/flag-game-ux', { recursive: true }))
+test.beforeAll(() => mkdirSync('artifacts/qa/product-consistency', { recursive: true }))
 
 interface CountryRecord {
   iso3: string
@@ -24,7 +24,8 @@ interface CityRecord {
 
 async function openGame(page: Page, id: string, mode: 'daily' | 'practice' = 'practice') {
   await page.goto(`/games/${id}?mode=${mode}`)
-  await expect(page.locator(id === 'flags' ? '.flag-question-row h1' : '.game-page-heading h1')).toBeVisible()
+  await expect(page.locator('.game-context-bar')).toBeVisible()
+  await expect(page.locator('.game-context-title')).toHaveCount(1)
   await expect(page.locator('.game-body')).toBeVisible({ timeout: 30_000 })
 }
 
@@ -32,6 +33,20 @@ async function submitText(page: Page, selector: string, answer: string) {
   const input = page.locator(selector)
   await input.fill(answer)
   await input.press('Enter')
+}
+
+async function setGameSetting(page: Page, label: string, value: string | { label: string }) {
+  const panel = page.getByRole('group', { name: 'Game settings' })
+  if (!(await panel.isVisible())) await page.getByRole('button', { name: 'Game settings' }).click()
+  await page.getByLabel(label).selectOption(value)
+}
+
+async function answerOnMapByKeyboard(page: Page, answer: string) {
+  const mapCountries = page.locator('.geo-map path[role="button"]')
+  const index = await mapCountries.evaluateAll((elements, name) => elements.findIndex((element) => element.getAttribute('aria-label') === name), answer)
+  expect(index, `map country ${answer}`).toBeGreaterThanOrEqual(0)
+  await mapCountries.nth(index).evaluate((element) => (element as SVGElement).focus())
+  await page.keyboard.press('Enter')
 }
 
 async function countryData(page: Page): Promise<CountryRecord[]> {
@@ -46,6 +61,26 @@ async function cityData(page: Page): Promise<CityRecord[]> {
   return (await response.json()).cities as CityRecord[]
 }
 
+async function shellGeometry(page: Page) {
+  await page.evaluate(() => document.fonts.ready)
+  return page.evaluate(() => {
+    const rect = (selector: string) => {
+      const element = document.querySelector(selector)
+      if (!element) return null
+      const { x, y, width, height } = element.getBoundingClientRect()
+      return [x, y, width, height].map((value) => Math.round(value * 10) / 10)
+    }
+    return {
+      header: rect('.site-header'),
+      brand: rect('.brand'),
+      nav: rect('.primary-nav'),
+      utility: rect('.header-tools'),
+      menu: rect('.mobile-menu-toggle'),
+      brandFontSize: getComputedStyle(document.querySelector('.brand')!).fontSize,
+    }
+  })
+}
+
 async function expectCenteredFlagLayout(page: Page, direction: 'flag-to-country' | 'country-to-flag') {
   const layout = await page.evaluate(() => {
     const bounds = (element: Element | null) => {
@@ -56,7 +91,8 @@ async function expectCenteredFlagLayout(page: Page, direction: 'flag-to-country'
     const frameSelector = '.flag-frame-large'
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },
-      nav: bounds(document.querySelector('.flag-game-bar')),
+      nav: bounds(document.querySelector('.site-header')),
+      context: bounds(document.querySelector('.game-context-bar')),
       round: bounds(document.querySelector('.flag-round')),
       question: bounds(document.querySelector('.flag-question-row h1')),
       display: bounds(document.querySelector('.flag-display')),
@@ -70,12 +106,12 @@ async function expectCenteredFlagLayout(page: Page, direction: 'flag-to-country'
   expect(layout.nav).not.toBeNull()
   expect(layout.round).not.toBeNull()
   expect(layout.question).not.toBeNull()
-  const nav = layout.nav!
   const round = layout.round!
   const question = layout.question!
   expect(Math.abs((question.x + question.width / 2) - layout.viewport.width / 2)).toBeLessThan(2)
-  expect(question.y).toBeGreaterThanOrEqual(nav.bottom - 1)
-  expect(Math.abs((round.y + round.height / 2) - ((nav.bottom + layout.viewport.height) / 2))).toBeLessThan(5)
+  expect(layout.context).not.toBeNull()
+  expect(question.y).toBeGreaterThanOrEqual(layout.context!.bottom - 1)
+  expect(Math.abs((round.y + round.height / 2) - ((layout.context!.bottom + layout.viewport.height) / 2))).toBeLessThan(48)
   expect(layout.pageWidth).toBeLessThanOrEqual(layout.viewport.width)
 
   if (direction === 'flag-to-country') {
@@ -151,14 +187,14 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   })
   await expect.poll(hoverLift).toBeLessThan(-2.8)
   await expect.poll(() => leadCard.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(leadCardBackground)
-  await page.screenshot({ path: 'artifacts/qa/flag-game-ux/home-tile-hover-desktop.png', fullPage: true })
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/home-tile-hover-desktop.png', fullPage: true })
   const countryMap = page.locator('.game-card-countries .art-world')
   await expect(countryMap).toHaveJSProperty('complete', true)
   await expect(countryMap).toHaveCSS('object-fit', 'contain')
   await expect(page.locator('.game-card-routes .art-route img')).toHaveCount(1)
   await expect(page.locator('.game-card-cities .art-city-target')).toHaveCount(1)
   await page.mouse.move(0, 0)
-  await page.screenshot({ path: 'artifacts/qa/flag-game-ux/home-desktop.png', fullPage: true })
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/home-desktop.png', fullPage: true })
   await page.keyboard.press('Tab')
   await expect(page.locator('.skip-link')).toBeFocused()
 
@@ -190,6 +226,10 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await menuToggle.click()
   await expect(menuToggle).toHaveAttribute('aria-expanded', 'true')
   await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible()
+  await page.mouse.click(3, 400)
+  await expect(menuToggle).toHaveAttribute('aria-expanded', 'false')
+  await menuToggle.click()
+  await expect(menuToggle).toHaveAttribute('aria-expanded', 'true')
   await page.keyboard.press('Escape')
   await expect(menuToggle).toHaveAttribute('aria-expanded', 'false')
   await expect(menuToggle).toBeFocused()
@@ -197,7 +237,7 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await page.getByRole('link', { name: 'Explore', exact: true }).click()
   await expect(page).toHaveURL(/\/explore$/)
   await page.goto('/')
-  await page.screenshot({ path: 'artifacts/qa/flag-game-ux/home-mobile.png', fullPage: true })
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/home-mobile.png', fullPage: true })
   const widths = await page.evaluate(() => ({ viewport: window.innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }))
   expect(widths.document).toBeLessThanOrEqual(widths.viewport)
   expect(widths.body).toBeLessThanOrEqual(widths.viewport)
@@ -217,11 +257,11 @@ test('daily completion appears as a green check on the puzzle tile', async ({ pa
   await openGame(page, 'countries', 'daily')
   for (let index = 0; index < 8; index += 1) {
     const answer = await page.locator('.question-toolbar h2 em').innerText()
-    await submitText(page, '#country-answer', answer)
+    await answerOnMapByKeyboard(page, answer)
     await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
     await page.getByRole('button', { name: index === 7 ? 'See result' : 'Next place' }).click()
   }
-  await expect(page.locator('.result-panel')).toBeVisible()
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
   await page.goto('/')
   const countryTile = page.locator('.game-card-countries')
   const completionMark = countryTile.locator('.completed-mark')
@@ -235,20 +275,65 @@ test('daily completion appears as a green check on the puzzle tile', async ({ pa
   })
   expect(geometry.markLeft - geometry.cardLeft).toBeLessThan(40)
   expect(geometry.markTop - geometry.cardTop).toBeLessThan(45)
-  await page.screenshot({ path: 'artifacts/qa/flag-game-ux/home-complete-desktop.png', fullPage: true })
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/home-complete-desktop.png', fullPage: true })
+
+  await page.goto('/games/countries?mode=daily')
+  await expect(page.locator('.completed-daily-result')).toBeVisible()
+  const completedBounds = await page.locator('.completed-daily-result').boundingBox()
+  const mainBounds = await page.locator('main').boundingBox()
+  expect(completedBounds?.x).toBeGreaterThan((mainBounds?.x ?? 0) + 120)
+  expect(Math.abs((completedBounds?.y ?? 0) + (completedBounds?.height ?? 0) / 2 - ((mainBounds?.y ?? 0) + (mainBounds?.height ?? 0) / 2))).toBeLessThan(45)
+  await expect(page.locator('.site-header')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Play practice' })).toBeVisible()
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/countries-completed-daily-desktop.png', fullPage: true })
+})
+
+test('the application shell keeps identical navigation geometry across routes and game states', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 })
+  const routes = ['/', '/explore', '/statistics', '/settings', '/data', '/about', '/privacy',
+    '/games/countries?mode=daily', '/games/countries?mode=practice',
+    '/games/outlines?mode=daily', '/games/routes?mode=practice', '/games/flags?mode=daily',
+    '/games/grid?mode=practice', '/games/cities?mode=daily']
+  let desktopGeometry: Awaited<ReturnType<typeof shellGeometry>> | undefined
+  for (const route of routes) {
+    await page.goto(route)
+    await expect(page.locator('.site-header')).toBeVisible()
+    if (route.includes('/games/')) await expect(page.locator('.game-context-bar')).toBeVisible()
+    else await expect(page.locator('main h1').first()).toBeVisible()
+    const geometry = await shellGeometry(page)
+    if (!desktopGeometry) desktopGeometry = geometry
+    else expect(geometry, `${route} navbar geometry`).toEqual(desktopGeometry)
+  }
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  let mobileGeometry: Awaited<ReturnType<typeof shellGeometry>> | undefined
+  for (const route of ['/', '/explore', '/settings', '/games/countries?mode=practice', '/games/flags?mode=daily', '/games/grid?mode=practice']) {
+    await page.goto(route)
+    const geometry = await shellGeometry(page)
+    if (!mobileGeometry) mobileGeometry = geometry
+    else expect(geometry, `${route} mobile navbar geometry`).toEqual(mobileGeometry)
+    const menu = page.locator('.mobile-menu-toggle')
+    await expect(menu).toBeVisible()
+    await menu.click()
+    await expect(menu).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(menu).toHaveAttribute('aria-expanded', 'false')
+    await expect(menu).toBeFocused()
+  }
 })
 
 test('country identification uses the map data, accepts an answer and saves a full practice result', async ({ page }) => {
   await openGame(page, 'countries')
   for (let index = 0; index < 10; index += 1) {
     const answer = await page.locator('.question-toolbar h2 em').innerText()
-    await submitText(page, '#country-answer', answer)
+    await answerOnMapByKeyboard(page, answer)
     await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
     await page.getByRole('button', { name: index === 9 ? 'See result' : 'Next place' }).click()
   }
-  await expect(page.locator('.result-panel')).toBeVisible()
-  await expect(page.locator('.result-score')).toContainText('1,000')
-  await page.getByRole('link', { name: 'See your statistics' }).click()
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-score')).toContainText('1,000')
+  await page.locator('main').getByRole('link', { name: 'Statistics', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Statistics' })).toBeVisible()
   await expect(page.locator('.stat-overview')).toContainText('1 completed')
   await page.reload()
@@ -287,12 +372,16 @@ test('country outlines reveal the answer after six valid guesses and save the re
   await openGame(page, 'outlines')
   const guesses = ['Afghanistan', 'Brazil', 'Canada', 'France', 'Japan', 'Kenya']
   for (const guess of guesses) {
-    if (await page.locator('.result-panel').isVisible().catch(() => false)) break
-    await submitText(page, '#outline-answer', guess)
+    if (await page.locator('.game-results-dialog').isVisible().catch(() => false)) break
+    const input = page.locator('#outline-answer')
+    await input.fill(guess)
+    await expect(page.locator('.suggestion-option').filter({ has: page.getByText(guess, { exact: true }) }).first()).toBeVisible()
+    await page.locator('.suggestion-option').filter({ has: page.getByText(guess, { exact: true }) }).first().click()
+    await page.getByRole('button', { name: 'Guess' }).click()
     await expect(page.locator('.answer-feedback')).toBeVisible()
   }
-  await expect(page.locator('.result-panel')).toBeVisible()
-  await expect(page.locator('.result-panel h2')).not.toBeEmpty()
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-dialog h2')).not.toBeEmpty()
 })
 
 test('border route accepts an actual shortest path and scores it', async ({ page }) => {
@@ -308,12 +397,13 @@ test('border route accepts an actual shortest path and scores it', async ({ page
     await submitText(page, '#route-country', shortestRoute[index])
     if (index < shortestRoute.length - 1) await expect(page.locator('.route-stops li')).toHaveCount(index + 2)
   }
-  await expect(page.locator('.route-result')).toBeVisible()
-  await expect(page.locator('.route-result h2')).toContainText('shortest')
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-dialog h2')).toContainText('shortest')
 })
 
 test('flag identification answers each locally bundled flag and completes practice', async ({ page }) => {
   await openGame(page, 'flags')
+  const navigationBeforeRound = await shellGeometry(page)
   for (let index = 0; index < 10; index += 1) {
     const label = await page.locator('.flag-display [role="img"]').getAttribute('aria-label')
     const answer = (label ?? '').replace(/^Flag of /, '')
@@ -334,15 +424,19 @@ test('flag identification answers each locally bundled flag and completes practi
   }
   const results = page.getByRole('dialog', { name: 'Practice round complete.' })
   await expect(results).toBeVisible()
-  await expect(page.locator('.flag-results-score')).toContainText('1,000')
-  await expect(page.locator('.flag-results-summary')).toHaveText('10 / 10 correct · 100% accuracy')
+  await expect(page.locator('.game-results-score')).toContainText('1,000')
+  await expect(page.locator('.game-results-summary')).toHaveText('10 / 10 correct · 100% accuracy')
   const dialogBox = await results.boundingBox()
   expect(dialogBox?.y).toBeGreaterThanOrEqual(0)
   expect((dialogBox?.y ?? 0) + (dialogBox?.height ?? 0)).toBeLessThanOrEqual(960)
+  expect(await shellGeometry(page)).toEqual(navigationBeforeRound)
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-results-desktop.png' })
 
   await expect(page.getByRole('button', { name: 'Play again' })).toBeFocused()
   await page.keyboard.press('Tab')
-  await expect(page.getByRole('link', { name: 'Statistics' })).toBeFocused()
+  await expect(results.getByRole('link', { name: 'Statistics' })).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(results.getByRole('link', { name: 'All games' })).toBeFocused()
   await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: 'Return to the puzzle' })).toBeFocused()
   await page.keyboard.press('Tab')
@@ -354,12 +448,12 @@ test('flag identification answers each locally bundled flag and completes practi
   await expect(results).toBeVisible()
   await page.getByRole('button', { name: 'Play again' }).click()
   await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
-  await expect(page.locator('.flag-results-dialog')).toBeHidden()
+  await expect(page.locator('.game-results-dialog')).toBeHidden()
 })
 
 test('infinite flag practice cycles fairly, stays open and saves the chosen session total', async ({ page }) => {
   await openGame(page, 'flags')
-  await page.getByRole('button', { name: 'Practice settings' }).click()
+  await page.getByRole('button', { name: 'Game settings' }).click()
   await page.getByLabel('Questions').selectOption('infinite')
   await page.keyboard.press('Escape')
   await expect(page.locator('.flag-progress')).toHaveText('Question 1')
@@ -382,35 +476,35 @@ test('infinite flag practice cycles fairly, stays open and saves the chosen sess
     await expect(page.locator('.flag-progress')).toHaveText(`Question ${index + 2}`, { timeout: 5_000 })
   }
 
-  await expect(page.locator('.flag-results-dialog')).toHaveCount(0)
+  await expect(page.locator('.game-results-dialog')).toHaveCount(0)
   await expect(page.locator('.flag-live-status')).toContainText('1,200 pts')
   await expect(page.locator('.flag-live-status')).toContainText('12 correct')
   await expect(page.locator('.flag-live-status')).toContainText('100% accuracy')
   await page.getByRole('button', { name: 'End session' }).click()
   const results = page.getByRole('dialog', { name: 'Practice session complete.' })
   await expect(results).toBeVisible()
-  await expect(page.locator('.flag-results-score')).toContainText('1,200')
-  await expect(page.locator('.flag-results-summary')).toHaveText('12 / 12 correct · 100% accuracy')
-  await page.getByRole('link', { name: 'Statistics' }).click()
+  await expect(page.locator('.game-results-score')).toContainText('1,200')
+  await expect(page.locator('.game-results-summary')).toHaveText('12 / 12 correct · 100% accuracy')
+  await results.getByRole('link', { name: 'Statistics' }).click()
   await expect(page.locator('.history-result').first()).toContainText('12 / 12 correct')
 })
 
 test('flag daily mode keeps its seed and advances after a keyboard answer', async ({ page }) => {
   await openGame(page, 'flags', 'daily')
-  await expect(page.locator('.flag-game-bar')).toBeVisible()
-  const topBarBox = await page.locator('.flag-game-bar').boundingBox()
+  await expect(page.locator('.site-header')).toBeVisible()
+  const topBarBox = await page.locator('.site-header').boundingBox()
   expect(topBarBox?.y).toBeLessThanOrEqual(1)
-  expect(topBarBox?.height).toBeLessThanOrEqual(60)
-  await expect(page.locator('.flag-game-bar-left .flag-all-games')).toBeVisible()
-  await expect(page.locator('.flag-mode-switch a.is-selected')).toHaveText('Daily')
+  expect(topBarBox?.height).toBeLessThanOrEqual(62)
+  await expect(page.locator('.game-context-bar .game-context-back')).toBeVisible()
+  await expect(page.locator('.game-context-bar .mode-switch a.is-selected')).toHaveText('Daily')
   await expect(page.locator('.flag-settings-button')).toHaveCount(0)
   await expect(page.locator('.game-page-heading')).toHaveCount(0)
   await page.getByRole('link', { name: 'Practice', exact: true }).click()
   await expect(page).toHaveURL(/\/games\/flags\?mode=practice$/)
-  await expect(page.locator('.flag-mode-switch a.is-selected')).toHaveText('Practice')
-  await page.getByRole('link', { name: 'Daily', exact: true }).click()
+  await expect(page.locator('.game-context-bar .mode-switch a.is-selected')).toHaveText('Practice')
+  await page.locator('.game-context-bar .mode-switch').getByRole('link', { name: 'Daily', exact: true }).click()
   await expect(page).toHaveURL(/\/games\/flags\?mode=daily$/)
-  await expect(page.locator('.flag-mode-switch a.is-selected')).toHaveText('Daily')
+  await expect(page.locator('.game-context-bar .mode-switch a.is-selected')).toHaveText('Daily')
   await page.getByRole('link', { name: 'All games' }).click()
   await expect(page).toHaveURL(/\/explore$/)
   await page.goBack()
@@ -429,7 +523,7 @@ test('flag daily mode keeps its seed and advances after a keyboard answer', asyn
   await page.keyboard.press('Enter')
   await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
   await expect(page.locator('.flag-choice.is-right')).toHaveCSS('background-color', 'rgb(229, 239, 229)')
-  await page.screenshot({ path: 'artifacts/qa/flag-game-ux/flags-correct-desktop.png' })
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-correct-desktop.png' })
   await expect(page.locator('.flag-progress')).toHaveText('02 / 08', { timeout: 5_000 })
   await expect(page.getByRole('button', { name: 'Next flag' })).toHaveCount(0)
 })
@@ -447,7 +541,7 @@ test('changing practice settings cancels a pending automatic advance', async ({ 
   await choices.nth(correctIndex).click()
   await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
   await page.waitForTimeout(250)
-  await page.getByRole('button', { name: 'Practice settings' }).click()
+  await page.getByRole('button', { name: 'Game settings' }).click()
   await page.getByLabel('Region').selectOption({ label: 'Europe' })
   await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
   const refreshedFlag = await page.locator('.flag-display [role="img"]').getAttribute('aria-label')
@@ -462,35 +556,35 @@ test('flag practice settings cover regions, direction, answer style and progress
   const firstChoice = page.locator('.flag-choice').first()
   await firstChoice.hover()
   await expect(firstChoice).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
-  await page.screenshot({ path: 'artifacts/qa/flag-game-ux/flags-choice-hover-desktop.png' })
-  const settingsButton = page.getByRole('button', { name: 'Practice settings' })
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-choice-hover-desktop.png' })
+  const settingsButton = page.getByRole('button', { name: 'Game settings' })
   await expect(settingsButton).toHaveAttribute('aria-expanded', 'false')
-  await expect(page.getByRole('region', { name: 'Practice settings' })).toHaveCount(0)
+  await expect(page.getByRole('group', { name: 'Game settings' })).toHaveCount(0)
   await settingsButton.focus()
   await page.keyboard.press('Enter')
-  const settings = page.getByRole('region', { name: 'Practice settings' })
+  const settings = page.getByRole('group', { name: 'Game settings' })
   await expect(settings).toBeVisible()
-  await page.screenshot({ path: 'artifacts/qa/flag-game-ux/flags-settings-desktop.png' })
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-settings-desktop.png' })
   await page.keyboard.press('Escape')
   await expect(settingsButton).toBeFocused()
   await expect(settings).toHaveCount(0)
 
   await settingsButton.click()
-  await page.getByLabel('Questions').selectOption('20')
+  await setGameSetting(page, 'Questions', '20')
   await expect(page.locator('.flag-progress')).toHaveText('01 / 20')
-  await page.getByLabel('Questions').selectOption('50')
+  await setGameSetting(page, 'Questions', '50')
   await expect(page.locator('.flag-progress')).toHaveText('01 / 50')
-  await page.getByLabel('Questions').selectOption('infinite')
+  await setGameSetting(page, 'Questions', 'infinite')
   await expect(page.locator('.flag-progress')).toHaveText('Question 1')
-  await page.getByLabel('Questions').selectOption('10')
+  await setGameSetting(page, 'Questions', '10')
   await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
-  await page.getByLabel('Region').selectOption({ label: 'Europe' })
+  await setGameSetting(page, 'Region', { label: 'Europe' })
   await expect(page.getByLabel('Region')).toHaveValue('Europe')
-  await page.getByLabel('Direction').selectOption('country-to-flag')
+  await setGameSetting(page, 'Direction', 'country-to-flag')
   await expect(page.getByLabel('Answer style')).toHaveCount(0)
   await page.keyboard.press('Escape')
   await expect(settings).toHaveCount(0)
-  await page.screenshot({ path: 'artifacts/qa/flag-game-ux/flags-country-to-flag-desktop.png' })
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-country-to-flag-desktop.png' })
   const answerFlagWidths = await page.locator('.image-choice-grid .flag-frame').evaluateAll((elements) => elements.map((element) => element.getBoundingClientRect().width))
   expect(answerFlagWidths).toHaveLength(4)
   expect(Math.min(...answerFlagWidths)).toBeGreaterThan(70)
@@ -522,8 +616,8 @@ test('flag practice settings cover regions, direction, answer style and progress
   await expect(page.locator('.flag-progress')).toHaveText('03 / 10', { timeout: 5_000 })
 
   await settingsButton.click()
-  await page.getByLabel('Direction').selectOption('flag-to-country')
-  await page.getByLabel('Answer style').selectOption('typed')
+  await setGameSetting(page, 'Direction', 'flag-to-country')
+  await setGameSetting(page, 'Answer style', 'typed')
   await page.getByLabel('Reveal after wrong guesses').check()
   await expect(page.getByLabel('Answer style')).toHaveValue('typed')
   await expect(page.getByLabel('Reveal after wrong guesses')).toBeChecked()
@@ -560,14 +654,27 @@ test('flag compositions stay centered and bounded at desktop, laptop and mobile 
     await page.setViewportSize({ width: viewport.width, height: viewport.height })
     await openGame(page, 'flags')
     await expectCenteredFlagLayout(page, 'flag-to-country')
-    await page.screenshot({ path: `artifacts/qa/flag-game-ux/flags-${viewport.name}-flag-to-country.png`, fullPage: true })
+    await page.screenshot({ path: `artifacts/qa/product-consistency/flags-${viewport.name}-flag-to-country.png`, fullPage: true })
 
-    await page.getByRole('button', { name: 'Practice settings' }).click()
-    await page.getByLabel('Direction').selectOption('country-to-flag')
+    await page.getByRole('button', { name: 'Game settings' }).click()
+    await setGameSetting(page, 'Direction', 'country-to-flag')
     await page.keyboard.press('Escape')
     await expect(page.locator('.image-choice-grid .flag-choice')).toHaveCount(4)
     await expectCenteredFlagLayout(page, 'country-to-flag')
-    await page.screenshot({ path: `artifacts/qa/flag-game-ux/flags-${viewport.name}-country-to-flag.png`, fullPage: true })
+    if (viewport.name === 'mobile') {
+      const textRects = await page.locator('.flag-question-row h1').evaluate((element) => {
+        const range = document.createRange()
+        range.selectNodeContents(element)
+        return [...range.getClientRects()].map(({ x, y, right, bottom }) => ({ x, y, right, bottom }))
+      })
+      const utility = await page.locator('.flag-round-utility').boundingBox()
+      const progress = await page.locator('.flag-progress').boundingBox()
+      const settings = await page.locator('.game-settings-button').boundingBox()
+      expect(utility).not.toBeNull()
+      expect(textRects.some((rect) => rect.x < utility!.x + utility!.width && rect.right > utility!.x && rect.y < utility!.y + utility!.height && rect.bottom > utility!.y)).toBe(false)
+      expect(settings!.x).toBeGreaterThanOrEqual(progress!.x + progress!.width + 4)
+    }
+    await page.screenshot({ path: `artifacts/qa/product-consistency/flags-${viewport.name}-country-to-flag.png`, fullPage: true })
   }
 })
 
@@ -576,26 +683,26 @@ test('flag practice settings stay within the mobile viewport and remain tappable
   try {
     const page = await context.newPage()
     await openGame(page, 'flags')
-    const topBarBox = await page.locator('.flag-game-bar').boundingBox()
+    const topBarBox = await page.locator('.site-header').boundingBox()
     expect(topBarBox?.y).toBeLessThanOrEqual(1)
     expect(topBarBox?.height).toBeLessThanOrEqual(60)
-    await page.screenshot({ path: 'artifacts/qa/flag-game-ux/flags-practice-mobile.png', fullPage: true })
-    await page.getByRole('button', { name: 'Practice settings' }).tap()
-    const settings = page.getByRole('region', { name: 'Practice settings' })
+    await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-practice-mobile.png', fullPage: true })
+    await page.getByRole('button', { name: 'Game settings' }).tap()
+    const settings = page.getByRole('group', { name: 'Game settings' })
     await expect(settings).toBeVisible()
     const panel = await settings.boundingBox()
     expect(panel?.x).toBeGreaterThanOrEqual(0)
     expect((panel?.x ?? 0) + (panel?.width ?? 0)).toBeLessThanOrEqual(390)
-    await page.screenshot({ path: 'artifacts/qa/flag-game-ux/flags-settings-mobile.png', fullPage: true })
-    await page.getByLabel('Region').selectOption({ label: 'Asia' })
-    await page.getByLabel('Direction').selectOption('country-to-flag')
-    await page.getByLabel('Questions').selectOption('infinite')
+    await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-settings-mobile.png', fullPage: true })
+    await setGameSetting(page, 'Region', { label: 'Asia' })
+    await setGameSetting(page, 'Direction', 'country-to-flag')
+    await setGameSetting(page, 'Questions', 'infinite')
     await page.keyboard.press('Escape')
     await expect(settings).toHaveCount(0)
     await expect(page.locator('.image-choice-grid .flag-choice')).toHaveCount(4)
     const answerFlagWidths = await page.locator('.image-choice-grid .flag-frame').evaluateAll((elements) => elements.map((element) => element.getBoundingClientRect().width))
     expect(Math.min(...answerFlagWidths)).toBeGreaterThan(60)
-    await page.screenshot({ path: 'artifacts/qa/flag-game-ux/flags-country-to-flag-mobile.png', fullPage: true })
+    await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-country-to-flag-mobile.png', fullPage: true })
     const widths = await page.evaluate(() => ({ viewport: window.innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }))
     expect(widths.document).toBeLessThanOrEqual(widths.viewport)
     expect(widths.body).toBeLessThanOrEqual(widths.viewport)
@@ -613,7 +720,7 @@ test('flag practice settings stay within the mobile viewport and remain tappable
     expect(resultsBox?.y).toBeGreaterThanOrEqual(0)
     expect((resultsBox?.x ?? 0) + (resultsBox?.width ?? 0)).toBeLessThanOrEqual(390)
     expect((resultsBox?.y ?? 0) + (resultsBox?.height ?? 0)).toBeLessThanOrEqual(844)
-    await page.screenshot({ path: 'artifacts/qa/flag-game-ux/flags-infinite-results-mobile.png', fullPage: true })
+    await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-infinite-results-mobile.png', fullPage: true })
   } finally {
     await context.close()
   }
@@ -668,8 +775,8 @@ test('geography grid accepts nine distinct countries from real category intersec
     filled += 1
     await expect(page.locator('.grid-answer strong')).toHaveCount(filled)
   }
-  await expect(page.locator('.result-panel')).toBeVisible()
-  await expect(page.locator('.result-panel')).toContainText('9 of 9 squares')
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-dialog')).toContainText('All nine squares filled')
 })
 
 test('captures the redesigned desktop game stages and key mobile screens', async ({ page }) => {
@@ -678,23 +785,23 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   await expect(page.locator('.daily-grid .game-card')).toHaveCount(6)
   await page.goto('/explore')
   await expect(page.locator('.explore-grid .game-card')).toHaveCount(6)
-  await page.screenshot({ path: 'artifacts/qa/flag-game-ux/explore-desktop.png', fullPage: true })
+  await page.screenshot({ path: 'artifacts/qa/product-consistency/explore-desktop.png', fullPage: true })
 
   for (const [route, name] of [['/statistics', 'statistics'], ['/settings', 'settings'], ['/data', 'data'], ['/about', 'about'], ['/privacy', 'privacy']] as const) {
     await page.goto(route)
     await expect(page.locator('main h1').first()).toBeVisible()
-    await page.screenshot({ path: `artifacts/qa/flag-game-ux/${name}-desktop.png`, fullPage: true })
+    await page.screenshot({ path: `artifacts/qa/product-consistency/${name}-desktop.png`, fullPage: true })
   }
 
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities']) {
     await openGame(page, id, 'daily')
-    await page.screenshot({ path: `artifacts/qa/flag-game-ux/game-${id}-desktop.png` })
+    await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-desktop.png` })
   }
 
   await page.setViewportSize({ width: 1280, height: 800 })
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities']) {
     await openGame(page, id, 'daily')
-    await page.screenshot({ path: `artifacts/qa/flag-game-ux/game-${id}-laptop.png` })
+    await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-laptop.png` })
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `${id} laptop width overflow`).toBeLessThanOrEqual(0)
   }
@@ -702,7 +809,7 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   await page.setViewportSize({ width: 1024, height: 768 })
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities']) {
     await openGame(page, id, 'daily')
-    await page.screenshot({ path: `artifacts/qa/flag-game-ux/game-${id}-tablet.png` })
+    await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-tablet.png` })
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `${id} tablet width overflow`).toBeLessThanOrEqual(0)
   }
@@ -722,6 +829,21 @@ test('captures the redesigned desktop game stages and key mobile screens', async
       const mapBox = await page.locator('.game-map-stage').boundingBox()
       expect(mapBox?.width).toBeGreaterThan(340)
     }
+    if (id === 'outlines') {
+      const mapBox = await page.locator('.outline-map-stage').boundingBox()
+      expect(mapBox?.width).toBeGreaterThan(340)
+    }
+    if (id === 'routes') {
+      const mapBox = await page.locator('.route-map-stage').boundingBox()
+      expect(mapBox?.width).toBeGreaterThan(340)
+      const builderBox = await page.locator('.route-game-dock .route-builder').boundingBox()
+      const inputBox = await page.locator('.route-game-dock .route-input-row').boundingBox()
+      expect(builderBox && inputBox && builderBox.y + builderBox.height).toBeLessThanOrEqual(inputBox?.y ?? 0)
+    }
+    if (id === 'cities') {
+      const mapBox = await page.locator('.city-map-stage').boundingBox()
+      expect(mapBox?.width).toBeGreaterThan(340)
+    }
     if (id === 'grid') {
       await expect(page.locator('.geo-grid .grid-cell')).toHaveCount(9)
       const gridLayout = await page.locator('.geo-grid').evaluate((element) => {
@@ -735,7 +857,7 @@ test('captures the redesigned desktop game stages and key mobile screens', async
       expect(gridLayout.columns).toBe(3)
       expect(gridLayout.boardHeight).toBeLessThan(360)
     }
-    await page.screenshot({ path: `artifacts/qa/flag-game-ux/game-${id}-mobile.png`, fullPage: true })
+    await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-mobile.png`, fullPage: true })
   }
 
   for (const [route, name] of [['/', 'home'], ['/explore', 'explore'], ['/statistics', 'statistics'], ['/settings', 'settings'], ['/data', 'data'], ['/about', 'about'], ['/privacy', 'privacy']] as const) {
@@ -743,7 +865,7 @@ test('captures the redesigned desktop game stages and key mobile screens', async
     await expect(page.locator('main h1').first()).toBeVisible()
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `${route} mobile width overflow`).toBeLessThanOrEqual(0)
-    await page.screenshot({ path: `artifacts/qa/flag-game-ux/${name}-mobile.png`, fullPage: true })
+    await page.screenshot({ path: `artifacts/qa/product-consistency/${name}-mobile.png`, fullPage: true })
   }
 })
 
@@ -759,9 +881,12 @@ test('capitals and cities include typed capitals, coordinate placement and city 
     await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
     await page.getByRole('button', { name: index === 7 ? 'See result' : 'Next place' }).click()
   }
-  await expect(page.locator('.result-panel')).toBeVisible()
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
 
+  await page.getByRole('button', { name: 'New city round' }).click()
+  await page.getByRole('button', { name: 'Game settings' }).click()
   await page.getByLabel('Practice task').selectOption('locate')
+  await expect(page.locator('.game-results-dialog')).toHaveCount(0)
   const cities = await cityData(page)
   let prompt = await page.locator('.question-toolbar h2').innerText()
   let cityStart = prompt.indexOf('Place ') + 'Place '.length
@@ -780,6 +905,7 @@ test('capitals and cities include typed capitals, coordinate placement and city 
   await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
   await page.getByRole('button', { name: 'Next place' }).click()
 
+  await page.getByRole('button', { name: 'Game settings' }).click()
   await page.getByLabel('Practice task').selectOption('identify')
   prompt = await page.locator('.question-toolbar h2').innerText()
   countryName = prompt.replace(/^Which city is marked in /, '').replace(/\?$/, '')

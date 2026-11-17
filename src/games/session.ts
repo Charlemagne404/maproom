@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAppData } from '../app/useAppData'
 import type { GameId, GameMode, GameResult } from '../geography/types'
 import { dailyPuzzleId } from '../puzzles/engine'
@@ -7,11 +7,19 @@ export function useGameSession(gameId: GameId, mode: GameMode, date: string, see
   const { completeGame } = useAppData()
   const session = useRef<SessionIdentity | null>(null)
   const saved = useRef(false)
-  const [saveError, setSaveError] = useState('')
+  const [saveErrorState, setSaveErrorState] = useState({ puzzleId: '', message: '' })
   const puzzleId = mode === 'daily' ? dailyPuzzleId(gameId, date) : `${gameId}:practice:${seed}`
+  const saveError = saveErrorState.puzzleId === puzzleId ? saveErrorState.message : ''
+
+  const resetSession = useCallback(() => {
+    session.current = createSessionIdentity()
+    saved.current = false
+    setSaveErrorState({ puzzleId, message: '' })
+  }, [puzzleId])
 
   useEffect(() => {
     session.current = createSessionIdentity()
+    saved.current = false
   }, [puzzleId])
 
   async function save(score: number, correct: number, total: number, detail?: Record<string, unknown>) {
@@ -37,11 +45,11 @@ export function useGameSession(gameId: GameId, mode: GameMode, date: string, see
       await completeGame(result)
     } catch (error) {
       saved.current = false
-      setSaveError(error instanceof Error ? error.message : 'This result could not be saved.')
+      setSaveErrorState({ puzzleId, message: error instanceof Error ? error.message : 'This result could not be saved.' })
     }
   }
 
-  return { puzzleId, save, saveError }
+  return { puzzleId, save, saveError, resetSession }
 }
 
 interface SessionIdentity { id: string; startedAt: string; startedAtMs: number }

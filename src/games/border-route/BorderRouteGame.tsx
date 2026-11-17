@@ -1,14 +1,21 @@
 import { useMemo, useState } from 'react'
-import { ArrowRight, Check, Lightbulb, Route as RouteIcon } from 'lucide-react'
+import { ArrowRight, Lightbulb, Route as RouteIcon } from 'lucide-react'
 import { AutocompleteInput, type Suggestion } from '../../components/AutocompleteInput'
 import { GeoMap } from '../../components/GeoMap'
 import { InlineNotice } from '../../components/Kit'
+import { GameResultsDialog } from '../../components/GameResults'
 import type { GeographyData, GameMode } from '../../geography/types'
 import { buildAdjacency, generateRoutePuzzle, resolveCountryAnswer, validateRouteStep } from '../../puzzles/engine'
 import { useAppData } from '../../app/useAppData'
 import { useGameSession } from '../session'
 
 export function BorderRouteGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
+  const [round, setRound] = useState(0)
+  const roundSeed = mode === 'daily' ? seed : `${seed}:${round}`
+  return <RouteRound key={round} data={data} mode={mode} date={date} seed={roundSeed} onReplay={() => setRound((value) => value + 1)} />
+}
+
+function RouteRound({ data, mode, date, seed, onReplay }: { data: GeographyData; mode: GameMode; date: string; seed: string; onReplay: () => void }) {
   const { state } = useAppData()
   const puzzle = useMemo(() => generateRoutePuzzle(data.countries, `${seed}:route`), [data.countries, seed])
   const adjacency = useMemo(() => buildAdjacency(data.countries), [data.countries])
@@ -99,7 +106,7 @@ export function BorderRouteGame({ data, mode, date, seed }: { data: GeographyDat
           {hintShown && <div className="route-hint" role="status"><Lightbulb size={15} /><span>A shortest route is <strong>{puzzle.shortest.map((code) => data.countriesByCode.get(code)?.name ?? code).join(' → ')}</strong></span></div>}
         </div>
       </div>
-      {finished && <div className="result-panel route-result"><span className="eyebrow">Route complete</span><h2>{route.length === puzzle.shortest.length ? 'The shortest way through.' : 'A valid route across the map.'}</h2><p>{routeNames.join(' → ')}</p><div className="result-score">{finalScore.toLocaleString()}<small>points</small></div><div className="result-actions"><a className="button button-dark" href="/statistics">See statistics</a><a className="button button-outline" href="/games/routes?mode=practice"><Check size={15} /> Build another route</a></div>{saveError && <div className="form-message form-message-error" role="alert">{saveError}</div>}</div>}
+      <GameResultsDialog complete={finished} gameId="routes" mode={mode} score={finalScore} correct={finished ? 1 : 0} total={1} title={route.length === puzzle.shortest.length ? 'The shortest way through.' : 'A valid route across the map.'} message={routeNames.join(' → ')} saveError={saveError} onReplay={mode === 'practice' ? onReplay : undefined} replayLabel="Build another route" />
     </div>
   )
 }

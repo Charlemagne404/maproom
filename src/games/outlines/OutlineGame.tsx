@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Check, CircleHelp } from 'lucide-react'
 import { AutocompleteInput, type Suggestion } from '../../components/AutocompleteInput'
+import { GameResultsDialog } from '../../components/GameResults'
+import { GameSettingsMenu } from '../../components/GameControls'
 import { GeoMap } from '../../components/GeoMap'
 import { InlineNotice } from '../../components/Kit'
 import type { Country, GeographyData, GameMode } from '../../geography/types'
@@ -80,8 +82,10 @@ function OutlineRound({ data, target, mode, date, seed, onNext, scope, choices, 
 
   return (
     <div className="game-body outline-game-body">
-      {mode === 'practice' && <div className="practice-config"><label><span>Practice scope</span><select value={scope} onChange={(event) => onScopeChange(event.target.value)}>{choices.map((item) => <option key={item}>{item}</option>)}</select></label><span className="practice-config-note">Each outline gives six guesses.</span></div>}
-      <div className="outline-prompt"><div><span className="eyebrow">Six guesses</span><h2>Which country is this?</h2><p>Look at the borders, not the fill. The silhouette is drawn from map data.</p></div><div className="attempt-meter" aria-label={`${attempts.length} of 6 guesses used`}>{Array.from({ length: 6 }, (_, index) => <span key={index} className={index < attempts.length ? (solved && index === attempts.length - 1 ? 'is-right' : 'is-used') : ''} />)}</div></div>
+      <div className="outline-prompt"><div><span className="eyebrow">Six guesses</span><h2>Which country is this?</h2><p>Look at the borders, not the fill. The silhouette is drawn from map data.</p></div><div className="outline-prompt-tools">
+        {mode === 'practice' && <GameSettingsMenu><div className="practice-config"><label><span>Practice scope</span><select value={scope} onChange={(event) => onScopeChange(event.target.value)}>{choices.map((item) => <option key={item}>{item}</option>)}</select></label><span className="practice-config-note">Six guesses per outline.</span></div></GameSettingsMenu>}
+        <div className="attempt-meter" aria-label={`${attempts.length} of 6 guesses used`}>{Array.from({ length: 6 }, (_, index) => <span key={index} className={index < attempts.length ? (solved && index === attempts.length - 1 ? 'is-right' : 'is-used') : ''} />)}</div>
+      </div></div>
       <div className="outline-map-stage"><GeoMap features={features} ariaLabel="Unlabelled country silhouette" showHoverLabels={false} /></div>
       {!finished && <AutocompleteInput
         id="outline-answer"
@@ -95,9 +99,9 @@ function OutlineRound({ data, target, mode, date, seed, onNext, scope, choices, 
         submitLabel="Guess"
       />}
       {message && <div className={`answer-feedback${solved ? ' is-correct' : finished ? ' is-incorrect' : ''}`} role="status"><span className="feedback-icon">{solved ? <Check size={17} /> : <CircleHelp size={16} />}</span><span>{message}</span></div>}
-      {finished && <div className="result-panel outline-result"><span className="eyebrow">{solved ? 'Outline solved' : 'Answer revealed'}</span><h2>{target.name}</h2><p>{attempts.length} of 6 guesses used</p><div className="result-score">{score.toLocaleString()}<small>points</small></div><div className="result-actions">{mode === 'daily' ? <a className="button button-dark" href="/games/outlines?mode=practice">Try another outline</a> : <button className="button button-dark" type="button" onClick={onNext}>Try another outline</button>}<a className="button button-outline" href="/statistics">See statistics</a></div>{saveError && <div className="form-message form-message-error" role="alert">{saveError}</div>}</div>}
       {attempts.length > 0 && !finished && <div className="guess-list" aria-label="Previous guesses">{attempts.map((code) => <span key={code}>{data.countriesByCode.get(code)?.name}</span>)}</div>}
       {mode === 'daily' && <p className="map-source-note">Daily country silhouette · {date}</p>}
+      <GameResultsDialog complete={finished} gameId="outlines" mode={mode} score={score} correct={solved ? 1 : 0} total={1} title={solved ? 'Outline solved.' : `The answer was ${target.name}.`} message={`${attempts.length} of 6 guesses used.`} saveError={saveError} onReplay={mode === 'practice' ? onNext : undefined} replayLabel="Next outline" />
     </div>
   )
 }

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Check, CircleHelp, Grid3X3, Plus } from 'lucide-react'
 import { AutocompleteInput, type Suggestion } from '../../components/AutocompleteInput'
+import { GameResultsDialog } from '../../components/GameResults'
+import { GameSettingsMenu } from '../../components/GameControls'
 import { InlineNotice } from '../../components/Kit'
 import type { GeographyData, GameMode, Country } from '../../geography/types'
 import { gridAnswerScore, gridCandidates, seededShuffle, validGridPresets, type GridPreset } from '../../puzzles/engine'
@@ -10,12 +12,14 @@ export function GeographyGridGame({ data, mode, date, seed }: { data: GeographyD
   const presets = useMemo(() => validGridPresets(data.countries), [data.countries])
   const daily = seededShuffle(presets, `${seed}:preset`)[0]
   const [presetId, setPresetId] = useState(daily?.id ?? presets[0]?.id ?? '')
+  const [round, setRound] = useState(0)
   if (!presets.length) return <InlineNotice title="A validated grid is unavailable" tone="warning">The current country facts do not fill every square for these grid sets.</InlineNotice>
   const preset = presets.find((item) => item.id === presetId) ?? daily ?? presets[0]
-  return <GridRound key={`${preset.id}:${mode === 'daily' ? seed : preset.id}`} data={data} mode={mode} date={date} seed={`${seed}:${preset.id}`} preset={preset} presets={presets} onPreset={setPresetId} />
+  const roundSeed = mode === 'daily' ? `${seed}:${preset.id}` : `${seed}:${preset.id}:${round}`
+  return <GridRound key={`${preset.id}:${roundSeed}`} data={data} mode={mode} date={date} seed={roundSeed} preset={preset} presets={presets} onPreset={setPresetId} onReplay={() => setRound((value) => value + 1)} />
 }
 
-function GridRound({ data, mode, date, seed, preset, presets, onPreset }: {
+function GridRound({ data, mode, date, seed, preset, presets, onPreset, onReplay }: {
   data: GeographyData
   mode: GameMode
   date: string
@@ -23,6 +27,7 @@ function GridRound({ data, mode, date, seed, preset, presets, onPreset }: {
   preset: GridPreset
   presets: GridPreset[]
   onPreset: (id: string) => void
+  onReplay: () => void
 }) {
   const [answers, setAnswers] = useState<Record<string, Country>>({})
   const [inputs, setInputs] = useState<Record<string, string>>({})
@@ -78,8 +83,16 @@ function GridRound({ data, mode, date, seed, preset, presets, onPreset }: {
 
   return (
     <div className="game-body grid-game-body">
-      {mode === 'practice' && <div className="practice-config"><label><span>Grid set</span><select value={preset.id} onChange={(event) => onPreset(event.target.value)}>{presets.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label><span className="practice-config-note">Answers can fit more than one square, but each country can be used once.</span></div>}
-      <div className="question-toolbar"><div><span className="eyebrow">{mode === 'daily' ? 'Today’s 3 × 3' : 'A fresh set of crossings'}</span><h2>{preset.title}</h2><p>Find one country for every row-and-column crossing.</p></div><div className="question-count"><strong>{filled}</strong><span>of 9</span></div></div>
+      <div className="question-toolbar">
+        <div><span className="eyebrow">{mode === 'daily' ? 'Today’s 3 × 3' : 'A fresh set of crossings'}</span><h2>{preset.title}</h2><p>Find one country for every row-and-column crossing.</p></div>
+        <div className="question-toolbar-tools">
+          {mode === 'practice' && <GameSettingsMenu><div className="practice-config">
+            <label><span>Grid set</span><select value={preset.id} onChange={(event) => onPreset(event.target.value)}>{presets.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
+            <span className="practice-config-note">Each country can be used once.</span>
+          </div></GameSettingsMenu>}
+          <div className="question-count"><strong>{filled}</strong><span>of 9</span></div>
+        </div>
+      </div>
       <div className="geo-grid" role="grid" aria-label="Geography category intersection grid">
         <div className="grid-corner" role="columnheader"><Grid3X3 size={17} aria-hidden="true" /><span>Find the match</span></div>
         {preset.columns.map((column, columnIndex) => <div className={`grid-column-label${activeColumn === columnIndex ? ' is-active' : ''}`} role="columnheader" key={column.id}>{column.label}</div>)}
@@ -119,7 +132,7 @@ function GridRound({ data, mode, date, seed, preset, presets, onPreset }: {
         </div>
       })()}
       <div className="grid-scoring-note"><CircleHelp size={15} /><span>Less common answers are worth more. Current points: <strong>{score.toLocaleString()}</strong></span></div>
-      {finished && <div className="result-panel"><span className="eyebrow">Grid complete</span><h2>Every crossing has a place.</h2><p>9 of 9 squares filled with distinct countries.</p><div className="result-score">{score.toLocaleString()}<small>points</small></div><div className="result-actions"><a className="button button-dark" href="/statistics">See statistics</a>{mode === 'daily' ? <a className="button button-outline" href="/games/grid?mode=practice">Try another grid</a> : <a className="button button-outline" href="/explore">Explore the library</a>}</div>{saveError && <div className="form-message form-message-error" role="alert">{saveError}</div>}</div>}
+      <GameResultsDialog complete={finished} gameId="grid" mode={mode} score={score} correct={filled} total={9} title="Every crossing has a place." message="All nine squares filled with distinct countries." saveError={saveError} onReplay={mode === 'practice' ? onReplay : undefined} />
     </div>
   )
 }
