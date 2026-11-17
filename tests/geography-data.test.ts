@@ -2,8 +2,10 @@ import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { geoArea } from 'd3-geo'
 import { feature } from 'topojson-client'
 import type { Topology } from 'topojson-specification'
+import { normalizeRegionFeature } from '../src/geography/data'
 import type { City, Country, GeoFeature } from '../src/geography/types'
 import { generateRoutePuzzle, gridCandidates, validGridPresets, buildAdjacency, normalizeAnswer } from '../src/puzzles/engine'
 
@@ -146,6 +148,9 @@ describe('bundled geography data', () => {
             || latitude < -90.01 || latitude > 90.01) coordinatesAreValid = false
         }
         expect(coordinatesAreValid, `Region ${id} coordinates are in range`).toBe(true)
+        const drawable = normalizeRegionFeature(item)
+        expect(drawable.properties?.name).not.toMatch(/[ÃÂ�]/u)
+        expect(geoArea(drawable), `${entry.iso3} ${id} has a regional outline, not a globe-sized complement`).toBeLessThan(Math.PI * 2)
       }
       expect(packageMetadata.get(entry.iso3)).toMatchObject({ sha256: entry.artifactSha256, bytes: entry.artifactBytes })
     }
