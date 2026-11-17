@@ -11,6 +11,8 @@ Standard contains exactly 195 catalogue records:
 
 The game uses the catalogue's ISO3 codes to map this rule onto its data. The inclusion list is explicit in [`src/geography/eligibility.ts`](../src/geography/eligibility.ts), so a future data refresh cannot silently redefine Standard through an `independent` flag or boundary vendor classification. The [United Nations lists its 193 Member States](https://www.un.org/about-us/member-states) and identifies the [Holy See and State of Palestine as non-member Observer States](https://research.un.org/en/unmembers/observers).
 
+The UN observer is the Holy See, while the geographic catalogue labels its corresponding map record `VAT` / Vatican City. Standard uses that `VAT` record as the catalogue mapping for the Holy See observer entry; it does not treat the two names as interchangeable in every legal or political context.
+
 Kosovo (XKX) and other places not covered by those two UN categories are not in Standard. This is a consistent game-pool rule, not an assertion about sovereignty or recognition.
 
 ## Extended
