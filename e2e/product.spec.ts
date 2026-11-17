@@ -1,5 +1,8 @@
 import { mkdirSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
+import type { Country, GeoFeature } from '../src/geography/types'
+import { buildOutlineCandidateGroups, EMPTY_OUTLINE_PROGRESS, outlineQuestionAt } from '../src/games/outlines/questionPool'
+import { flagCountryPool } from '../src/games/flags/questionPool'
 
 test.beforeAll(() => mkdirSync('artifacts/qa/product-consistency', { recursive: true }))
 
@@ -117,12 +120,17 @@ async function waitForDailySession(page: Page, gameId: string) {
   }, gameId)
 }
 
-async function displayedFlagCountry(page: Page): Promise<string> {
+async function displayedFlagCountry(page: Page, region = 'All regions'): Promise<string> {
   const iconClass = await page.locator('.flag-display [role="img"]').getAttribute('class')
   const flagCode = iconClass?.split(/\s+/).find((name) => name.startsWith('fi-') && name !== 'fi')?.slice(3)
   expect(flagCode, 'flag icon should expose its bundled flag code to the test').toBeTruthy()
-  const country = (await countryData(page)).find((item) => item.flagCode === flagCode)
-  expect(country, `country with flag code ${flagCode}`).toBeDefined()
+  const countries = await countryData(page)
+  const visibleChoiceNames = new Set(await page.locator('.flag-choice-name').allTextContents())
+  const candidates = visibleChoiceNames.size
+    ? countries.filter((item) => item.flagCode === flagCode && visibleChoiceNames.has(item.name))
+    : flagCountryPool(countries as unknown as Country[], region, 'standard').filter((item) => item.flagCode === flagCode)
+  const country = candidates.find((item) => item.independent) ?? candidates[0]
+  expect(country, `eligible country with flag code ${flagCode}`).toBeDefined()
   return country!.name
 }
 
@@ -746,8 +754,62 @@ test('map controls and favorites remain touch-sized on mobile', async ({ browser
 })
 
 test('country outlines reveal the answer after six valid guesses and save the result', async ({ page }) => {
-  await openGame(page, 'outlines')
-  const guesses = ['Afghanistan', 'Brazil', 'Canada', 'France', 'Japan', 'Kenya']
+  const seed = 'product-outline-valid-six'
+  await page.goto('/settings')
+  const date = await page.evaluate(() => {
+    const parts = new Intl.DateTimeFormat('en', {
+      timeZone: 'Europe/Stockholm', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).formatToParts(new Date())
+    const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? '00'
+    return `${part('year')}-${part('month')}-${part('day')}`
+  })
+  await page.evaluate(({ dateValue, seedValue }) => {
+    const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<Record<string, unknown>>
+    const kept = sessions.filter((item) => !(item.gameId === 'outlines' && item.mode === 'freeplay'))
+    kept.push({
+      id: `outlines:${dateValue}:browser:${seedValue}`,
+      gameId: 'outlines',
+      mode: 'freeplay',
+      puzzleId: `outlines:practice:${seedValue}`,
+      seed: seedValue,
+      date: dateValue,
+      startedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      version: 1,
+      payload: {},
+    })
+    localStorage.setItem('maproom-sessions-v1', JSON.stringify(kept))
+  }, { dateValue: date, seedValue: seed })
+
+  await page.goto('/games/outlines?mode=freeplay')
+  await expect(page.getByRole('button', { name: 'Start Free play' })).toBeVisible()
+  const config = page.locator('.practice-config select')
+  await config.nth(0).selectOption('standard')
+  await config.nth(1).selectOption('World')
+  await config.nth(2).selectOption('medium')
+  await page.getByRole('button', { name: 'Start Free play' }).click()
+  await expect(page.locator('.game-body')).toBeVisible()
+
+  const countriesResponse = await page.request.get(new URL('/data/countries.json', page.url()).toString())
+  const outlinesResponse = await page.request.get(new URL('/data/countries-outline.geojson', page.url()).toString())
+  expect(countriesResponse.ok()).toBe(true)
+  expect(outlinesResponse.ok()).toBe(true)
+  const countries = (await countriesResponse.json()).countries as Country[]
+  const features = (await outlinesResponse.json()).features as GeoFeature[]
+  const featuresByCode = new Map<string, GeoFeature[]>()
+  for (const feature of features) {
+    const code = feature.properties.iso3
+    if (!code) continue
+    const list = featuresByCode.get(code) ?? []
+    list.push(feature)
+    featuresByCode.set(code, list)
+  }
+  const groups = buildOutlineCandidateGroups(countries, featuresByCode, { pool: 'standard', difficulty: 'medium', scope: 'World' })
+  const question = outlineQuestionAt(groups, `${seed}:country:standard:World:medium`, EMPTY_OUTLINE_PROGRESS)
+  expect(question).not.toBeNull()
+  const guesses = groups.standard.filter((candidate) => candidate.code !== question?.code).slice(0, 6).map((candidate) => candidate.country.name)
+  expect(guesses).toHaveLength(6)
+
   for (const guess of guesses) {
     if (await page.locator('.game-results-dialog').isVisible().catch(() => false)) break
     const input = page.locator('#outline-answer')
@@ -1035,9 +1097,9 @@ test('flag free play settings cover regions, answer style and progressive reveal
   await expect(page.getByLabel('Reveal after wrong guesses')).toBeChecked()
   await page.keyboard.press('Escape')
 
-  const typedAnswer = await displayedFlagCountry(page)
+  const typedAnswer = await displayedFlagCountry(page, 'Europe')
   const countries = await countryData(page)
-  const wrongCountry = countries.find((country) => country.continent === 'Europe' && (country.independent || country.iso3 === 'PSE') && country.name !== typedAnswer)?.name
+  const wrongCountry = flagCountryPool(countries as unknown as Country[], 'Europe', 'standard').find((country) => country.name !== typedAnswer)?.name
   expect(wrongCountry).toBeTruthy()
   const input = page.getByLabel('Country name for the flag')
   await input.fill(wrongCountry!)

@@ -3,7 +3,8 @@
 Geometry refreshed 2026-11-17 from the bundled Natural Earth sources.
 
 - 255 country, territory and other geographic identity records; Standard remains fixed at 195.
-- 255 playable identity geometries across 260 world-map features and 271 detailed outline features.
+- 243 identities enter ordinary Extended country pools; 12 special geographic records stay catalogued but are withheld from ordinary questions.
+- 255 identity geometries across 260 world-map features and 271 detailed outline features. The outline layer has all 255 catalogue codes and 11 additional Natural Earth records without an ISO3 identity; those 11 records are audited but never enter country question pools. Outline eligibility is separately curated by difficulty; see [GEOGRAPHY_ELIGIBILITY.md](GEOGRAPHY_ELIGIBILITY.md).
 - 198 ADM1 country packages with 3,236 divisions.
 - 34,456 populated places in the city challenge dataset.
 
@@ -213,6 +214,7 @@ Geometry refreshed 2026-11-17 from the bundled Natural Earth sources.
 ## Limitations
 
 - World maps use Natural Earth 1:50m generalized geometry; Country Outlines use detailed 1:10m geometry. Tiny islands and disputed boundaries follow Natural Earth conventions.
+- The complete outline catalogue and no-code source features can be regenerated and reviewed in both themes with `npm run qa:outlines`. A more detailed ODbL San Marino boundary was evaluated, but its fitted silhouette remains generic; no geometry source replacement was adopted.
 - Explicit parent-territory relationships separate detached overseas components into their own Extended identities while domestic archipelagos remain grouped with their country. All catalog identities currently have map geometry.
 - ADM1 availability is per country and may vary by date, source, geographic scope, and license. Countries without a downloaded package are not offered in the subdivision map.
 - GeoNames cities500 includes populated places of 50,000 or more plus national and first-level seats with lower population; cities below that threshold are omitted.

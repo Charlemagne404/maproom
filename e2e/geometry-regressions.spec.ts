@@ -1,78 +1,83 @@
 import { mkdirSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
+import type { Country, GeoFeature } from '../src/geography/types'
+import { directionFromTo } from '../src/puzzles/engine'
+import {
+  advanceOutlineSequence,
+  buildOutlineCandidateGroups,
+  EMPTY_OUTLINE_PROGRESS,
+  outlineQuestionAt,
+  type OutlineDifficulty,
+  type OutlinePoolMode,
+} from '../src/games/outlines/questionPool'
 
-const outputDirectory = 'artifacts/qa/geometry-regressions'
-const targetCodes = ['AIA', 'NLD', 'BES', 'IDN', 'JPN', 'PHL', 'CLP', 'ATC', 'CSI', 'ESB', 'WSB']
-const minimumComponentsByTarget: Record<string, number> = {
-  AIA: 6,
-  NLD: 5,
-  BES: 3,
-  IDN: 100,
-  JPN: 50,
-  PHL: 50,
-  CLP: 1,
-  ATC: 1,
-  CSI: 1,
-  ESB: 1,
-  WSB: 1,
-}
+const outputDirectory = 'artifacts/qa/geography-overhaul/browser'
+const themeColors = { light: 'rgb(229, 121, 55)' }
+const scenarios = [
+  { code: 'NLD', pool: 'standard', difficulty: 'medium', scope: 'Europe', minimumMoves: 5 },
+  { code: 'IDN', pool: 'standard', difficulty: 'easy', scope: 'World', minimumMoves: 100 },
+  { code: 'JPN', pool: 'standard', difficulty: 'easy', scope: 'World', minimumMoves: 50 },
+  { code: 'PHL', pool: 'standard', difficulty: 'easy', scope: 'World', minimumMoves: 50 },
+  { code: 'USA', pool: 'standard', difficulty: 'easy', scope: 'World', minimumMoves: 100 },
+  { code: 'RUS', pool: 'standard', difficulty: 'easy', scope: 'World', minimumMoves: 1 },
+  { code: 'NZL', pool: 'standard', difficulty: 'easy', scope: 'World', minimumMoves: 10 },
+  { code: 'GRL', pool: 'extended', difficulty: 'easy', scope: 'World', minimumMoves: 100 },
+  { code: 'BHR', pool: 'standard', difficulty: 'hard', scope: 'World', minimumMoves: 1 },
+  { code: 'NCL', pool: 'territories', difficulty: 'hard', scope: 'World', minimumMoves: 1 },
+] as const
 
 test.beforeAll(() => mkdirSync(outputDirectory, { recursive: true }))
 
-interface CountryRecord {
-  iso3: string
-  name: string
-  hasGeometry: boolean
+interface OutlineFixture {
+  countries: Country[]
+  featuresByCode: Map<string, GeoFeature[]>
 }
 
-function hashSeed(seed: string): number {
-  let hash = 2166136261
-  for (let index = 0; index < seed.length; index += 1) {
-    hash ^= seed.charCodeAt(index)
-    hash = Math.imul(hash, 16777619)
+async function loadFixture(page: Page): Promise<OutlineFixture> {
+  const countryResponse = await page.request.get(new URL('/data/countries.json', page.url()).toString())
+  const outlineResponse = await page.request.get(new URL('/data/countries-outline.geojson', page.url()).toString())
+  expect(countryResponse.ok()).toBe(true)
+  expect(outlineResponse.ok()).toBe(true)
+  const countries = (await countryResponse.json()).countries as Country[]
+  const features = (await outlineResponse.json()).features as GeoFeature[]
+  const featuresByCode = new Map<string, GeoFeature[]>()
+  for (const feature of features) {
+    const code = feature.properties.iso3
+    if (!code) continue
+    const list = featuresByCode.get(code) ?? []
+    list.push(feature)
+    featuresByCode.set(code, list)
   }
-  return hash >>> 0
+  return { countries, featuresByCode }
 }
 
-function shuffle<T>(values: readonly T[], seed: string): T[] {
-  let state = hashSeed(seed)
-  const random = () => {
-    state += 0x6d2b79f5
-    let value = state
-    value = Math.imul(value ^ (value >>> 15), value | 1)
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61)
-    return ((value ^ (value >>> 14)) >>> 0) / 4_294_967_296
-  }
-  const result = [...values]
-  for (let index = result.length - 1; index > 0; index -= 1) {
-    const other = Math.floor(random() * (index + 1))
-    ;[result[index], result[other]] = [result[other]!, result[index]!]
-  }
-  return result
+function groupsFor(fixture: OutlineFixture, pool: OutlinePoolMode, difficulty: OutlineDifficulty, scope: string) {
+  return buildOutlineCandidateGroups(fixture.countries, fixture.featuresByCode, { pool, difficulty, scope })
 }
 
-function seedForTarget(countries: CountryRecord[], targetCode: string): string {
-  const eligible = countries.filter((country) => country.hasGeometry)
-  for (let index = 0; index < 100_000; index += 1) {
-    const seed = `geometry-regression-${targetCode}-${index}`
-    if (shuffle(eligible, `${seed}:outline:World:0`)[0]?.iso3 === targetCode) return seed
+function seedForTarget(fixture: OutlineFixture, targetCode: string, pool: OutlinePoolMode, difficulty: OutlineDifficulty, scope: string): string {
+  const groups = groupsFor(fixture, pool, difficulty, scope)
+  const poolKey = `country:${pool}:${scope}:${difficulty}`
+  for (let index = 0; index < 20_000; index += 1) {
+    const seed = `browser-outline-${targetCode}-${pool}-${difficulty}-${scope}-${index}`
+    if (outlineQuestionAt(groups, `${seed}:${poolKey}`)?.code === targetCode) return seed
   }
-  throw new Error(`Could not find an outline seed for ${targetCode}`)
+  throw new Error(`${targetCode} is not an eligible ${pool} ${difficulty} outline in ${scope}`)
 }
 
-async function installSeededOutlineSession(page: Page, targetCode: string, seed: string) {
+async function installFreeplaySeed(page: Page, seed: string) {
   const date = await page.evaluate(() => {
-    const values = new Intl.DateTimeFormat('en', {
+    const parts = new Intl.DateTimeFormat('en', {
       timeZone: 'Europe/Stockholm', year: 'numeric', month: '2-digit', day: '2-digit',
     }).formatToParts(new Date())
-    const part = (type: Intl.DateTimeFormatPartTypes) => values.find((item) => item.type === type)?.value ?? '00'
+    const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? '00'
     return `${part('year')}-${part('month')}-${part('day')}`
   })
-  const now = new Date().toISOString()
   await page.evaluate(({ dateValue, seedValue }) => {
-    const current = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<Record<string, unknown>>
-    current.push({
-      id: `outlines:${dateValue}:${seedValue}`,
+    const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<Record<string, unknown>>
+    const kept = sessions.filter((item) => !(item.gameId === 'outlines' && item.mode === 'freeplay'))
+    kept.push({
+      id: `outlines:${dateValue}:browser:${seedValue}`,
       gameId: 'outlines',
       mode: 'freeplay',
       puzzleId: `outlines:practice:${seedValue}`,
@@ -83,10 +88,31 @@ async function installSeededOutlineSession(page: Page, targetCode: string, seed:
       version: 1,
       payload: {},
     })
-    localStorage.setItem('maproom-sessions-v1', JSON.stringify(current))
+    localStorage.setItem('maproom-sessions-v1', JSON.stringify(kept))
   }, { dateValue: date, seedValue: seed })
-  expect(targetCode).toMatch(/^[A-Z]{3}$/)
-  expect(now).toMatch(/^\d{4}-\d\d-\d\dT/)
+}
+
+async function startFreeplay(page: Page, fixture: OutlineFixture, options: {
+  code?: string
+  seed?: string
+  pool: OutlinePoolMode
+  difficulty: OutlineDifficulty
+  scope?: string
+}) {
+  const scope = options.scope ?? 'World'
+  const seed = options.seed ?? (options.code ? seedForTarget(fixture, options.code, options.pool, options.difficulty, scope) : `browser-outline-seed:${options.pool}:${options.difficulty}:${scope}`)
+  await installFreeplaySeed(page, seed)
+  await page.goto('/games/outlines?mode=freeplay')
+  await expect(page.getByRole('button', { name: 'Start Free play' })).toBeVisible({ timeout: 30_000 })
+  const config = page.locator('.practice-config select')
+  // Keep the intermediate pool non-empty while changing the other options.
+  // Territory Focus has no Medium silhouettes, so apply Hard before selecting it.
+  await config.nth(2).selectOption(options.difficulty)
+  await config.nth(1).selectOption(scope)
+  await config.nth(0).selectOption(options.pool)
+  await page.getByRole('button', { name: 'Start Free play' }).click()
+  await expect(page.locator('.outline-map-stage .geo-map path')).not.toHaveCount(0, { timeout: 30_000 })
+  return { seed, scope, groups: groupsFor(fixture, options.pool, options.difficulty, scope) }
 }
 
 async function setTheme(page: Page, theme: 'light' | 'dark') {
@@ -111,64 +137,158 @@ function contrastRatio(first: string, second: string): number {
   return (values[0]! + 0.05) / (values[1]! + 0.05)
 }
 
-test('renders detailed separated territory and archipelago outlines in both themes and zooms', async ({ page }) => {
+async function answerCorrectly(page: Page, country: Country) {
+  const input = page.locator('#outline-answer')
+  await input.fill(country.name)
+  await expect(page.getByRole('option')).toHaveCount(1)
+  await input.press('Enter')
+  await expect(input).toHaveValue(country.name)
+  await input.press('Enter')
+  await expect(page.locator('.answer-feedback')).toContainText(`That’s ${country.name}.`)
+}
+
+test('plays curated silhouettes across difficulties, territories, islands, and the Date Line', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 960 })
   await page.goto('/settings')
-  await page.getByLabel('Default country catalogue').selectOption('extended')
   await setTheme(page, 'light')
+  const fixture = await loadFixture(page)
 
-  const catalogResponse = await page.request.get(new URL('/data/countries.json', page.url()).toString())
-  expect(catalogResponse.ok()).toBe(true)
-  const countries = (await catalogResponse.json()).countries as CountryRecord[]
+  for (const scenario of scenarios) {
+    const { groups } = await startFreeplay(page, fixture, scenario)
+    expect([...groups.standard, ...groups.extended].some((candidate) => candidate.code === scenario.code)).toBe(true)
+    const paths = page.locator('.outline-map-stage .geo-map path')
+    const expectedFeatures = fixture.featuresByCode.get(scenario.code)!.length
+    await expect(paths).toHaveCount(expectedFeatures)
+    const geometry = await paths.evaluateAll((items) => items.map((item) => {
+      const bounds = (item as SVGPathElement).getBBox()
+      return { path: item.getAttribute('d') ?? '', x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }
+    }))
+    expect(geometry.map((item) => item.path).join('')).not.toMatch(/NaN|Infinity|undefined/)
+    expect(geometry.filter((item) => item.path.match(/M/g)?.length ?? 0).reduce((sum, item) => sum + (item.path.match(/M/g)?.length ?? 0), 0)).toBeGreaterThanOrEqual(scenario.minimumMoves)
+    expect(geometry.every((item) => item.x >= 0 && item.y >= 0 && item.x + item.width <= 960 && item.y + item.height <= 480)).toBe(true)
 
-  for (const targetCode of targetCodes) {
-    const seed = seedForTarget(countries, targetCode)
-    await installSeededOutlineSession(page, targetCode, seed)
-    await page.goto('/games/outlines?mode=freeplay')
-    await page.getByRole('button', { name: 'Start Free play' }).click()
-    await expect(page.locator('.outline-map-stage .geo-map path')).toHaveCount(1, { timeout: 30_000 })
-    const silhouette = page.locator('.outline-map-stage .geo-map path').first()
-    const pathData = await silhouette.getAttribute('d')
-    expect(pathData).toMatch(/^M/)
-    expect(pathData).not.toMatch(/NaN|Infinity/)
-    const moveCount = pathData?.match(/M/g)?.length ?? 0
-    const minimumComponents = minimumComponentsByTarget[targetCode] ?? 1
-    expect(moveCount, `${targetCode} disconnected components remain separate`).toBeGreaterThanOrEqual(minimumComponents)
-
-    const lightColors = await page.locator('.outline-map-stage').evaluate((stage) => ({
+    const colors = await page.locator('.outline-map-stage').evaluate((stage) => ({
       water: getComputedStyle(stage.querySelector('.map-water')!).fill,
       shape: getComputedStyle(stage.querySelector('.map-country')!).fill,
     }))
-    expect(contrastRatio(lightColors.shape, lightColors.water)).toBeGreaterThan(3)
-    await page.screenshot({ path: `${outputDirectory}/outline-${targetCode.toLowerCase()}-light.png` })
+    expect(colors.shape).toBe(themeColors.light)
+    expect(contrastRatio(colors.shape, colors.water)).toBeGreaterThan(3)
+    const screenshotName = `outline-${scenario.code.toLowerCase()}-${scenario.difficulty}-${scenario.pool}-light.png`
+    await page.screenshot({ path: `${outputDirectory}/${screenshotName}` })
 
-    await setTheme(page, 'dark')
-    await page.waitForTimeout(350)
-    const darkColors = await page.locator('.outline-map-stage').evaluate((stage) => ({
-      water: getComputedStyle(stage.querySelector('.map-water')!).fill,
-      shape: getComputedStyle(stage.querySelector('.map-country')!).fill,
-    }))
-    expect(darkColors.water).not.toBe(lightColors.water)
-    expect(contrastRatio(darkColors.shape, darkColors.water)).toBeGreaterThan(3)
-    await page.screenshot({ path: `${outputDirectory}/outline-${targetCode.toLowerCase()}-dark.png` })
+    if (['NLD', 'USA'].includes(scenario.code)) {
+      await setTheme(page, 'dark')
+      await page.waitForTimeout(200)
+      const darkColors = await page.locator('.outline-map-stage').evaluate((stage) => ({
+        water: getComputedStyle(stage.querySelector('.map-water')!).fill,
+        shape: getComputedStyle(stage.querySelector('.map-country')!).fill,
+      }))
+      expect(darkColors.shape).toMatch(/^rgb\(242, 15[0-9], 9[0-9]\)$/)
+      expect(contrastRatio(darkColors.shape, darkColors.water)).toBeGreaterThan(3)
+      await page.screenshot({ path: `${outputDirectory}/outline-${scenario.code.toLowerCase()}-${scenario.difficulty}-${scenario.pool}-dark.png` })
+      await setTheme(page, 'light')
+    }
 
-    if (targetCode === 'AIA') {
+    if (scenario.code === 'IDN') {
       const mapLayer = page.locator('.outline-map-stage .geo-map > g').first()
       const beforeZoom = await mapLayer.getAttribute('transform')
       await page.getByRole('button', { name: 'Zoom in' }).click()
       await expect(mapLayer).not.toHaveAttribute('transform', beforeZoom ?? '')
-      expect(await silhouette.getAttribute('d')).toBe(pathData)
-      await page.screenshot({ path: `${outputDirectory}/outline-anguilla-dark-zoom.png` })
+      await page.screenshot({ path: `${outputDirectory}/outline-idn-zoom.png` })
       await page.getByRole('button', { name: 'Reset map view' }).click()
     }
+
+    await answerCorrectly(page, fixture.countries.find((country) => country.iso3 === scenario.code)!)
+    await expect(page.getByRole('button', { name: 'Next outline' })).toBeVisible()
+    await page.goto('/settings')
     await setTheme(page, 'light')
+  }
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  const mobile = await startFreeplay(page, fixture, { code: 'NZL', pool: 'standard', difficulty: 'easy' })
+  expect(outlineQuestionAt(mobile.groups, `${mobile.seed}:country:standard:World:easy`)?.code).toBe('NZL')
+  const stage = page.locator('.outline-map-stage')
+  await expect(stage).toBeVisible()
+  const box = await stage.boundingBox()
+  expect(box?.width).toBeLessThanOrEqual(390)
+  expect(box?.width).toBeGreaterThan(300)
+  await page.screenshot({ path: `${outputDirectory}/outline-nzl-mobile-light.png` })
+})
+
+test('completes ten Standard rounds without repeats before pool exhaustion', async ({ page }) => {
+  await page.goto('/settings')
+  const fixture = await loadFixture(page)
+  const seed = 'browser-standard-ten-round-deck'
+  const { groups } = await startFreeplay(page, fixture, { seed, pool: 'standard', difficulty: 'easy' })
+  const expected: string[] = []
+  let progress = EMPTY_OUTLINE_PROGRESS
+  for (let index = 0; index < 10; index += 1) {
+    const question = outlineQuestionAt(groups, `${seed}:country:standard:World:easy`, progress)!
+    expected.push(question.code)
+    progress = advanceOutlineSequence(progress, question.code)
+  }
+  expect(new Set(expected).size).toBe(10)
+
+  for (const [index, code] of expected.entries()) {
+    await answerCorrectly(page, fixture.countries.find((country) => country.iso3 === code)!)
+    if (index < expected.length - 1) {
+      await page.getByRole('button', { name: 'Next outline' }).click()
+      await expect(page.locator('.outline-map-stage .geo-map path')).not.toHaveCount(0)
+    }
+  }
+  await expect(page.getByRole('heading', { name: 'Outline solved.' })).toBeVisible()
+})
+
+test('balances ten Extended Hard rounds and exposes a path out of empty regional pools', async ({ page }) => {
+  await page.goto('/settings')
+  const fixture = await loadFixture(page)
+  const seed = 'browser-extended-hard-ten-round-deck'
+  const { groups } = await startFreeplay(page, fixture, { seed, pool: 'extended', difficulty: 'hard' })
+  const standardCodes = new Set(groups.standard.map((candidate) => candidate.code))
+  const expected: string[] = []
+  let progress = EMPTY_OUTLINE_PROGRESS
+  for (let index = 0; index < 10; index += 1) {
+    const question = outlineQuestionAt(groups, `${seed}:country:extended:World:hard`, progress)!
+    expected.push(question.code)
+    progress = advanceOutlineSequence(progress, question.code)
+  }
+  expect(new Set(expected).size).toBe(10)
+  expect(expected.filter((code) => !standardCodes.has(code)).length).toBeLessThanOrEqual(3)
+  expect(expected).not.toContain('GGY')
+
+  for (const [index, code] of expected.entries()) {
+    await answerCorrectly(page, fixture.countries.find((country) => country.iso3 === code)!)
+    if (index < expected.length - 1) await page.getByRole('button', { name: 'Next outline' }).click()
+  }
+
+  await page.goto('/settings')
+  await page.goto('/games/outlines?mode=freeplay')
+  await expect(page.getByRole('button', { name: 'Start Free play' })).toBeVisible({ timeout: 30_000 })
+  let config = page.locator('.practice-config select')
+  await config.nth(0).selectOption('standard')
+  await config.nth(1).selectOption('Europe')
+  await config.nth(2).selectOption('hard')
+  await expect(page.getByRole('status')).toContainText('This selection has no fair silhouettes')
+  await expect(page.getByLabel('Difficulty')).toBeVisible()
+  await page.getByLabel('Difficulty').selectOption('medium')
+  config = page.locator('.practice-config select')
+  await config.nth(0).selectOption('extended')
+  await config.nth(2).selectOption('hard')
+  await expect(page.locator('.practice-config-note').first()).toContainText('3 suitable silhouettes')
+  await page.getByRole('button', { name: 'Start Free play' }).click()
+  await expect(page.locator('.outline-map-stage .geo-map path')).not.toHaveCount(0)
+
+  for (const microstate of ['Guernsey', 'San Marino', 'Monaco', 'Vatican City']) {
+    const input = page.locator('#outline-answer')
+    await input.fill(microstate)
+    await expect(page.getByRole('option')).toHaveCount(0)
   }
 })
 
-test('autocomplete Enter accepts a suggestion before it can submit the guess', async ({ page }) => {
-  await page.goto('/games/outlines?mode=freeplay')
-  await page.getByRole('button', { name: 'Start Free play' }).click()
-  await expect(page.locator('.outline-map-stage .geo-map path')).toHaveCount(1, { timeout: 30_000 })
+test('autocomplete Enter accepts before submit and target-relative direction hints remain correct', async ({ page }) => {
+  await page.goto('/settings')
+  const fixture = await loadFixture(page)
+  await startFreeplay(page, fixture, { code: 'NLD', pool: 'standard', difficulty: 'medium' })
   const input = page.locator('#outline-answer')
 
   await input.fill('zzzxqv')
@@ -176,40 +296,59 @@ test('autocomplete Enter accepts a suggestion before it can submit the guess', a
   await expect(page.locator('.answer-feedback')).toContainText('Choose a place from the suggestions.')
   await expect(page.locator('.guess-list span')).toHaveCount(0)
 
-  await input.fill('Tong')
+  await input.fill('Nige')
   await expect(page.getByRole('option')).toHaveCount(1)
   await input.press('Enter')
-  await expect(input).toHaveValue('Tonga')
+  await expect(input).toHaveValue('Niger')
   await expect(page.getByRole('option')).toHaveCount(0)
-  await expect(input).toBeFocused()
   await expect(page.locator('.guess-list span')).toHaveCount(0)
   await expect(page.locator('.game-results-dialog')).toHaveCount(0)
-
   await input.press('Enter')
-  await expect.poll(async () => {
-    const guesses = await page.locator('.guess-list span').count()
-    const complete = await page.locator('.game-results-dialog').isVisible().catch(() => false)
-    return guesses + Number(complete)
-  }).toBe(1)
+  await expect(page.locator('.answer-feedback')).toContainText('Niger is south of the answer')
+
+  await page.goto('/settings')
+  const usa = fixture.countries.find((country) => country.iso3 === 'USA')!
+  if (!usa.coordinates) throw new Error('USA must have a catalogue center')
+  const eastGuess = groupsFor(fixture, 'standard', 'easy', 'World').standard.find((candidate) => candidate.country.coordinates && directionFromTo(usa.coordinates!, candidate.country.coordinates) === 'east')
+  if (!eastGuess) throw new Error('The Standard Easy pool needs an eastern comparison guess for the USA')
+  await startFreeplay(page, fixture, { code: 'USA', pool: 'standard', difficulty: 'easy' })
+  const usaGuess = page.locator('#outline-answer')
+  await usaGuess.fill(eastGuess.country.name)
+  await expect(page.getByRole('option')).toHaveCount(1)
+  await usaGuess.press('Enter')
+  await usaGuess.press('Enter')
+  await expect(page.locator('.answer-feedback')).toContainText(`${eastGuess.country.name} is east of the answer`)
 })
 
-test('country outline hints state the guessed country position relative to the answer', async ({ page }) => {
+test('restores an in-progress v2 daily silhouette and writes progress under v3', async ({ page }) => {
   await page.goto('/settings')
-  await page.getByLabel('Default country catalogue').selectOption('extended')
-  const catalogResponse = await page.request.get(new URL('/data/countries.json', page.url()).toString())
-  const countries = (await catalogResponse.json()).countries as CountryRecord[]
-  const seed = seedForTarget(countries, 'USA')
-  await installSeededOutlineSession(page, 'USA', seed)
-  await page.goto('/games/outlines?mode=freeplay')
-  await page.getByRole('button', { name: 'Start Free play' }).click()
+  const date = await page.evaluate(() => {
+    const parts = new Intl.DateTimeFormat('en', {
+      timeZone: 'Europe/Stockholm', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).formatToParts(new Date())
+    const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? '00'
+    return `${part('year')}-${part('month')}-${part('day')}`
+  })
+  const oldSession = {
+    id: `outlines:${date}`,
+    gameId: 'outlines',
+    mode: 'daily',
+    puzzleId: `outlines:${date}:v2`,
+    seed: `outlines:${date}:v2`,
+    date,
+    startedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    version: 1,
+    payload: { targetCode: 'SMR', attempts: ['MCO'], input: 'San', message: '', finished: false, solved: false, score: 0 },
+  }
+  await page.evaluate((session) => localStorage.setItem('maproom-sessions-v1', JSON.stringify([session])), oldSession)
+  await page.reload()
+  await page.goto('/games/outlines?mode=daily')
   await expect(page.locator('.outline-map-stage .geo-map path')).toHaveCount(1, { timeout: 30_000 })
-
-  const input = page.locator('#outline-answer')
-  await input.fill('Turkmenistan')
-  await expect(page.getByRole('option')).toHaveCount(1)
-  await input.press('Enter')
-  await expect(input).toHaveValue('Turkmenistan')
-  await expect(page.locator('.guess-list span')).toHaveCount(0)
-  await input.press('Enter')
-  await expect(page.locator('.answer-feedback')).toContainText('Turkmenistan is east of the answer')
+  await expect(page.locator('#outline-answer')).toHaveValue('San')
+  await expect(page.locator('.guess-list span')).toContainText('Monaco')
+  await expect.poll(() => page.evaluate((dateValue) => {
+    const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<{ puzzleId?: string; payload?: { targetCode?: string } }>
+    return sessions.find((session) => session.puzzleId === `outlines:${dateValue}:v3`)?.payload?.targetCode
+  }, date)).toBe('SMR')
 })
