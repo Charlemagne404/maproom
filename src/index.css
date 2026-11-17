@@ -264,7 +264,7 @@ p { margin-bottom: 0; }
 .attempt-meter span.is-right { background: var(--accent); }
 .outline-map-stage { overflow: hidden; border: 1px solid var(--border); background: var(--water); }
 .outline-map-stage .geo-map { aspect-ratio: 2.1 / 1; }
-.outline-map-stage .map-country { fill: #cbc4b7; stroke: var(--paper); stroke-width: 1.4px; }
+.outline-map-stage .map-country { fill: var(--accent); stroke: var(--paper); stroke-width: 1.4px; }
 .outline-game-body > .answer-form { margin-top: 15px; }
 .guess-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
 .guess-list span { padding: 4px 8px; border: 1px solid var(--border); color: var(--muted); font-size: .68rem; }

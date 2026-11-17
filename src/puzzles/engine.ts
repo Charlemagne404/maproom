@@ -6,7 +6,7 @@ export const PUZZLE_VERSION = 2
 // intact while assigning the new, standard-country puzzle identities.
 const GAME_PUZZLE_VERSIONS: Partial<Record<GameId, number>> = {
   countries: 2,
-  outlines: 2,
+  outlines: 3,
   routes: 2,
   flags: 2,
   grid: 3,

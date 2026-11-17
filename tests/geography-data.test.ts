@@ -8,7 +8,7 @@ import type { Topology } from 'topojson-specification'
 import { normalizeRegionFeature } from '../src/geography/data'
 import type { City, Country, GeoFeature } from '../src/geography/types'
 import { generateRoutePuzzle, gridCandidates, validGridPresets, buildAdjacency, directionFromTo, normalizeAnswer } from '../src/puzzles/engine'
-import { eligibleCountries, eligibleFeatures, isStandardCountry, standardCountryCount } from '../src/geography/eligibility'
+import { classifyGeography, eligibleCountries, eligibleFeatures, isStandardCountry, standardCountryCount } from '../src/geography/eligibility'
 import { validatePolygonFeature } from '../scripts/data/country-geometry.mjs'
 import { territoryRelations, excludedParentRelations } from '../scripts/data/territory-relations.mjs'
 
@@ -147,6 +147,18 @@ describe('bundled geography data', () => {
         expect(byCode.get(code!)?.parentIso3, `${code} detached from its named parent`).toBe(feature.properties.separatedFrom)
       }
     }
+    for (const [iso3, relation] of Object.entries(territoryRelations)) {
+      const territory = byCode.get(iso3)
+      const ownFeatures = outlineCollection.features.filter((feature) => feature.properties.iso3 === iso3)
+      const parentFeatures = outlineCollection.features.filter((feature) => feature.properties.iso3 === relation.parentIso3)
+      expect(territory, `${iso3} has a catalogue identity`).toBeDefined()
+      expect(ownFeatures.length, `${iso3} has its own detailed geometry`).toBeGreaterThan(0)
+      expect(parentFeatures.length, `${relation.parentIso3} parent has detailed geometry`).toBeGreaterThan(0)
+      const representativePoints = [territory!.coordinates, ...(relation.anchors ?? []).map((anchor) => ({ lat: anchor.lat, lon: anchor.lon }))].filter((point) => point !== null)
+      for (const point of representativePoints) {
+        expect(parentFeatures.some((feature) => geoContains(feature as unknown as GeoJSON.Feature, [point!.lon, point!.lat])), `${iso3} representative geography is not duplicated in ${relation.parentIso3}`).toBe(false)
+      }
+    }
     const inCountry = (features: GeoFeature[], iso3: string, lat: number, lon: number) =>
       features.filter((item) => item.properties.iso3 === iso3)
         .some((item) => geoContains(item as unknown as GeoJSON.Feature, [lon, lat]))
@@ -195,22 +207,55 @@ describe('bundled geography data', () => {
     expect(bounds(outlineCollection.features, 'PHL')[3] - bounds(outlineCollection.features, 'PHL')[1]).toBeGreaterThan(15)
   })
 
-  it('keeps the standard 195-country set distinct from the complete Extended catalogue', () => {
+  it('keeps Standard, ordinary Extended, and special geographic catalogue records distinct', () => {
     expect(standardCountryCount()).toBe(195)
     const standard = eligibleCountries(catalog.countries, 'standard')
     const extended = eligibleCountries(catalog.countries, 'extended')
     const standardMap = eligibleFeatures(collection.features, 'standard')
     const extendedMap = eligibleFeatures(collection.features, 'extended')
     expect(standard).toHaveLength(195)
-    expect(extended).toHaveLength(catalog.countries.length)
+    expect(extended).toHaveLength(243)
+    expect(catalog.countries).toHaveLength(255)
     expect(standard.every((country) => isStandardCountry(country.iso3))).toBe(true)
     expect(standard.some((country) => country.parentIso3 !== null)).toBe(false)
-    for (const code of ['BES', 'ABW', 'CUW', 'SXM', 'CYM', 'BMU', 'GRL', 'CLP', 'ATC', 'CSI', 'WSB', 'ESB']) {
+    for (const code of ['BES', 'ABW', 'CUW', 'SXM', 'CYM', 'BMU', 'GRL']) {
       expect(standard.some((country) => country.iso3 === code)).toBe(false)
       expect(extended.some((country) => country.iso3 === code && country.hasGeometry)).toBe(true)
       expect(standardMap.some((feature) => feature.properties.iso3 === code)).toBe(false)
       expect(extendedMap.some((feature) => feature.properties.iso3 === code)).toBe(true)
     }
+    for (const code of ['ATA', 'ATC', 'ATF', 'BVT', 'CLP', 'CSI', 'ESB', 'HMD', 'IOT', 'SJM', 'UMI', 'WSB']) {
+      expect(classifyGeography(catalog.countries.find((country) => country.iso3 === code)!)).toBe('special-geographic-entity')
+      expect(extended.some((country) => country.iso3 === code)).toBe(false)
+      expect(extendedMap.some((feature) => feature.properties.iso3 === code)).toBe(false)
+    }
+    expect(classifyGeography(catalog.countries.find((country) => country.iso3 === 'GGY')!)).toBe('separately-represented-territory')
+    expect(classifyGeography(catalog.countries.find((country) => country.iso3 === 'UNK')!)).toBe('additional-identity')
+
+    const outlineCodes = new Set(outlineCollection.features.map((feature) => feature.properties.iso3).filter(Boolean))
+    expect(outlineCodes).toEqual(new Set(catalog.countries.map((country) => country.iso3)))
+    const unassignedOutlineFeatures = outlineCollection.features.filter((feature) => !feature.properties.iso3)
+    expect(unassignedOutlineFeatures).toHaveLength(11)
+    expect(new Set(unassignedOutlineFeatures.map((feature) => feature.properties.name))).toEqual(new Set([
+      'Somaliland', 'US Naval Base Guantanamo Bay', 'Northern Cyprus', 'Cyprus No Mans Area', 'Siachen Glacier',
+      'Southern Patagonian Ice Field', 'Bir Tawil', 'Spratly Islands', 'Bajo Nuevo Bank (Petrel Is.)', 'Serranilla Bank', 'Scarborough Reef',
+    ]))
+    expect(eligibleFeatures(unassignedOutlineFeatures, 'extended')).toHaveLength(0)
+  })
+
+  it('has no ambiguous normalized country aliases', () => {
+    const aliases = new Map<string, Set<string>>()
+    for (const country of catalog.countries) {
+      for (const alias of [country.name, country.officialName, ...country.aliases]) {
+        const normalized = normalizeAnswer(alias)
+        if (!normalized) continue
+        const owners = aliases.get(normalized) ?? new Set<string>()
+        owners.add(country.iso3)
+        aliases.set(normalized, owners)
+      }
+    }
+    const collisions = [...aliases].filter(([, owners]) => owners.size > 1)
+    expect(collisions).toEqual([])
   })
 
   it('gives directional hints relative to the target using stored country coordinates', () => {

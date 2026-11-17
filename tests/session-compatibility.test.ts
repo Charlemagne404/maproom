@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { isCompatibleGameSession } from '../src/games/sessionCompatibility'
 import type { GameSessionSnapshot } from '../src/geography/types'
+import { dailyPuzzleId, dailyPuzzleSeed } from '../src/puzzles/engine'
 
 const snapshot: GameSessionSnapshot = {
   id: 'flags:2026-11-17',
@@ -26,5 +27,25 @@ describe('daily session compatibility', () => {
     const freeplay = { ...snapshot, mode: 'freeplay' as const, puzzleId: 'flags:practice:round-1' }
     expect(isCompatibleGameSession(freeplay, 'freeplay', 'flags:practice:round-1')).toBe(true)
     expect(isCompatibleGameSession(freeplay, 'freeplay', 'flags:practice:round-2')).toBe(false)
+  })
+
+  it('migrates an in-progress outline v2 daily question without changing its target', () => {
+    const date = '2026-11-17'
+    const previous = {
+      ...snapshot,
+      id: `outlines:${date}`,
+      gameId: 'outlines' as const,
+      puzzleId: `outlines:${date}:v2`,
+      seed: `outlines:${date}:v2`,
+      date,
+      payload: { targetCode: 'SMR', attempts: ['MCO'], input: 'san', finished: false, solved: false, score: 0 },
+    }
+    const currentPuzzleId = dailyPuzzleId('outlines', date)
+    expect(currentPuzzleId).toBe(`outlines:${date}:v3`)
+    expect(dailyPuzzleSeed('outlines', date)).toBe(currentPuzzleId)
+    expect(isCompatibleGameSession(previous, 'daily', currentPuzzleId)).toBe(true)
+    expect(isCompatibleGameSession({ ...previous, payload: { attempts: [] } }, 'daily', currentPuzzleId)).toBe(false)
+    expect(isCompatibleGameSession(previous, 'daily', dailyPuzzleId('outlines', '2026-11-18'))).toBe(false)
+    expect(isCompatibleGameSession({ ...previous, version: 2 }, 'daily', currentPuzzleId)).toBe(false)
   })
 })

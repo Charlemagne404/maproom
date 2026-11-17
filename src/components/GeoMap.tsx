@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react'
-import { geoEqualEarth, geoMercator, geoPath, type GeoPermissibleObjects, type GeoProjection } from 'd3-geo'
+import { geoCentroid, geoEqualEarth, geoMercator, geoPath, type GeoPermissibleObjects, type GeoProjection } from 'd3-geo'
 import { LocateFixed, Minus, Plus } from 'lucide-react'
 import type { Coordinates, GeoFeature } from '../geography/types'
 
@@ -25,6 +25,8 @@ interface GeoMapProps {
   hideFeatureNames?: boolean
   focusCodes?: string[]
   focusPadding?: number
+  localFit?: boolean
+  fitCenter?: Coordinates | null
 }
 
 export function GeoMap({
@@ -45,6 +47,8 @@ export function GeoMap({
   hideFeatureNames = false,
   focusCodes,
   focusPadding = 56,
+  localFit = false,
+  fitCenter = null,
 }: GeoMapProps) {
   const [hovered, setHovered] = useState<string | null>(null)
   const [view, setView] = useState({ focusKey: '', zoom: 1, pan: { x: 0, y: 0 } })
@@ -69,9 +73,13 @@ export function GeoMap({
   }, [collection, focusSet])
   const projection = useMemo<GeoProjection>(() => {
     const base = projectionName === 'mercator' ? geoMercator() : geoEqualEarth()
+    if (localFit) {
+      const center = fitCenter ? [fitCenter.lon, fitCenter.lat] as [number, number] : geoCentroid(focusCollection)
+      if (center.every(Number.isFinite)) base.rotate([-center[0], -center[1]])
+    }
     const padding = Math.max(24, Math.min(160, focusPadding))
     return base.fitExtent(focusSet.size ? [[padding, padding], [WIDTH - padding, HEIGHT - padding]] : EDGE, focusCollection)
-  }, [focusCollection, focusPadding, focusSet.size, projectionName])
+  }, [focusCollection, focusPadding, focusSet.size, fitCenter, localFit, projectionName])
   const rotationTransform = useMemo(() => {
     const radians = rotationDegrees * Math.PI / 180
     const contentWidth = WIDTH - 32

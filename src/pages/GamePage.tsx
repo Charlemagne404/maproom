@@ -10,6 +10,7 @@ import { dailyPuzzleId, dailyPuzzleSeed } from '../puzzles/engine'
 import { usePuzzleDate } from '../hooks/usePuzzleDate'
 import { formatsForGame, getGame, isDailyGame } from '../games/catalog'
 import { FreePlaySetupContext } from '../components/FreePlaySetupContext'
+import { isCompatibleGameSession } from '../games/sessionCompatibility'
 
 const CountryIdentificationGame = lazy(() => import('../games/country-map/CountryIdentificationGame').then((module) => ({ default: module.CountryIdentificationGame })))
 const OutlineGame = lazy(() => import('../games/outlines/OutlineGame').then((module) => ({ default: module.OutlineGame })))
@@ -95,7 +96,7 @@ export function GamePage() {
     const hasStaleSession = state.sessions.some((session) => session.gameId === game.id
       && session.mode === 'daily'
       && session.date === date
-      && (session.version !== 1 || session.puzzleId !== puzzleId))
+      && !isCompatibleGameSession(session, 'daily', puzzleId))
     if (hasStaleSession) void deleteSession(game.id, 'daily', date, puzzleId)
   }, [state.sessions, deleteSession, date, game, mode])
 
@@ -154,8 +155,9 @@ function GameExperience({ gameId, mode, date, data }: {
   const saved = state.sessions.find((session) => session.gameId === gameId
     && session.mode === mode
     && session.date === date
-    && session.version === 1
-    && (mode === 'freeplay' || session.puzzleId === dailyPuzzleId(gameId, date)))
+    && (mode === 'freeplay'
+      ? session.version === 1
+      : isCompatibleGameSession(session, mode, dailyPuzzleId(gameId, date))))
   const [seed] = useState(() => mode === 'daily'
     ? saved?.seed ?? dailyPuzzleSeed(gameId, date)
     : saved?.seed ?? `${gameId}:practice:${crypto.randomUUID?.() ?? Math.random()}`)

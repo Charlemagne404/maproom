@@ -14,7 +14,7 @@ export function useGameSession(gameId: GameId, mode: GameMode, date: string, see
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0], [state.sessions, gameId, mode, date, seed])
   const currentPuzzleId = mode === 'daily' ? dailyPuzzleId(gameId, date) : `${gameId}:practice:${seed}`
   const compatibleSession = existingSession && isCompatibleGameSession(existingSession, mode, currentPuzzleId) ? existingSession : undefined
-  const puzzleId = compatibleSession?.puzzleId ?? currentPuzzleId
+  const puzzleId = currentPuzzleId
   const storedSeed = mode === 'daily' ? compatibleSession?.seed ?? dailyPuzzleSeed(gameId, date) : seed
   const existingSessionId = compatibleSession?.id
   const existingStartedAt = compatibleSession?.startedAt

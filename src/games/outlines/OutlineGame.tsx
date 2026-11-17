@@ -1,45 +1,52 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { geoCentroid } from 'd3-geo'
 import { Check, CircleHelp } from 'lucide-react'
 import { AutocompleteInput, type Suggestion } from '../../components/AutocompleteInput'
 import { GameResultsDialog } from '../../components/GameResults'
 import { GameSettingsMenu } from '../../components/GameControls'
+import { FreePlaySetupContext } from '../../components/FreePlaySetupContext'
 import { GeoMap } from '../../components/GeoMap'
 import { InlineNotice, LoadingState } from '../../components/Kit'
 import type { Coordinates, Country, GeoFeature, GeographyData, GameMode, RegionCollection } from '../../geography/types'
 import { loadOutlineFeatures, loadRegions } from '../../geography/data'
-import { directionFromTo, greatCircleKm, hashSeed, normalizeAnswer, seededShuffle } from '../../puzzles/engine'
+import { directionFromTo, greatCircleKm, hashSeed, normalizeAnswer } from '../../puzzles/engine'
 import { useGameSession } from '../session'
-import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
+import { classifyGeography, eligibleCountries, initialGeographyEligibility, type GeographyEligibility, type GeographicClassification } from '../../geography/eligibility'
 import { useAppData } from '../../app/useAppData'
+import { advanceOutlineSequence, buildOutlineCandidateGroups, EMPTY_OUTLINE_PROGRESS, outlinePoolSize, outlineQuestionAt, type OutlineCandidate, type OutlineDifficulty, type OutlinePoolMode, type OutlineSequenceProgress } from './questionPool'
 
-type Difficulty = 'easy' | 'standard' | 'expert'
-type OutlinePlace = { code: string; name: string; aliases: string[]; coordinates: Coordinates | null; feature?: GeoFeature }
+type OutlinePlace = { code: string; name: string; aliases: string[]; coordinates: Coordinates | null; feature?: GeoFeature; classification?: GeographicClassification; difficulty?: OutlineDifficulty | null }
 type OutlineQuestion = {
   target: OutlinePlace
   places: OutlinePlace[]
   type: 'country' | 'subdivision'
   scopeLabel: string
   parentCountry?: Country
+  poolKey: string
 }
 
 export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const { state } = useAppData()
-  const [eligibility, setEligibility] = useState<GeographyEligibility>(initialGeographyEligibility(mode, state.settings.catalogue))
+  const setup = useContext(FreePlaySetupContext)
+  const [eligibility, setEligibility] = useState<OutlinePoolMode>(initialGeographyEligibility(mode, state.settings.catalogue))
   const [scope, setScope] = useState('World')
   const [regionCountry, setRegionCountry] = useState('USA')
-  const [difficulty, setDifficulty] = useState<Difficulty>('standard')
+  const [difficulty, setDifficulty] = useState<OutlineDifficulty>('medium')
   const [rotated, setRotated] = useState(false)
   const [round, setRound] = useState(0)
+  const [sequenceProgress, setSequenceProgress] = useState<Record<string, OutlineSequenceProgress>>({})
   const [loadedRegions, setLoadedRegions] = useState<RegionCollection | null>(null)
   const [regionError, setRegionError] = useState('')
   const [outlineFeaturesByCode, setOutlineFeaturesByCode] = useState<Map<string, GeoFeature[]> | null>(null)
   const [outlineError, setOutlineError] = useState('')
-  const eligible = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
+  const geographyEligibility: GeographyEligibility = eligibility === 'territories' ? 'extended' : eligibility
+  const eligible = useMemo(() => eligibleCountries(data.countries, geographyEligibility), [data.countries, geographyEligibility])
   const continents = useMemo(() => [...new Set(eligible.map((country) => country.continent).filter((value): value is string => Boolean(value)))].sort(), [eligible])
   const countriesWithRegions = useMemo(() => eligible.filter((country) => country.regionCount > 0).sort((left, right) => left.name.localeCompare(right.name)), [eligible])
   const regionParent = data.countriesByCode.get(regionCountry)
-  const roundSeed = `${seed}:${scope}:${regionCountry}:${round}:${difficulty}:${rotated}`
+  const countryPoolKey = `country:${eligibility}:${scope}:${difficulty}`
+  const activeSequenceProgress = sequenceProgress[countryPoolKey] ?? EMPTY_OUTLINE_PROGRESS
+  const roundSeed = `${seed}:${scope}:${regionCountry}:${round}:${difficulty}:${rotated}:${eligibility}`
   const session = useGameSession('outlines', mode, date, roundSeed)
   const progress = mode === 'daily' ? session.progress : null
 
@@ -74,9 +81,13 @@ export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; m
   }, [scope, regionCountry])
 
   const regionCollection = loadedRegions?.countryIso3 === regionCountry ? loadedRegions : null
-  const countryPlaces = useMemo(() => eligible
-    .filter((country) => country.hasGeometry && (scope === 'World' || country.continent === scope))
-    .map((country) => ({ code: country.iso3, name: country.name, aliases: country.aliases, coordinates: country.coordinates })), [eligible, scope])
+  const countryGroups = useMemo(() => buildOutlineCandidateGroups(data.countries, outlineFeaturesByCode ?? new Map(), {
+    pool: eligibility,
+    difficulty,
+    scope,
+  }), [data.countries, difficulty, eligibility, outlineFeaturesByCode, scope])
+  const countryPlaces = useMemo(() => [...countryGroups.standard, ...countryGroups.extended].map(outlinePlaceFromCandidate), [countryGroups])
+  const selectedCandidate = outlineQuestionAt(countryGroups, `${seed}:${countryPoolKey}`, activeSequenceProgress)
   const question = useMemo<OutlineQuestion | null>(() => {
     if (scope === 'Subdivisions') {
       if (!regionCollection || !regionParent) return null
@@ -86,32 +97,60 @@ export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; m
         if (!code || !name) return []
         return [{ code, name, aliases: [], coordinates: featureCenter(feature), feature }]
       })
-      const generatedTarget = seededShuffle(places, `${seed}:outline:${scope}:${regionCountry}:${round}`)[0]
+      const poolKey = `subdivision:${regionCountry}`
+      const generatedTarget = outlineQuestionAt({ standard: places, extended: [] }, `${seed}:${poolKey}`, sequenceProgress[poolKey] ?? EMPTY_OUTLINE_PROGRESS)
       const target = places.find((place) => place.code === progress?.targetCode) ?? generatedTarget
       if (!target) return null
-      return { target, places, type: 'subdivision', scopeLabel: regionParent.name, parentCountry: regionParent }
+      return { target, places, type: 'subdivision', scopeLabel: regionParent.name, parentCountry: regionParent, poolKey }
     }
 
-    const generatedTarget = seededShuffle(countryPlaces, `${seed}:outline:${scope}:${round}`)[0]
-    const target = countryPlaces.find((place) => place.code === progress?.targetCode) ?? generatedTarget
+    const poolKey = countryPoolKey
+    const legacyTargetCountry = mode === 'daily' && typeof progress?.targetCode === 'string'
+      ? data.countriesByCode.get(progress.targetCode)
+      : undefined
+    const legacyTarget = legacyTargetCountry?.hasGeometry
+      ? {
+          code: legacyTargetCountry.iso3,
+          name: legacyTargetCountry.name,
+          aliases: legacyTargetCountry.aliases,
+          coordinates: legacyTargetCountry.coordinates,
+          classification: classifyGeography(legacyTargetCountry),
+        }
+      : undefined
+    const target = (legacyTarget ?? countryPlaces.find((place) => place.code === progress?.targetCode)) ?? (selectedCandidate ? outlinePlaceFromCandidate(selectedCandidate) : null)
     if (!target) return null
+    const places = legacyTarget && !countryPlaces.some((place) => place.code === legacyTarget.code) ? [...countryPlaces, legacyTarget] : countryPlaces
     return {
       target,
-      places: countryPlaces,
+      places,
       type: 'country',
       scopeLabel: scope,
       parentCountry: data.countriesByCode.get(target.code),
+      poolKey,
     }
-  }, [countryPlaces, data.countriesByCode, regionCollection, regionParent, regionCountry, round, scope, seed, progress])
+  }, [countryPlaces, countryPoolKey, data.countriesByCode, mode, progress, regionCollection, regionParent, regionCountry, scope, seed, selectedCandidate, sequenceProgress])
 
   if (!outlineFeaturesByCode && !outlineError) return <LoadingState label="Loading detailed country outlines…" />
   if (outlineError) return <div className="game-body"><InlineNotice title="Country outlines unavailable" tone="warning">{outlineError}</InlineNotice></div>
   if (scope === 'Subdivisions' && !regionCollection && !regionError) return <LoadingState label={`Opening ${regionParent?.name ?? 'subdivision'} outlines…`} />
   if (regionError) return <div className="game-body"><InlineNotice title="Subdivision outlines unavailable" tone="warning">{regionError}<div className="empty-game-actions"><button className="button button-outline" type="button" onClick={() => { setRegionError(''); setScope('World') }}>Return to world outlines</button></div></InlineNotice></div>
   if (scope === 'Subdivisions' && regionCollection?.features.length === 0) return <div className="game-body"><InlineNotice title="No subdivision outlines found" tone="warning">Choose another country with first-level boundary data.</InlineNotice></div>
-  if (!question) return <InlineNotice title="No outlines found" tone="warning">There are no shapes available in this scope.</InlineNotice>
+  if (!question) {
+    const noCandidates = scope !== 'Subdivisions' && outlineFeaturesByCode && outlinePoolSize(countryGroups) === 0
+    return <div className="game-body">
+      <InlineNotice title={noCandidates ? 'No fair silhouettes in this pool' : 'No outlines found'} tone="warning">{noCandidates ? 'This scope and difficulty have no outlines approved for silhouette-only play. Choose a wider scope, a different difficulty, or the Extended pool.' : 'There are no shapes available in this scope.'}</InlineNotice>
+      {noCandidates && mode === 'freeplay' && (setup.setup
+        ? <GameSettingsMenu>
+            <p className="practice-config-note" role="status">This selection has no fair silhouettes. Change the pool, scope, or difficulty, then start free play.</p>
+            <OutlineSettingsControls eligibility={eligibility} onEligibility={setEligibility} scope={scope} onScopeChange={(value) => { setRegionError(''); setScope(value) }} continents={continents} difficulty={difficulty} onDifficulty={setDifficulty} countriesWithRegions={countriesWithRegions} regionCountry={regionCountry} onRegionCountryChange={setRegionCountry} rotated={rotated} onRotated={setRotated} activePoolSize={0} />
+          </GameSettingsMenu>
+        : <div className="practice-config outline-empty-settings"><OutlineSettingsControls eligibility={eligibility} onEligibility={setEligibility} scope={scope} onScopeChange={(value) => { setRegionError(''); setScope(value) }} continents={continents} difficulty={difficulty} onDifficulty={setDifficulty} countriesWithRegions={countriesWithRegions} regionCountry={regionCountry} onRegionCountryChange={setRegionCountry} rotated={rotated} onRotated={setRotated} activePoolSize={0} /></div>
+      )}
+    </div>
+  }
 
   const rotationDegrees = rotated ? ((hashSeed(`${seed}:${scope}:${regionCountry}:${round}:rotation`) % 271) + 45) : 0
+  const activePoolSize = question.type === 'country' ? outlinePoolSize(countryGroups) : question.places.length
   return <OutlineRound
     key={`${scope}:${regionCountry}:${round}:${difficulty}:${rotated}:${eligibility}`}
     data={data}
@@ -120,7 +159,12 @@ export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; m
     mode={mode}
     date={date}
     session={session}
-    onNext={() => setRound((value) => value + 1)}
+    onNext={() => {
+      const next = advanceOutlineSequence(sequenceProgress[question.poolKey] ?? EMPTY_OUTLINE_PROGRESS, question.target.code)
+      setSequenceProgress((current) => ({ ...current, [question.poolKey]: next }))
+      setRound((value) => value + 1)
+    }}
+    activePoolSize={activePoolSize}
     scope={scope}
     continents={continents}
     countriesWithRegions={countriesWithRegions}
@@ -137,7 +181,7 @@ export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; m
   />
 }
 
-function OutlineRound({ data, outlineFeaturesByCode, question, mode, date, session, onNext, scope, continents, countriesWithRegions, regionCountry, onScopeChange, onRegionCountryChange, difficulty, onDifficulty, eligibility, onEligibility, rotated, onRotated, rotationDegrees }: {
+function OutlineRound({ data, outlineFeaturesByCode, question, mode, date, session, onNext, activePoolSize, scope, continents, countriesWithRegions, regionCountry, onScopeChange, onRegionCountryChange, difficulty, onDifficulty, eligibility, onEligibility, rotated, onRotated, rotationDegrees }: {
   data: GeographyData
   outlineFeaturesByCode: Map<string, GeoFeature[]>
   question: OutlineQuestion
@@ -145,16 +189,17 @@ function OutlineRound({ data, outlineFeaturesByCode, question, mode, date, sessi
   date: string
   session: ReturnType<typeof useGameSession>
   onNext: () => void
+  activePoolSize: number
   scope: string
   continents: string[]
   countriesWithRegions: Country[]
   regionCountry: string
   onScopeChange: (scope: string) => void
   onRegionCountryChange: (iso3: string) => void
-  difficulty: Difficulty
-  onDifficulty: (difficulty: Difficulty) => void
-  eligibility: GeographyEligibility
-  onEligibility: (eligibility: GeographyEligibility) => void
+  difficulty: OutlineDifficulty
+  onDifficulty: (difficulty: OutlineDifficulty) => void
+  eligibility: OutlinePoolMode
+  onEligibility: (eligibility: OutlinePoolMode) => void
   rotated: boolean
   onRotated: (rotated: boolean) => void
   rotationDegrees: number
@@ -166,7 +211,7 @@ function OutlineRound({ data, outlineFeaturesByCode, question, mode, date, sessi
   const [finished, setFinished] = useState(() => progress?.finished === true)
   const [solved, setSolved] = useState(() => progress?.solved === true)
   const [score, setScore] = useState(() => typeof progress?.score === 'number' ? progress.score : 0)
-  const guessLimit = difficulty === 'easy' ? 8 : difficulty === 'expert' ? 4 : 6
+  const guessLimit = difficulty === 'easy' ? 8 : difficulty === 'hard' ? 4 : 6
   const { save, saveError, saveProgress } = session
   const suggestions: Suggestion[] = useMemo(() => question.places.map((place) => ({
     value: place.code,
@@ -197,7 +242,7 @@ function OutlineRound({ data, outlineFeaturesByCode, question, mode, date, sessi
     setAttempts(nextAttempts)
     setInput('')
     if (place.code === question.target.code) {
-      const penalty = difficulty === 'easy' ? 100 : difficulty === 'expert' ? 250 : 150
+      const penalty = difficulty === 'easy' ? 100 : difficulty === 'hard' ? 250 : 150
       const points = Math.max(100, 1000 - (nextAttempts.length - 1) * penalty)
       setSolved(true)
       setFinished(true)
@@ -218,12 +263,12 @@ function OutlineRound({ data, outlineFeaturesByCode, question, mode, date, sessi
     const distance = from && to ? greatCircleKm(from, to) : null
     const direction = from && to ? directionFromTo(to, from) : null
     const locationHint = question.type === 'subdivision'
-      ? nextAttempts.length >= 4
+      ? nextAttempts.length >= (difficulty === 'hard' ? 3 : 4)
         ? ` · the outline starts with ${question.target.name[0]?.toLocaleUpperCase() ?? '…'}`
         : nextAttempts.length >= 2 && question.parentCountry?.coordinates && to
           ? ` · it lies ${directionFromTo(question.parentCountry.coordinates, to)} of ${question.parentCountry.name}’s catalog center`
           : ''
-      : nextAttempts.length >= 4 && question.parentCountry?.subregion
+      : nextAttempts.length >= (difficulty === 'hard' ? 3 : 4) && question.parentCountry?.subregion
         ? ` · the answer is in ${question.parentCountry.subregion}`
         : nextAttempts.length >= 2 && question.parentCountry?.continent
           ? ` · the answer is in ${question.parentCountry.continent}`
@@ -233,11 +278,11 @@ function OutlineRound({ data, outlineFeaturesByCode, question, mode, date, sessi
 
   return (
     <div className="game-body outline-game-body">
-      <div className="outline-prompt"><div><span className="eyebrow">{guessLimit} guesses · {question.type === 'subdivision' ? question.parentCountry?.name : question.scopeLabel}</span><h2>{question.type === 'subdivision' ? 'Which subdivision is this?' : 'Which country is this?'}</h2><p>Look at the borders, not the fill. The silhouette is drawn from the bundled boundary data.</p></div><div className="outline-prompt-tools">
-        {mode === 'freeplay' && <GameSettingsMenu><div className="practice-config"><label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label><label><span>Free play scope</span><select value={scope} onChange={(event) => onScopeChange(event.target.value)}><option value="World">World</option>{continents.map((item) => <option key={item}>{item}</option>)}<option value="Subdivisions">First-level subdivisions</option></select></label>{scope === 'Subdivisions' && <label><span>Country</span><select value={regionCountry} onChange={(event) => onRegionCountryChange(event.target.value)}>{countriesWithRegions.map((country) => <option key={country.iso3} value={country.iso3}>{country.name} · {country.regionCount}</option>)}</select></label>}<label><span>Difficulty</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as Difficulty)}><option value="easy">Easy · 8 guesses</option><option value="standard">Standard · 6 guesses</option><option value="expert">Expert · 4 guesses</option></select></label><label className="flag-reveal-setting"><input type="checkbox" checked={rotated} onChange={(event) => onRotated(event.target.checked)} /><span>Rotate silhouettes</span></label><span className="practice-config-note">Wrong guesses give distance and bearing; later hints narrow by region or position.</span></div></GameSettingsMenu>}
+      <div className="outline-prompt"><div><span className="eyebrow">{guessLimit} guesses · {question.type === 'subdivision' ? question.parentCountry?.name : question.scopeLabel}</span><h2>{question.type === 'subdivision' ? 'Which subdivision is this?' : 'Which country is this?'}</h2><p>Identify the place from its shape. Each outline is selected for fair silhouette play at this difficulty.</p></div><div className="outline-prompt-tools">
+        {mode === 'freeplay' && <GameSettingsMenu><OutlineSettingsControls eligibility={eligibility} onEligibility={onEligibility} scope={scope} onScopeChange={onScopeChange} continents={continents} difficulty={difficulty} onDifficulty={onDifficulty} countriesWithRegions={countriesWithRegions} regionCountry={regionCountry} onRegionCountryChange={onRegionCountryChange} rotated={rotated} onRotated={onRotated} activePoolSize={activePoolSize} /></GameSettingsMenu>}
         <div className="attempt-meter" aria-label={`${attempts.length} of ${guessLimit} guesses used`}>{Array.from({ length: guessLimit }, (_, index) => <span key={index} className={index < attempts.length ? (solved && index === attempts.length - 1 ? 'is-right' : 'is-used') : ''} />)}</div>
       </div></div>
-      <div className="outline-map-stage"><GeoMap features={answerFeatures} rotationDegrees={rotationDegrees} hideFeatureNames showHoverLabels={false} ariaLabel={`${rotated ? 'Rotated ' : ''}unlabelled ${question.type === 'subdivision' ? 'first-level subdivision' : 'country'} silhouette`} /></div>
+      <div className="outline-map-stage"><GeoMap features={answerFeatures} rotationDegrees={rotationDegrees} localFit fitCenter={question.type === 'subdivision' ? question.parentCountry?.coordinates : question.target.coordinates} hideFeatureNames showHoverLabels={false} ariaLabel={`${rotated ? 'Rotated ' : ''}unlabelled ${question.type === 'subdivision' ? 'first-level subdivision' : 'country'} silhouette`} /></div>
       {!finished && <AutocompleteInput
         id="outline-answer"
         label={question.type === 'subdivision' ? 'Name the subdivision shown' : 'Name the country shown'}
@@ -250,12 +295,49 @@ function OutlineRound({ data, outlineFeaturesByCode, question, mode, date, sessi
         submitLabel="Guess"
       />}
       {message && <div className={`answer-feedback${solved ? ' is-correct' : finished ? ' is-incorrect' : ''}`} role="status"><span className="feedback-icon">{solved ? <Check size={17} /> : <CircleHelp size={16} />}</span><span>{message}</span></div>}
-      {attempts.length > 0 && !finished && <div className="guess-list" aria-label="Previous guesses">{attempts.map((code) => <span key={code}>{question.places.find((place) => place.code === code)?.name ?? code}</span>)}</div>}
+      {attempts.length > 0 && !finished && <div className="guess-list" aria-label="Previous guesses">{attempts.map((code) => <span key={code}>{question.places.find((place) => place.code === code)?.name ?? data.countriesByCode.get(code)?.name ?? code}</span>)}</div>}
       {mode === 'daily' && <p className="map-source-note">Daily country silhouette · {date}</p>}
       {question.type === 'subdivision' && question.parentCountry?.regionSource && <p className="map-source-note">Subdivision data: {question.parentCountry.regionSource.source} · {question.parentCountry.regionSource.license}</p>}
       <GameResultsDialog complete={finished} gameId="outlines" mode={mode} score={score} correct={solved ? 1 : 0} total={1} title={solved ? `${question.type === 'subdivision' ? 'Subdivision' : 'Outline'} solved.` : `The answer was ${question.target.name}.`} message={`${attempts.length} of ${guessLimit} guesses used.`} saveError={saveError} onReplay={mode === 'freeplay' ? onNext : undefined} replayLabel={question.type === 'subdivision' ? 'Next subdivision' : 'Next outline'} />
     </div>
   )
+}
+
+function OutlineSettingsControls({ eligibility, onEligibility, scope, onScopeChange, continents, difficulty, onDifficulty, countriesWithRegions, regionCountry, onRegionCountryChange, rotated, onRotated, activePoolSize }: {
+  eligibility: OutlinePoolMode
+  onEligibility: (value: OutlinePoolMode) => void
+  scope: string
+  onScopeChange: (value: string) => void
+  continents: string[]
+  difficulty: OutlineDifficulty
+  onDifficulty: (value: OutlineDifficulty) => void
+  countriesWithRegions: Country[]
+  regionCountry: string
+  onRegionCountryChange: (value: string) => void
+  rotated: boolean
+  onRotated: (value: boolean) => void
+  activePoolSize: number
+}) {
+  return <div className="practice-config">
+    <label><span>Outline pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as OutlinePoolMode)}><option value="standard">Standard · eligible countries</option><option value="extended">Extended · balanced territories</option><option value="territories">Territory focus</option></select></label>
+    <label><span>Free play scope</span><select value={scope} onChange={(event) => onScopeChange(event.target.value)}><option value="World">World</option>{continents.map((item) => <option key={item}>{item}</option>)}<option value="Subdivisions">First-level subdivisions</option></select></label>
+    {scope === 'Subdivisions' && <label><span>Country</span><select value={regionCountry} onChange={(event) => onRegionCountryChange(event.target.value)}>{countriesWithRegions.map((country) => <option key={country.iso3} value={country.iso3}>{country.name} · {country.regionCount}</option>)}</select></label>}
+    <label><span>Difficulty</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as OutlineDifficulty)}><option value="easy">Easy · familiar silhouettes</option><option value="medium">Medium · wider geography</option><option value="hard">Hard · challenging outlines</option></select></label>
+    <label className="flag-reveal-setting"><input type="checkbox" checked={rotated} onChange={(event) => onRotated(event.target.checked)} /><span>Rotate silhouettes</span></label>
+    {scope !== 'Subdivisions' && <span className="practice-config-note">{activePoolSize} suitable silhouettes. A place repeats only after this pool has been used once.</span>}
+    <span className="practice-config-note">Wrong guesses give distance and direction; later guesses reveal the region.</span>
+  </div>
+}
+
+function outlinePlaceFromCandidate(candidate: OutlineCandidate): OutlinePlace {
+  return {
+    code: candidate.code,
+    name: candidate.country.name,
+    aliases: candidate.country.aliases,
+    coordinates: candidate.country.coordinates,
+    classification: classifyGeography(candidate.country),
+    difficulty: candidate.rule.difficulty,
+  }
 }
 
 function featureCenter(feature: GeoFeature): Coordinates | null {

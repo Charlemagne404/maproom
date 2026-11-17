@@ -64,18 +64,22 @@ describe('expanded daily and practice puzzle builders', () => {
     expect(gridAnswerScore(0)).toBe(0)
   })
 
-  it('applies the documented Standard 195-country set and keeps the full catalog in Extended', () => {
+  it('applies the documented Standard and ordinary Extended pools', () => {
     const standard = eligibleCountries(countries, 'standard')
     const extended = eligibleCountries(countries, 'extended')
     expect(standardCountryCount()).toBe(195)
     expect(standard).toHaveLength(195)
-    expect(extended).toHaveLength(countries.length)
+    expect(countries).toHaveLength(255)
+    expect(extended).toHaveLength(243)
     expect(standard.every((country) => isStandardCountry(country.iso3))).toBe(true)
     expect(standard.map((country) => country.iso3)).toContain('VAT')
     expect(standard.map((country) => country.iso3)).toContain('PSE')
     expect(standard.map((country) => country.iso3)).not.toContain('XKX')
     expect(standard.map((country) => country.iso3)).not.toContain('GGY')
     expect(standard.map((country) => country.iso3)).not.toContain('FLK')
+    for (const special of ['ATA', 'ATC', 'ATF', 'BVT', 'CLP', 'CSI', 'ESB', 'HMD', 'IOT', 'SJM', 'UMI', 'WSB']) {
+      expect(extended.map((country) => country.iso3)).not.toContain(special)
+    }
   })
 
   it('generates deterministic Connections boards with four exact, non-overlapping groups', () => {
