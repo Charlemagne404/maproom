@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "e2e": "npm run build && playwright test",
     "data:sync": "node scripts/data/build-geography.mjs",
+    "data:geometries": "node scripts/data/rebuild-country-geometries.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

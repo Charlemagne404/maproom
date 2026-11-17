@@ -55,11 +55,11 @@ test('captures the product experience in light and dark at desktop and mobile si
   await openFreePlay(page, 'flag-to-country')
   const countryResponse = await page.request.get(new URL('/data/countries.json', page.url()).toString())
   expect(countryResponse.ok()).toBe(true)
-  const countries = (await countryResponse.json()).countries as Array<{ name: string; flagCode?: string }>
+  const countries = (await countryResponse.json()).countries as Array<{ name: string; flagCode?: string; flagEligible?: boolean }>
   for (let index = 0; index < 10; index += 1) {
     const flagClass = await page.locator('.flag-display [role="img"]').getAttribute('class')
     const flagCode = flagClass?.split(/\s+/).find((name) => name.startsWith('fi-') && name !== 'fi')?.slice(3)
-    const expected = countries.find((country) => country.flagCode === flagCode)?.name
+    const expected = countries.find((country) => country.flagCode === flagCode && country.flagEligible !== false)?.name
     expect(expected).toBeTruthy()
     const choices = page.locator('.flag-choice')
     let correctChoice = -1

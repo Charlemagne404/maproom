@@ -1,6 +1,7 @@
 export interface Country {
   iso3: string
-  iso2: string
+  parentIso3: string | null
+  iso2: string | null
   name: string
   officialName: string
   aliases: string[]
@@ -17,6 +18,7 @@ export interface Country {
   borders: string[]
   independent: boolean
   flagCode: string
+  flagEligible?: boolean
   hasGeometry: boolean
   regionCount: number
   regionSource: RegionSource | null

@@ -42,6 +42,10 @@ async function openGame(page: Page, id: string, mode: 'daily' | 'freeplay' = 'fr
 async function submitText(page: Page, selector: string, answer: string) {
   const input = page.locator(selector)
   await input.fill(answer)
+  if (await page.locator('.suggestion-option').count()) {
+    await input.press('Enter')
+    await expect(page.locator('.suggestion-option')).toHaveCount(0)
+  }
   await input.press('Enter')
 }
 
@@ -1394,16 +1398,13 @@ test('Neighbour Challenge evaluates the complete neighbor set without answer lea
   await expect(incorrectOption).toBeVisible()
   await incorrectOption.click()
   await page.getByRole('button', { name: `Remove ${nonNeighbour!.name}` }).click()
-  await answerInput.fill(firstNeighbor.name)
-  await page.locator('#neighbour-answer').press('Enter')
-  await answerInput.fill(firstNeighbor.name)
-  await page.locator('#neighbour-answer').press('Enter')
+  await submitText(page, '#neighbour-answer', firstNeighbor.name)
+  await submitText(page, '#neighbour-answer', firstNeighbor.name)
   await expect(page.locator('.neighbour-selected button')).toHaveCount(1)
   await expect(page.locator('.answer-feedback')).toContainText('already selected')
   await page.getByRole('button', { name: `Remove ${firstNeighbor.name}` }).click()
 
-  await answerInput.fill(target!.name)
-  await page.locator('#neighbour-answer').press('Enter')
+  await submitText(page, '#neighbour-answer', target!.name)
   await expect(page.locator('.answer-feedback')).toContainText('target, so it cannot be')
 
   for (let index = 0; index < 5; index += 1) {
@@ -1431,8 +1432,7 @@ test('Neighbour Challenge evaluates the complete neighbor set without answer lea
   expect(replayTarget).toBeDefined()
   const replayNeighbor = countries.find((country) => standardCodes.has(country.iso3) && country.iso3 !== replayTarget!.iso3 && (replayTarget!.borders.includes(country.iso3) || country.borders.includes(replayTarget!.iso3)))
   expect(replayNeighbor).toBeDefined()
-  await page.locator('#neighbour-answer').fill(replayNeighbor!.name)
-  await page.locator('#neighbour-answer').press('Enter')
+  await submitText(page, '#neighbour-answer', replayNeighbor!.name)
   await expect(page.locator('.neighbour-selected button')).toHaveCount(1)
 })
 

@@ -4,7 +4,7 @@ Maproom has ten games. The home page curates six daily puzzles: Find the country
 
 ## Country pools
 
-Country-based practice defaults to **Standard**: the 193 United Nations member states plus the Holy See and the State of Palestine, the two UN non-member observer states. **Extended** uses every country, dependency, and territory record in Maproom's 250-record catalogue. The catalog is not a statement of sovereignty. Kosovo and other places outside the Standard rule are available only in Extended. Borders use the catalog's reciprocal land-neighbour graph; maritime claims and disputed boundaries are not adjudicated. See [GEOGRAPHY_ELIGIBILITY.md](GEOGRAPHY_ELIGIBILITY.md) for the inclusion rule and references.
+Country-based practice defaults to **Standard**: the 193 United Nations member states plus the Holy See and the State of Palestine, the two UN non-member observer states. **Extended** uses all 255 geographic identities in Maproom's catalogue, including separately named territories and other records outside the Standard rule. Parent relationships are recorded where appropriate; Extended membership does not imply independent sovereignty. Kosovo and other places outside the Standard rule are available only in Extended. Borders use the catalog's reciprocal land-neighbour graph; maritime claims and disputed boundaries are not adjudicated. See [GEOGRAPHY_ELIGIBILITY.md](GEOGRAPHY_ELIGIBILITY.md) for the inclusion rule and references.
 
 ## Find the country
 

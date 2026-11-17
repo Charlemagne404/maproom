@@ -7,7 +7,7 @@ import { GameSettingsMenu } from '../../components/GameControls'
 import { GeoMap } from '../../components/GeoMap'
 import { InlineNotice, LoadingState } from '../../components/Kit'
 import type { Coordinates, Country, GeoFeature, GeographyData, GameMode, RegionCollection } from '../../geography/types'
-import { loadRegions } from '../../geography/data'
+import { loadOutlineFeatures, loadRegions } from '../../geography/data'
 import { directionFromTo, greatCircleKm, hashSeed, normalizeAnswer, seededShuffle } from '../../puzzles/engine'
 import { useGameSession } from '../session'
 import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
@@ -33,6 +33,8 @@ export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; m
   const [round, setRound] = useState(0)
   const [loadedRegions, setLoadedRegions] = useState<RegionCollection | null>(null)
   const [regionError, setRegionError] = useState('')
+  const [outlineFeaturesByCode, setOutlineFeaturesByCode] = useState<Map<string, GeoFeature[]> | null>(null)
+  const [outlineError, setOutlineError] = useState('')
   const eligible = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
   const continents = useMemo(() => [...new Set(eligible.map((country) => country.continent).filter((value): value is string => Boolean(value)))].sort(), [eligible])
   const countriesWithRegions = useMemo(() => eligible.filter((country) => country.regionCount > 0).sort((left, right) => left.name.localeCompare(right.name)), [eligible])
@@ -40,6 +42,25 @@ export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; m
   const roundSeed = `${seed}:${scope}:${regionCountry}:${round}:${difficulty}:${rotated}`
   const session = useGameSession('outlines', mode, date, roundSeed)
   const progress = mode === 'daily' ? session.progress : null
+
+  useEffect(() => {
+    let active = true
+    loadOutlineFeatures().then((features) => {
+      if (!active) return
+      const byCode = new Map<string, GeoFeature[]>()
+      for (const feature of features) {
+        const code = feature.properties.iso3
+        if (!code) continue
+        const existing = byCode.get(code) ?? []
+        existing.push(feature)
+        byCode.set(code, existing)
+      }
+      setOutlineFeaturesByCode(byCode)
+    }).catch((error) => {
+      if (active) setOutlineError(error instanceof Error ? error.message : 'The detailed outline data could not be loaded.')
+    })
+    return () => { active = false }
+  }, [])
 
   useEffect(() => {
     if (scope !== 'Subdivisions') return
@@ -83,6 +104,8 @@ export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; m
     }
   }, [countryPlaces, data.countriesByCode, regionCollection, regionParent, regionCountry, round, scope, seed, progress])
 
+  if (!outlineFeaturesByCode && !outlineError) return <LoadingState label="Loading detailed country outlines…" />
+  if (outlineError) return <div className="game-body"><InlineNotice title="Country outlines unavailable" tone="warning">{outlineError}</InlineNotice></div>
   if (scope === 'Subdivisions' && !regionCollection && !regionError) return <LoadingState label={`Opening ${regionParent?.name ?? 'subdivision'} outlines…`} />
   if (regionError) return <div className="game-body"><InlineNotice title="Subdivision outlines unavailable" tone="warning">{regionError}<div className="empty-game-actions"><button className="button button-outline" type="button" onClick={() => { setRegionError(''); setScope('World') }}>Return to world outlines</button></div></InlineNotice></div>
   if (scope === 'Subdivisions' && regionCollection?.features.length === 0) return <div className="game-body"><InlineNotice title="No subdivision outlines found" tone="warning">Choose another country with first-level boundary data.</InlineNotice></div>
@@ -92,6 +115,7 @@ export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; m
   return <OutlineRound
     key={`${scope}:${regionCountry}:${round}:${difficulty}:${rotated}:${eligibility}`}
     data={data}
+    outlineFeaturesByCode={outlineFeaturesByCode!}
     question={question}
     mode={mode}
     date={date}
@@ -113,8 +137,9 @@ export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; m
   />
 }
 
-function OutlineRound({ data, question, mode, date, session, onNext, scope, continents, countriesWithRegions, regionCountry, onScopeChange, onRegionCountryChange, difficulty, onDifficulty, eligibility, onEligibility, rotated, onRotated, rotationDegrees }: {
+function OutlineRound({ data, outlineFeaturesByCode, question, mode, date, session, onNext, scope, continents, countriesWithRegions, regionCountry, onScopeChange, onRegionCountryChange, difficulty, onDifficulty, eligibility, onEligibility, rotated, onRotated, rotationDegrees }: {
   data: GeographyData
+  outlineFeaturesByCode: Map<string, GeoFeature[]>
   question: OutlineQuestion
   mode: GameMode
   date: string
@@ -149,7 +174,7 @@ function OutlineRound({ data, question, mode, date, session, onNext, scope, cont
     detail: question.type === 'subdivision' ? question.parentCountry?.name : question.scopeLabel === 'World' ? undefined : question.scopeLabel,
     aliases: place.aliases,
   })), [question])
-  const answerFeatures = question.target.feature ? [question.target.feature] : data.featuresByCode.get(question.target.code) ?? []
+  const answerFeatures = question.target.feature ? [question.target.feature] : outlineFeaturesByCode.get(question.target.code) ?? data.featuresByCode.get(question.target.code) ?? []
 
   useEffect(() => {
     if (mode !== 'daily' || finished) return
@@ -191,7 +216,7 @@ function OutlineRound({ data, question, mode, date, session, onNext, scope, cont
     const from = place.coordinates
     const to = question.target.coordinates
     const distance = from && to ? greatCircleKm(from, to) : null
-    const direction = from && to ? directionFromTo(from, to) : null
+    const direction = from && to ? directionFromTo(to, from) : null
     const locationHint = question.type === 'subdivision'
       ? nextAttempts.length >= 4
         ? ` · the outline starts with ${question.target.name[0]?.toLocaleUpperCase() ?? '…'}`

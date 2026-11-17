@@ -36,12 +36,14 @@ export function AutocompleteInput({
 }) {
   const [open, setOpen] = useState(false)
   const blurTimer = useRef<number | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const matches = useMemo(() => {
     const needle = normalizeAnswer(value)
     if (!needle) return []
-    return suggestions
-      .filter((suggestion) => [suggestion.label, ...(suggestion.aliases ?? [])]
-        .some((text) => normalizeAnswer(text).includes(needle)))
+    return suggestions.map((suggestion, order) => ({ suggestion, order, rank: suggestionRank(suggestion, needle) }))
+      .filter((item) => item.rank < Number.POSITIVE_INFINITY)
+      .sort((left, right) => left.rank - right.rank || left.order - right.order)
+      .map((item) => item.suggestion)
       .slice(0, 7)
   }, [suggestions, value])
 
@@ -57,11 +59,22 @@ export function AutocompleteInput({
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Escape') setOpen(false)
+    if (event.key === 'Enter' && open && matches.length) {
+      event.preventDefault()
+      acceptSuggestion(matches[0])
+      return
+    }
     if (event.key === 'ArrowDown' && matches.length) {
       event.preventDefault()
       setOpen(true)
       document.getElementById(`${id}-suggestion-0`)?.focus()
     }
+  }
+
+  function acceptSuggestion(suggestion: Suggestion) {
+    onChange(suggestion.label)
+    setOpen(false)
+    inputRef.current?.focus()
   }
 
   return (
@@ -70,6 +83,7 @@ export function AutocompleteInput({
       <div className="autocomplete-field">
         <Search size={17} aria-hidden="true" />
         <input
+          ref={inputRef}
           id={id}
           value={value}
           onChange={(event) => { onChange(event.target.value); setOpen(true) }}
@@ -109,7 +123,16 @@ export function AutocompleteInput({
                 className="suggestion-option"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => { onPick(suggestion); setOpen(false) }}
+                onFocus={() => {
+                  if (blurTimer.current !== null) window.clearTimeout(blurTimer.current)
+                  blurTimer.current = null
+                  setOpen(true)
+                }}
                 onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    acceptSuggestion(suggestion)
+                  }
                   if (event.key === 'ArrowDown') {
                     event.preventDefault()
                     document.getElementById(`${id}-suggestion-${Math.min(index + 1, matches.length - 1)}`)?.focus()
@@ -129,4 +152,16 @@ export function AutocompleteInput({
       </div>
     </form>
   )
+}
+
+function suggestionRank(suggestion: Suggestion, needle: string): number {
+  const label = normalizeAnswer(suggestion.label)
+  const aliases = (suggestion.aliases ?? []).map(normalizeAnswer)
+  if (label === needle) return 0
+  if (aliases.includes(needle)) return 1
+  if (label.startsWith(needle)) return 2
+  if (aliases.some((alias) => alias.startsWith(needle))) return 3
+  if (label.includes(needle)) return 4
+  if (aliases.some((alias) => alias.includes(needle))) return 5
+  return Number.POSITIVE_INFINITY
 }

@@ -4,7 +4,7 @@ import { eligibleCountries, type GeographyEligibility } from '../../geography/el
 export type PracticeQuestionCount = '10' | '20' | '50' | 'infinite'
 
 export function flagCountryPool(countries: readonly Country[], region: string, eligibility: GeographyEligibility = 'standard'): Country[] {
-  return eligibleCountries([...countries], eligibility).filter((country) => country.flagCode && (region === 'All regions' || country.continent === region))
+  return eligibleCountries([...countries], eligibility).filter((country) => country.flagCode && country.flagEligible !== false && (region === 'All regions' || country.continent === region))
 }
 
 export function shuffleFlagPool<T>(values: readonly T[], random: () => number = Math.random, previous?: T): T[] {

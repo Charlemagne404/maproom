@@ -1,9 +1,9 @@
 # Geographic coverage report
 
-Generated 2026-11-16T20:43:02.789Z.
+Geometry refreshed 2026-11-17 from the bundled Natural Earth sources.
 
-- 250 country and territory metadata records.
-- 237 ISO-coded country geometries across 242 map features.
+- 255 country, territory and other geographic identity records; Standard remains fixed at 195.
+- 255 playable identity geometries across 260 world-map features and 271 detailed outline features.
 - 198 ADM1 country packages with 3,236 divisions.
 - 34,456 populated places in the city challenge dataset.
 
@@ -212,10 +212,9 @@ Generated 2026-11-16T20:43:02.789Z.
 
 ## Limitations
 
-- Country boundaries use Natural Earth 1:50m generalized geometry; tiny islands and disputed boundaries follow Natural Earth conventions.
+- World maps use Natural Earth 1:50m generalized geometry; Country Outlines use detailed 1:10m geometry. Tiny islands and disputed boundaries follow Natural Earth conventions.
+- Explicit parent-territory relationships separate detached overseas components into their own Extended identities while domestic archipelagos remain grouped with their country. All catalog identities currently have map geometry.
 - ADM1 availability is per country and may vary by date, source, geographic scope, and license. Countries without a downloaded package are not offered in the subdivision map.
 - GeoNames cities500 includes populated places of 50,000 or more plus national and first-level seats with lower population; cities below that threshold are omitted.
 - National-capital names and coordinates are incomplete for some territories; capital-location questions use records with a known coordinate.
 - Population uses World Bank 2023 annual estimates where an ISO3 match exists; area values come from the country catalog. Neither figure is a live statistical feed.
-
-Country catalog records without a Natural Earth feature: Bouvet Island, Caribbean Netherlands, Christmas Island, Cocos (Keeling) Islands, French Guiana, Gibraltar, Guadeloupe, Martinique, Mayotte, Réunion, Svalbard and Jan Mayen, Tokelau, United States Minor Outlying Islands.

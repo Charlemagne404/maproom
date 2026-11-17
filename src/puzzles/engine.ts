@@ -193,7 +193,7 @@ function generateScopedRoutePuzzle(countries: Country[], seed: string, options: 
 export function greatCircleKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
   const radians = (degrees: number) => degrees * Math.PI / 180
   const latitudeDelta = radians(b.lat - a.lat)
-  const longitudeDelta = radians(b.lon - a.lon)
+  const longitudeDelta = radians(shortestLongitudeDelta(a.lon, b.lon))
   const angle = 2 * Math.asin(Math.sqrt(
     Math.sin(latitudeDelta / 2) ** 2
       + Math.cos(radians(a.lat)) * Math.cos(radians(b.lat)) * Math.sin(longitudeDelta / 2) ** 2,
@@ -202,9 +202,17 @@ export function greatCircleKm(a: { lat: number; lon: number }, b: { lat: number;
 }
 
 export function directionFromTo(from: { lat: number; lon: number }, to: { lat: number; lon: number }): string {
-  const angle = (Math.atan2(to.lon - from.lon, to.lat - from.lat) * 180 / Math.PI + 360) % 360
+  const longitudeDelta = shortestLongitudeDelta(from.lon, to.lon)
+  const angle = (Math.atan2(longitudeDelta, to.lat - from.lat) * 180 / Math.PI + 360) % 360
   const directions = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']
   return directions[Math.round(angle / 45) % 8]
+}
+
+function shortestLongitudeDelta(from: number, to: number): number {
+  const rawDelta = to - from
+  const wrapped = ((rawDelta + 540) % 360) - 180
+  if (Math.abs(wrapped) === 180) return rawDelta >= 0 ? 180 : -180
+  return wrapped
 }
 
 export function distanceScore(kilometres: number): number {

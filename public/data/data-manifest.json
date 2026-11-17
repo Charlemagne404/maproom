@@ -18,6 +18,20 @@
       ]
     },
     {
+      "name": "Natural Earth 1:10m Admin 0 Countries",
+      "source": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson",
+      "version": "GitHub natural-earth-vector master snapshot",
+      "retrievedAt": "2026-11-16T20:43:02.789Z",
+      "sha256": "239eec57ac17f100a11e2536cffc56752c318b50ae765b0918ff7aab4ce8f255",
+      "license": "Public domain",
+      "licenseUrl": "https://www.naturalearthdata.com/about/terms-of-use/",
+      "attribution": "Made with Natural Earth.",
+      "transformations": [
+        "Preserved detailed Polygon and MultiPolygon rings for country silhouettes",
+        "Separated named territory components from their parent countries"
+      ]
+    },
+    {
       "name": "World country metadata",
       "source": "https://raw.githubusercontent.com/mledoze/countries/master/countries.json",
       "version": "GitHub mledoze/countries master snapshot",
@@ -93,10 +107,10 @@
     }
   ],
   "artifacts": {
-    "countriesGeoJSONSha256": "77fde8e9b34cdde1e3264a27ad176ceb1757ca5d5860cad5e90ede34d4ebc8ab",
-    "countriesCatalogSha256": "9efd7cb9c2758bc70413f82410429ffbab903411be2066e321fc7d585ac66b76",
+    "countriesGeoJSONSha256": "c3bb694167f6a9b05f33d915f2928da0d31b0eb1dd44ec7e4cf21880bd10bd6a",
+    "countriesCatalogSha256": "f519294f51da1332118c2f1e91239199ffae0c357d0e1b8b79659a0500f868fe",
     "citiesSha256": "81d91cedddb8f06cc30e1cd4d78dd50cf38ed064cf6cf7df2d0be25d39195eb2",
-    "coverageSha256": "afc2a3e1d27ebe40599c6f647d81c0ee5f379c7f4261e511ce6f565348a464f3",
+    "coverageSha256": "0bfce52f825ee3d8972703d3433c4a4a8b4cf6fdbd2b2ffb46dca5723b2e6ee6",
     "regionIndexSha256": "95cae1434ec49d58728f3cf93cbbc44bb146780ea16eebb537167a133d0b245e",
     "regionPackages": [
       {
@@ -1683,6 +1697,7 @@
         "sha256": "9fa28863d481d781cf3ef2914cede33465c53499040fda83f2e7514287f0e86b",
         "bytes": 5542089
       }
-    ]
+    ],
+    "countriesOutlineGeoJSONSha256": "d8093cb58e7725310a4675522932e77707d6efb3817fb94457880fb19feb9923"
   }
 }

@@ -5,6 +5,8 @@ import { mkdir, readdir, unlink, writeFile } from 'node:fs/promises';
 import { topology } from 'topojson-server';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { mergeDetailedFallback, normalizeNaturalEarthGeometry, territoryParentIso3 } from './country-geometry.mjs';
+import { supplementalTerritories } from './supplemental-territories.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const rawDir = path.join(root, '.data', 'raw');
@@ -17,6 +19,7 @@ const regionLimit = process.env.MAPROOM_REGION_LIMIT
 
 const sources = {
   naturalEarth: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson',
+  naturalEarthDetail: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson',
   countryCatalog: 'https://raw.githubusercontent.com/mledoze/countries/master/countries.json',
   countryLicense: 'https://raw.githubusercontent.com/mledoze/countries/master/LICENSE',
   geonamesCities: 'https://download.geonames.org/export/dump/cities500.zip',
@@ -55,13 +58,15 @@ async function fetchJson(url, target, label) {
   };
 }
 
-const [naturalEarth, countryCatalog, worldBankPopulation, geoBoundaryIndex, cityArchive] = await Promise.all([
+const [naturalEarth, naturalEarthDetail, countryCatalog, worldBankPopulation, geoBoundaryIndex, cityArchive] = await Promise.all([
   fetchJson(sources.naturalEarth, path.join(rawDir, 'natural-earth-admin0-50m.geojson'), 'Natural Earth country boundaries'),
+  fetchJson(sources.naturalEarthDetail, path.join(rawDir, 'natural-earth-admin0-10m.geojson'), 'Natural Earth detailed country boundaries'),
   fetchJson(sources.countryCatalog, path.join(rawDir, 'mledoze-countries.json'), 'Country metadata'),
   fetchJson(sources.worldBankPopulation, path.join(rawDir, 'world-bank-population-2023.json'), 'World Bank 2023 population'),
   fetchJson(sources.geoBoundaries, path.join(rawDir, 'geoboundaries-adm1-index.json'), 'geoBoundaries ADM1 index'),
   fetchBuffer(sources.geonamesCities, path.join(rawDir, 'geonames-cities500.zip'), 'GeoNames cities500'),
 ]);
+const catalogCountries = [...countryCatalog.value, ...supplementalTerritories];
 
 if (!Array.isArray(worldBankPopulation.value) || !Array.isArray(worldBankPopulation.value[1])) {
   throw new Error('World Bank population API returned an unexpected response.');
@@ -70,43 +75,15 @@ const populationByIso3 = new Map(worldBankPopulation.value[1]
   .filter((item) => item?.countryiso3code && item.date === '2023' && Number.isFinite(item.value))
   .map((item) => [item.countryiso3code, item]));
 
-const countriesByIso3 = new Map(countryCatalog.value.map((country) => [country.cca3, country]));
-const countriesByName = new Map();
-for (const country of countryCatalog.value) {
-  for (const name of [country.name?.common, country.name?.official, ...(country.altSpellings ?? [])]) {
-    if (name) countriesByName.set(normalize(name), country);
-  }
-}
+const normalizedOutlines = normalizeNaturalEarthGeometry({ ...naturalEarthDetail.value, scale: '1:10m' }, catalogCountries);
+const normalizedWorld = normalizeNaturalEarthGeometry({ ...naturalEarth.value, scale: '1:50m' }, catalogCountries);
+const detailedFeatures = normalizedOutlines.features;
+const normalizedFeatures = mergeDetailedFallback(normalizedWorld.features, detailedFeatures);
+const geometryCodes = new Set(normalizedFeatures.map((feature) => feature.properties.iso3).filter(Boolean));
+const countriesByIso3 = new Map(catalogCountries.map((country) => [country.cca3, country]));
 
-const normalizedFeatures = [];
-const geometryCodes = new Set();
-for (const feature of naturalEarth.value.features ?? []) {
-  const properties = feature.properties ?? {};
-  const candidates = [properties.ADM0_A3, properties.ISO_A3_EH, properties.ISO_A3, properties.GU_A3, properties.SOV_A3]
-    .filter((value) => typeof value === 'string' && /^[A-Z]{3}$/.test(value));
-  const country = candidates.map((code) => countriesByIso3.get(code)).find(Boolean)
-    ?? [properties.ADMIN, properties.NAME_EN, properties.NAME, properties.NAME_LONG]
-      .map((name) => countriesByName.get(normalize(name)))
-      .find(Boolean);
-  const iso3 = country?.cca3 ?? null;
-  if (iso3) geometryCodes.add(iso3);
-  normalizedFeatures.push({
-    type: 'Feature',
-    id: iso3 ?? `ne-${properties.NE_ID ?? normalizedFeatures.length}`,
-    properties: {
-      iso3,
-      name: country?.name?.common ?? properties.ADMIN ?? properties.NAME_EN ?? properties.NAME ?? 'Unlabelled area',
-      nameLong: country?.name?.official ?? properties.NAME_LONG ?? null,
-      continent: country ? continentFor(country) : properties.CONTINENT ?? null,
-      mapUnit: properties.ADMIN ?? properties.GEOUNIT ?? null,
-      naturalEarthId: properties.NE_ID ?? null,
-    },
-    geometry: feature.geometry,
-  });
-}
-
-const countryOutput = countryCatalog.value
-  .filter((country) => country.cca3 && country.cca2 && country.name?.common)
+const countryOutput = catalogCountries
+  .filter((country) => country.cca3 && (country.cca2 || country.maproomFlagCode) && country.name?.common)
   .map((country) => {
     const aliases = unique([
       country.name.common,
@@ -116,6 +93,7 @@ const countryOutput = countryCatalog.value
     ]);
     return {
       iso3: country.cca3,
+      parentIso3: territoryParentIso3(country.cca3),
       iso2: country.cca2,
       name: country.name.common,
       officialName: country.name.official ?? country.name.common,
@@ -136,7 +114,8 @@ const countryOutput = countryCatalog.value
       landlocked: Boolean(country.landlocked),
       borders: unique((country.borders ?? []).filter((code) => code !== country.cca3 && countriesByIso3.has(code))).sort(),
       independent: country.independent === true,
-      flagCode: country.cca2.toLowerCase(),
+      flagCode: country.maproomFlagCode ?? country.cca2.toLowerCase(),
+      flagEligible: country.maproomFlagEligible ?? true,
       hasGeometry: geometryCodes.has(country.cca3),
       regionCount: 0,
       regionSource: null,
@@ -157,7 +136,7 @@ try {
   throw new Error(`Could not read GeoNames cities500.zip. Install the system unzip utility, then rerun. ${error.message}`);
 }
 
-const iso2ToIso3 = new Map(countryOutput.map((country) => [country.iso2, country.iso3]));
+const iso2ToIso3 = new Map(countryOutput.filter((country) => country.iso2).map((country) => [country.iso2, country.iso3]));
 const cities = [];
 for (const line of cityText.split('\n')) {
   if (!line) continue;
@@ -301,14 +280,17 @@ const coverage = {
   generatedAt: retrievedAt,
   countryCatalogCount: countryOutput.length,
   countryGeometryFeatureCount: normalizedFeatures.length,
+  outlineGeometryFeatureCount: detailedFeatures.length,
   countryCodesWithGeometry: geometryCodes.size,
+  countriesWithoutGeometry: countryOutput.filter((country) => !geometryCodes.has(country.iso3)).map((country) => country.iso3),
   admin1CountriesIndexed: regionEntries.length,
   admin1CountriesIncluded: regionResults.filter((entry) => entry.status === 'included').length,
   admin1UnitsIncluded: regionResults.filter((entry) => entry.status === 'included').reduce((sum, entry) => sum + entry.count, 0),
   cityCount: cities.length,
   countriesWithoutAdmin1: countryOutput.filter((country) => !country.regionCount).length,
   limitations: [
-    'Country boundaries use Natural Earth 1:50m generalized geometry; tiny islands and disputed boundaries follow Natural Earth conventions.',
+    'World maps use Natural Earth 1:50m generalized geometry and Country Outlines use detailed 1:10m geometry; tiny islands and disputed boundaries follow Natural Earth conventions.',
+    'Explicit parent-territory links split detached overseas components into separate Extended entries while preserving domestic archipelagos. Disputed records without a resolved parent remain separate.',
     'ADM1 availability is per country and may vary by date, source, geographic scope, and license. Countries without a downloaded package are not offered in the subdivision map.',
     'GeoNames cities500 includes populated places of 50,000 or more plus national and first-level seats with lower population; cities below that threshold are omitted.',
     'National-capital names and coordinates are incomplete for some territories; capital-location questions use records with a known coordinate.',
@@ -318,6 +300,7 @@ const coverage = {
 
 await Promise.all([
   writeFile(path.join(dataDir, 'countries.geojson'), JSON.stringify({ type: 'FeatureCollection', features: normalizedFeatures })),
+  writeFile(path.join(dataDir, 'countries-outline.geojson'), JSON.stringify({ type: 'FeatureCollection', features: detailedFeatures })),
   writeFile(path.join(dataDir, 'countries.json'), JSON.stringify({ schemaVersion: 1, countries: countryOutput })),
   writeFile(path.join(dataDir, 'cities.json'), JSON.stringify({ schemaVersion: 1, cities })),
   writeFile(path.join(dataDir, 'coverage.json'), JSON.stringify(coverage, null, 2)),
@@ -337,7 +320,18 @@ const manifest = {
       license: 'Public domain',
       licenseUrl: 'https://www.naturalearthdata.com/about/terms-of-use/',
       attribution: 'Made with Natural Earth.',
-      transformations: ['Kept world-scale generalized geometries', 'Normalized country identifiers and display properties', 'Removed unused source attributes'],
+      transformations: ['Kept world-scale generalized geometries', 'Normalized country identifiers and display properties', 'Separated named territory components from their parent countries'],
+    },
+    {
+      name: 'Natural Earth 1:10m Admin 0 Countries',
+      source: sources.naturalEarthDetail,
+      version: 'GitHub natural-earth-vector master snapshot',
+      retrievedAt,
+      sha256: naturalEarthDetail.sha256,
+      license: 'Public domain',
+      licenseUrl: 'https://www.naturalearthdata.com/about/terms-of-use/',
+      attribution: 'Made with Natural Earth.',
+      transformations: ['Preserved detailed Polygon and MultiPolygon rings for country silhouettes', 'Separated named territory components from their parent countries'],
     },
     {
       name: 'World country metadata',
@@ -397,6 +391,7 @@ const manifest = {
   ],
   artifacts: {
     countriesGeoJSONSha256: sha256File(path.join(dataDir, 'countries.geojson')),
+    countriesOutlineGeoJSONSha256: sha256File(path.join(dataDir, 'countries-outline.geojson')),
     countriesCatalogSha256: sha256File(path.join(dataDir, 'countries.json')),
     citiesSha256: sha256File(path.join(dataDir, 'cities.json')),
     coverageSha256: sha256File(path.join(dataDir, 'coverage.json')),
@@ -470,7 +465,7 @@ async function writeCoverageReport(dataCoverage, regions, countries) {
     '',
     `Generated ${dataCoverage.generatedAt}.`,
     '',
-    `- ${dataCoverage.countryCatalogCount} country and territory metadata records.`,
+    `- ${dataCoverage.countryCatalogCount} country, territory and other geographic identity records; 195 belong to the Standard catalogue.`,
     `- ${dataCoverage.countryCodesWithGeometry} ISO-coded country geometries across ${dataCoverage.countryGeometryFeatureCount} map features.`,
     `- ${supported.length} ADM1 country packages with ${dataCoverage.admin1UnitsIncluded.toLocaleString('en')} divisions.`,
     `- ${dataCoverage.cityCount.toLocaleString('en')} populated places in the city challenge dataset.`,

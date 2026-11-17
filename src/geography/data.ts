@@ -4,6 +4,7 @@ import { feature } from 'topojson-client'
 import type { Topology } from 'topojson-specification'
 
 let geographyPromise: Promise<GeographyData> | undefined
+let outlineFeaturesPromise: Promise<GeoFeature[]> | undefined
 let cityPromise: Promise<CityData> | undefined
 const regionPromises = new Map<string, Promise<RegionCollection>>()
 
@@ -38,6 +39,19 @@ export function loadGeography(): Promise<GeographyData> {
     throw error
   })
   return geographyPromise
+}
+
+export function loadOutlineFeatures(): Promise<GeoFeature[]> {
+  outlineFeaturesPromise ??= getJson<{ type: 'FeatureCollection'; features: GeoFeature[] }>('/data/countries-outline.geojson').then((collection) => {
+    if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features)) {
+      throw new Error('The detailed country outline data is malformed.')
+    }
+    return collection.features.filter((feature) => feature.geometry && feature.properties)
+  }).catch((error) => {
+    outlineFeaturesPromise = undefined
+    throw error
+  })
+  return outlineFeaturesPromise
 }
 
 export function loadCities(): Promise<CityData> {
@@ -122,6 +136,7 @@ function repairMojibake(value: string): string {
 
 export function resetGeographyCacheForTests(): void {
   geographyPromise = undefined
+  outlineFeaturesPromise = undefined
   cityPromise = undefined
   regionPromises.clear()
 }

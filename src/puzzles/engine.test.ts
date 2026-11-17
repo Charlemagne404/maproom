@@ -24,6 +24,7 @@ import {
 function country(iso3: string, overrides: Partial<Country> = {}): Country {
   return {
     iso3,
+    parentIso3: null,
     iso2: iso3.slice(0, 2),
     name: iso3,
     officialName: iso3,
@@ -138,10 +139,45 @@ describe('border routes', () => {
 })
 
 describe('distance and grid scoring', () => {
-  it('calculates great-circle distance and compass direction', () => {
+  it('calculates distance and all eight directions from the origin toward the destination', () => {
     expect(greatCircleKm({ lat: 0, lon: 0 }, { lat: 0, lon: 1 })).toBeCloseTo(111.2, 0)
     expect(directionFromTo({ lat: 0, lon: 0 }, { lat: 1, lon: 0 })).toBe('north')
     expect(directionFromTo({ lat: 0, lon: 0 }, { lat: 0, lon: 1 })).toBe('east')
+    expect(directionFromTo({ lat: 0, lon: 0 }, { lat: -1, lon: 0 })).toBe('south')
+    expect(directionFromTo({ lat: 0, lon: 0 }, { lat: 0, lon: -1 })).toBe('west')
+    expect(directionFromTo({ lat: 0, lon: 0 }, { lat: 1, lon: 1 })).toBe('north-east')
+    expect(directionFromTo({ lat: 0, lon: 0 }, { lat: -1, lon: 1 })).toBe('south-east')
+    expect(directionFromTo({ lat: 0, lon: 0 }, { lat: -1, lon: -1 })).toBe('south-west')
+    expect(directionFromTo({ lat: 0, lon: 0 }, { lat: 1, lon: -1 })).toBe('north-west')
+  })
+
+  it('uses shortest east-west paths across the International Date Line', () => {
+    const eastward = { lat: 0, lon: 170 }
+    const westward = { lat: 0, lon: -170 }
+    expect(directionFromTo(eastward, westward)).toBe('east')
+    expect(directionFromTo(westward, eastward)).toBe('west')
+    expect(greatCircleKm(eastward, westward)).toBeCloseTo(2223.9, 0)
+  })
+
+  it('keeps reversed pairs opposite and fixes real country-position regressions', () => {
+    const pairs = [
+      [{ lat: 38, lon: -97 }, { lat: 40, lon: 60 }], // USA to Turkmenistan
+      [{ lat: 38, lon: -97 }, { lat: 62, lon: 15 }], // USA to Sweden
+      [{ lat: -35, lon: 149 }, { lat: 64, lon: -21 }],
+      [{ lat: 10, lon: 179 }, { lat: -10, lon: -179 }],
+    ] as const
+    const opposite: Record<string, string> = {
+      north: 'south', 'north-east': 'south-west', east: 'west', 'south-east': 'north-west',
+      south: 'north', 'south-west': 'north-east', west: 'east', 'north-west': 'south-east',
+    }
+    for (const [origin, destination] of pairs) {
+      const forward = directionFromTo(origin, destination)
+      expect(directionFromTo(destination, origin)).toBe(opposite[forward])
+    }
+    expect(directionFromTo({ lat: 38, lon: -97 }, { lat: 40, lon: 60 })).toBe('east')
+    expect(directionFromTo({ lat: 40, lon: 60 }, { lat: 38, lon: -97 })).toBe('west')
+    expect(directionFromTo({ lat: 38, lon: -97 }, { lat: 62, lon: 15 })).toBe('east')
+    expect(directionFromTo({ lat: 62, lon: 15 }, { lat: 38, lon: -97 })).toBe('west')
   })
 
   it('scores city distance at the documented thresholds', () => {

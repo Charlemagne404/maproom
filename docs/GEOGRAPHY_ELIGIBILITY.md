@@ -17,7 +17,7 @@ Kosovo (XKX) and other places not covered by those two UN categories are not in 
 
 ## Extended
 
-Extended contains all 250 records in Maproom's current country and territory catalogue, including dependencies and additional or limited-recognition records where supplied by the source. The source catalogue is described in [DATA_SOURCES.md](DATA_SOURCES.md) and [DATA_COVERAGE.md](DATA_COVERAGE.md). Extended follows that catalogue; it is not a claim that the list is exhaustive or a political classification.
+Extended contains all 255 geographic identities in Maproom's current catalogue, including separately playable territories and additional or limited-recognition records where supplied by the source. The 195 Standard entries remain fixed. Parent relationships are recorded where appropriate, and Extended membership does not imply independent sovereignty. The source catalogue is described in [DATA_SOURCES.md](DATA_SOURCES.md) and [DATA_COVERAGE.md](DATA_COVERAGE.md). Extended follows that catalogue; it is not a claim that the list is exhaustive or a political classification.
 
 ## Game-specific data requirements
 
