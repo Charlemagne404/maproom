@@ -11,6 +11,7 @@ import { loadRegions } from '../../geography/data'
 import { pickCountries, seededShuffle } from '../../puzzles/engine'
 import { missedCountryCodes } from '../../statistics/mistakes'
 import { useGameSession } from '../session'
+import { eligibleCountries, eligibleFeatures, type GeographyEligibility } from '../../geography/eligibility'
 
 type Scope = 'world' | 'continent' | 'regions'
 type QuestionCount = '10' | '20' | '50' | 'infinite'
@@ -18,6 +19,12 @@ interface Question { code: string; name: string; detail: string; feature?: GeoFe
 
 export function CountryIdentificationGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const { state } = useAppData()
+  const session = useGameSession('countries', mode, date, seed)
+  const progress = mode === 'daily' ? session.progress : null
+  const restoredNumber = (key: string, fallback: number) => typeof progress?.[key] === 'number' ? progress[key] as number : fallback
+  const restoredString = (key: string, fallback: string) => typeof progress?.[key] === 'string' ? progress[key] as string : fallback
+  const restoredBoolean = (key: string, fallback: boolean) => typeof progress?.[key] === 'boolean' ? progress[key] as boolean : fallback
+  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
   const [scope, setScope] = useState<Scope>('world')
   const [continent, setContinent] = useState('Europe')
   const [regionCountry, setRegionCountry] = useState('USA')
@@ -28,25 +35,26 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
   const [deckCycle, setDeckCycle] = useState(0)
   const [loadedRegions, setLoadedRegions] = useState<{ iso3: string; collection: RegionCollection } | null>(null)
   const [failedRegionCountry, setFailedRegionCountry] = useState<string | null>(null)
-  const [index, setIndex] = useState(0)
-  const [selected, setSelected] = useState('')
-  const [answerLocked, setAnswerLocked] = useState(false)
-  const [feedback, setFeedback] = useState('')
-  const [input, setInput] = useState('')
-  const [correct, setCorrect] = useState(0)
-  const [score, setScore] = useState(0)
-  const [finished, setFinished] = useState(false)
+  const [index, setIndex] = useState(() => restoredNumber('index', 0))
+  const [selected, setSelected] = useState(() => restoredString('selected', ''))
+  const [answerLocked, setAnswerLocked] = useState(() => restoredBoolean('answerLocked', false))
+  const [feedback, setFeedback] = useState(() => restoredString('feedback', ''))
+  const [input, setInput] = useState(() => restoredString('input', ''))
+  const [correct, setCorrect] = useState(() => restoredNumber('correct', 0))
+  const [score, setScore] = useState(() => restoredNumber('score', 0))
+  const [finished, setFinished] = useState(() => restoredBoolean('finished', false))
   const [scopeError, setScopeError] = useState('')
-  const [resolved, setResolved] = useState(0)
-  const [seconds, setSeconds] = useState(60)
-  const [missedQuestions, setMissedQuestions] = useState<string[]>([])
+  const [resolved, setResolved] = useState(() => restoredNumber('resolved', 0))
+  const [seconds, setSeconds] = useState(() => restoredNumber('seconds', 60))
+  const [missedQuestions, setMissedQuestions] = useState<string[]>(() => Array.isArray(progress?.missedQuestions) ? progress.missedQuestions.filter((item): item is string => typeof item === 'string') : [])
   const missedCodes = useMemo(() => missedCountryCodes(state.history, 'countries'), [state.history])
-  const { save, saveError, resetSession } = useGameSession('countries', mode, date, `${seed}:${round}:${scope}:${continent}:${regionCountry}:${questionCount}:${timed}:${reviewMissed}`)
+  const { save, saveError, saveProgress, resetSession } = session
   const infinitePractice = mode === 'practice' && questionCount === 'infinite'
   const questionSeed = mode === 'daily' ? seed : `${seed}:${round}:${deckCycle}:${scope}:${continent}:${regionCountry}:${reviewMissed}`
 
-  const countriesWithRegions = useMemo(() => data.countries.filter((country) => country.regionCount > 0).sort((a, b) => a.name.localeCompare(b.name)), [data.countries])
-  const continents = useMemo(() => [...new Set(data.countries.filter((country) => country.hasGeometry && country.continent).map((country) => country.continent as string))].sort(), [data.countries])
+  const eligible = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
+  const countriesWithRegions = useMemo(() => eligible.filter((country) => country.regionCount > 0).sort((a, b) => a.name.localeCompare(b.name)), [eligible])
+  const continents = useMemo(() => [...new Set(eligible.map((country) => country.continent).filter((continent): continent is string => Boolean(continent)))].sort(), [eligible])
   const regions = loadedRegions?.iso3 === regionCountry ? loadedRegions.collection : null
   const regionError = failedRegionCountry === regionCountry
     ? 'No subdivision map is available for this country. Choose another supported country.'
@@ -65,7 +73,7 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
     const requestedCount = mode === 'daily' ? 8 : questionCount === 'infinite' ? 40 : Number(questionCount)
     if (scope === 'regions') {
       if (!regions) return []
-      return seededShuffle(regions.features, `${questionSeed}:regions:${regionCountry}`)
+      const generated = seededShuffle(regions.features, `${questionSeed}:regions:${regionCountry}`)
         .slice(0, requestedCount)
         .map((feature) => ({
           code: String(feature.properties.id ?? feature.id ?? ''),
@@ -73,17 +81,25 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
           detail: data.countriesByCode.get(regionCountry)?.name ?? regionCountry,
           feature,
         }))
+      return restoreQuestionOrder(generated, progress?.questionCodes)
     }
     const filter = scope === 'continent' ? (country: Country) => country.continent === continent : undefined
-    const selectedCountries = pickCountries(data.countries, data.countries.length, `${questionSeed}:${scope}:${continent}`, filter)
+    const selectedCountries = pickCountries(eligible, eligible.length, `${questionSeed}:${scope}:${continent}`, filter)
     const orderedCountries = mode === 'daily' || !reviewMissed
       ? selectedCountries
       : [
         ...seededShuffle(selectedCountries.filter((country) => missedCodes.includes(country.iso3)), `${questionSeed}:missed`),
         ...seededShuffle(selectedCountries.filter((country) => !missedCodes.includes(country.iso3)), `${questionSeed}:fresh`),
       ]
-    return orderedCountries.slice(0, requestedCount).map((country) => ({ code: country.iso3, name: country.name, detail: country.continent ?? 'World' }))
-  }, [scope, regions, regionCountry, mode, questionSeed, data.countries, data.countriesByCode, continent, questionCount, reviewMissed, missedCodes])
+    return restoreQuestionOrder(
+      orderedCountries.slice(0, requestedCount).map((country) => ({ code: country.iso3, name: country.name, detail: country.continent ?? 'World' })),
+      progress?.questionCodes,
+      (code) => {
+        const country = data.countriesByCode.get(code)
+        return country ? { code, name: country.name, detail: country.continent ?? 'World' } : undefined
+      },
+    )
+  }, [scope, regions, regionCountry, mode, questionSeed, eligible, data.countriesByCode, continent, questionCount, reviewMissed, missedCodes, progress])
 
   function resetRound() {
     setIndex(0)
@@ -105,11 +121,16 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
   const countLimit = questions.length
   const countryFeatures = useMemo(() => scope === 'regions'
     ? (regions?.features ?? [])
-    : data.features, [scope, regions, data.features])
+    : eligibleFeatures(data.features, eligibility), [scope, regions, data.features, eligibility])
   const suggestions: Suggestion[] = useMemo(() => scope === 'regions'
     ? (regions?.features ?? []).map((feature) => ({ value: String(feature.properties.id), label: String(feature.properties.name), detail: data.countriesByCode.get(regionCountry)?.name }))
-    : data.countries.filter((country) => country.hasGeometry).map((country) => ({ value: country.iso3, label: country.name, detail: country.continent ?? undefined, aliases: country.aliases })),
-  [scope, regions, data.countries, data.countriesByCode, regionCountry])
+    : eligible.map((country) => ({ value: country.iso3, label: country.name, detail: country.continent ?? undefined, aliases: country.aliases })),
+  [scope, regions, eligible, data.countriesByCode, regionCountry])
+
+  useEffect(() => {
+    if (mode !== 'daily' || finished) return
+    void saveProgress({ index, selected, answerLocked, feedback, input, correct, score, resolved, seconds, missedQuestions, deckCycle, questionCodes: questions.map((item) => item.code) })
+  }, [mode, finished, index, selected, answerLocked, feedback, input, correct, score, resolved, seconds, missedQuestions, deckCycle, questions, saveProgress])
 
   useEffect(() => {
     if (mode !== 'practice' || !timed || finished || questions.length === 0) return
@@ -186,6 +207,7 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
         <div><span className="eyebrow">{question.detail}</span><h2><em>{question.name}</em></h2></div>
         <div className="question-toolbar-tools">
           {showOptions && <GameSettingsMenu><div className="practice-config">
+            <label><span>Country pool</span><select value={eligibility} onChange={(event) => { resetRound(); setEligibility(event.target.value as GeographyEligibility) }}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
             <label><span>Practice scope</span><select value={scope} onChange={(event) => { resetRound(); setScope(event.target.value as Scope) }}><option value="world">Worldwide</option><option value="continent">One continent</option><option value="regions">Subdivisions</option></select></label>
             {scope === 'continent' && <label><span>Continent</span><select value={continent} onChange={(event) => { resetRound(); setContinent(event.target.value) }}>{continents.map((item) => <option key={item}>{item}</option>)}</select></label>}
             <label><span>Questions</span><select value={questionCount} onChange={(event) => { resetRound(); setQuestionCount(event.target.value as QuestionCount) }}><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="infinite">Infinite</option></select></label>
@@ -234,4 +256,15 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
       <GameResultsDialog complete={finished} gameId="countries" mode={mode} score={score} correct={correct} total={infinitePractice ? resolved : questions.length} title={timed && seconds === 0 ? 'Time is up.' : "Round complete."} message="Good work. You’ve covered some ground." saveError={saveError} onReplay={mode === 'practice' ? () => { resetRound(); resetSession(); setRound((value) => value + 1) } : undefined} />
     </div>
   )
+}
+
+function restoreQuestionOrder<T extends { code: string }>(generated: T[], saved: unknown, fallback?: (code: string) => T | undefined): T[] {
+  if (!Array.isArray(saved)) return generated
+  const byCode = new Map(generated.map((question) => [question.code, question]))
+  const restored = saved.flatMap((code) => {
+    if (typeof code !== 'string') return []
+    const question = byCode.get(code) ?? fallback?.(code)
+    return question ? [question] : []
+  })
+  return restored.length === generated.length ? restored : generated
 }

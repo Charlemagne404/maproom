@@ -1,8 +1,17 @@
 import type { Country, GameId } from '../geography/types'
 
 export const GAME_IDS: GameId[] = ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']
-export const PUZZLE_VERSION = 1
-const GAME_PUZZLE_VERSIONS: Partial<Record<GameId, number>> = { grid: 2 }
+export const PUZZLE_VERSION = 2
+// Eligibility pools changed for the original daily games. Keep completed history
+// intact while assigning the new, standard-country puzzle identities.
+const GAME_PUZZLE_VERSIONS: Partial<Record<GameId, number>> = {
+  countries: 2,
+  outlines: 2,
+  routes: 2,
+  flags: 2,
+  grid: 3,
+  cities: 2,
+}
 
 export function normalizeAnswer(value: string): string {
   return value

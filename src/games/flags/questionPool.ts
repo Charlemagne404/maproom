@@ -1,9 +1,10 @@
 import type { Country } from '../../geography/types'
+import { eligibleCountries, type GeographyEligibility } from '../../geography/eligibility'
 
 export type PracticeQuestionCount = '10' | '20' | '50' | 'infinite'
 
-export function flagCountryPool(countries: readonly Country[], region: string): Country[] {
-  return countries.filter((country) => country.flagCode && (region === 'All regions' || country.continent === region))
+export function flagCountryPool(countries: readonly Country[], region: string, eligibility: GeographyEligibility = 'standard'): Country[] {
+  return eligibleCountries([...countries], eligibility).filter((country) => country.flagCode && (region === 'All regions' || country.continent === region))
 }
 
 export function shuffleFlagPool<T>(values: readonly T[], random: () => number = Math.random, previous?: T): T[] {

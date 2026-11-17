@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Check, CircleHelp, Grid3X3, Plus } from 'lucide-react'
 import { AutocompleteInput, type Suggestion } from '../../components/AutocompleteInput'
 import { GameResultsDialog } from '../../components/GameResults'
@@ -7,47 +7,68 @@ import { InlineNotice } from '../../components/Kit'
 import type { GeographyData, GameMode, Country } from '../../geography/types'
 import { gridAnswerScore, gridCandidates, seededShuffle, validGridPresets, type GridPreset } from '../../puzzles/engine'
 import { useGameSession } from '../session'
+import { useAppData } from '../../app/useAppData'
+import { eligibleCountries, type GeographyEligibility } from '../../geography/eligibility'
 
 export function GeographyGridGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
-  const presets = useMemo(() => validGridPresets(data.countries), [data.countries])
+  const { state } = useAppData()
+  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const eligible = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
+  const presets = useMemo(() => validGridPresets(eligible), [eligible])
   const daily = seededShuffle(presets, `${seed}:preset`)[0]
-  const [presetId, setPresetId] = useState(daily?.id ?? presets[0]?.id ?? '')
+  const savedPreset = mode === 'daily' ? state.sessions.find((session) => session.gameId === 'grid' && session.mode === 'daily' && session.date === date)?.payload.preset : undefined
+  const [presetId, setPresetId] = useState(typeof savedPreset === 'string' ? savedPreset : daily?.id ?? presets[0]?.id ?? '')
   const [round, setRound] = useState(0)
   if (!presets.length) return <InlineNotice title="A validated grid is unavailable" tone="warning">The current country facts do not fill every square for these grid sets.</InlineNotice>
   const preset = presets.find((item) => item.id === presetId) ?? daily ?? presets[0]
-  const roundSeed = mode === 'daily' ? `${seed}:${preset.id}` : `${seed}:${preset.id}:${round}`
-  return <GridRound key={`${preset.id}:${roundSeed}`} data={data} mode={mode} date={date} seed={roundSeed} preset={preset} presets={presets} onPreset={setPresetId} onReplay={() => {
+  const roundSeed = mode === 'daily' ? `${seed}:${preset.id}` : `${seed}:${preset.id}:${round}:${eligibility}`
+  return <GridRound key={`${preset.id}:${roundSeed}`} countries={eligible} mode={mode} date={date} seed={roundSeed} preset={preset} presets={presets} eligibility={eligibility} onEligibility={setEligibility} onPreset={setPresetId} onReplay={() => {
     const current = presets.findIndex((item) => item.id === preset.id)
     setPresetId(presets[(current + 1) % presets.length]!.id)
     setRound((value) => value + 1)
   }} />
 }
 
-function GridRound({ data, mode, date, seed, preset, presets, onPreset, onReplay }: {
-  data: GeographyData
+function GridRound({ countries, mode, date, seed, preset, presets, eligibility, onEligibility, onPreset, onReplay }: {
+  countries: Country[]
   mode: GameMode
   date: string
   seed: string
   preset: GridPreset
   presets: GridPreset[]
+  eligibility: GeographyEligibility
+  onEligibility: (value: GeographyEligibility) => void
   onPreset: (id: string) => void
   onReplay: () => void
 }) {
-  const [answers, setAnswers] = useState<Record<string, Country>>({})
-  const [inputs, setInputs] = useState<Record<string, string>>({})
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [activeKey, setActiveKey] = useState('0:0')
-  const [score, setScore] = useState(0)
-  const [finished, setFinished] = useState(false)
-  const { save, saveError } = useGameSession('grid', mode, date, seed)
-  const countrySuggestions: Suggestion[] = useMemo(() => data.countries.map((country) => ({ value: country.iso3, label: country.name, detail: country.continent ?? undefined, aliases: country.aliases })), [data.countries])
+  const session = useGameSession('grid', mode, date, seed)
+  const progress = mode === 'daily' ? session.progress : null
+  const [answers, setAnswers] = useState<Record<string, Country>>(() => {
+    if (!progress?.answers || typeof progress.answers !== 'object') return {}
+    return Object.fromEntries(Object.entries(progress.answers as Record<string, unknown>).flatMap(([key, code]) => {
+      const country = typeof code === 'string' ? countries.find((item) => item.iso3 === code) : undefined
+      return country ? [[key, country]] : []
+    }))
+  })
+  const [inputs, setInputs] = useState<Record<string, string>>(() => progress?.inputs && typeof progress.inputs === 'object' ? progress.inputs as Record<string, string> : {})
+  const [errors, setErrors] = useState<Record<string, string>>(() => progress?.errors && typeof progress.errors === 'object' ? progress.errors as Record<string, string> : {})
+  const [activeKey, setActiveKey] = useState(() => typeof progress?.activeKey === 'string' ? progress.activeKey : '0:0')
+  const [score, setScore] = useState(() => typeof progress?.score === 'number' ? progress.score : 0)
+  const [finished, setFinished] = useState(() => progress?.finished === true)
+  const { save, saveError, saveProgress } = session
+  const countrySuggestions: Suggestion[] = useMemo(() => countries.map((country) => ({ value: country.iso3, label: country.name, detail: country.continent ?? undefined, aliases: country.aliases })), [countries])
   const filled = Object.keys(answers).length
   const [activeRow, activeColumn] = activeKey.split(':').map(Number)
+
+  useEffect(() => {
+    if (mode !== 'daily' || finished) return
+    void saveProgress({ answers: Object.fromEntries(Object.entries(answers).map(([key, country]) => [key, country.iso3])), inputs, errors, activeKey, score, finished, preset: preset.id })
+  }, [mode, finished, answers, inputs, errors, activeKey, score, preset.id, saveProgress])
 
   async function submitCell(key: string, countryCode: string) {
     if (finished || answers[key]) return
     const [rowIndex, columnIndex] = key.split(':').map(Number)
-    const country = data.countriesByCode.get(countryCode)
+    const country = countries.find((item) => item.iso3 === countryCode)
     if (!country) {
       setErrors((current) => ({ ...current, [key]: 'Choose a country name from the suggestions.' }))
       return
@@ -62,7 +83,7 @@ function GridRound({ data, mode, date, seed, preset, presets, onPreset, onReplay
       setErrors((current) => ({ ...current, [key]: `${country.name} doesn’t meet both clues.` }))
       return
     }
-    const points = gridAnswerScore(gridCandidates(data.countries, row, column).length)
+    const points = gridAnswerScore(gridCandidates(countries, row, column).length)
     const nextAnswers = { ...answers, [key]: country }
     const nextScore = score + points
     setAnswers(nextAnswers)
@@ -91,6 +112,7 @@ function GridRound({ data, mode, date, seed, preset, presets, onPreset, onReplay
         <div><span className="eyebrow">{mode === 'daily' ? 'Today’s 3 × 3' : 'A fresh set of crossings'}</span><h2>{preset.title}</h2><p>Find one country for every row-and-column crossing.</p></div>
         <div className="question-toolbar-tools">
           {mode === 'practice' && <GameSettingsMenu><div className="practice-config">
+            <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
             <label><span>Grid set</span><select value={preset.id} onChange={(event) => onPreset(event.target.value)}>{presets.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
           <span className="practice-config-note">Each distinct board has nine valid, unique answers. Replay cycles to a fresh set.</span>
           </div></GameSettingsMenu>}
@@ -105,7 +127,7 @@ function GridRound({ data, mode, date, seed, preset, presets, onPreset, onReplay
           {preset.columns.map((column, columnIndex) => {
             const key = `${rowIndex}:${columnIndex}`
             const answer = answers[key]
-            const candidates = gridCandidates(data.countries, row, column)
+            const candidates = gridCandidates(countries, row, column)
             return <div className={`grid-cell${answer ? ' is-filled' : ''}${activeKey === key && !answer ? ' is-current' : ''}`} role="gridcell" data-cell-key={key} key={key}>
               {answer ? <div className="grid-answer"><Check size={14} /><strong>{answer.name}</strong><small>{gridAnswerScore(candidates.length)} pts</small></div> : <button type="button" className="grid-cell-trigger" aria-label={`Answer for ${row.label} and ${column.label}${activeKey === key ? ', selected' : ''}`} aria-pressed={activeKey === key} onClick={() => setActiveKey(key)}><Plus size={17} aria-hidden="true" /><span>Add place</span></button>}
               {errors[key] && <div className="grid-cell-error" role="alert">{errors[key]}</div>}
@@ -118,7 +140,7 @@ function GridRound({ data, mode, date, seed, preset, presets, onPreset, onReplay
         const row = preset.rows[rowIndex]
         const column = preset.columns[columnIndex]
         if (!row || !column || answers[activeKey]) return null
-        const candidates = gridCandidates(data.countries, row, column)
+        const candidates = gridCandidates(countries, row, column)
         return <div className="grid-entry-panel" aria-label="Selected square">
           <div className="grid-entry-prompt"><span className="eyebrow">Your pick</span><strong>{row.label}<b>×</b>{column.label}</strong><small>{candidates.length} possible countries · rarer answers score more</small></div>
           <AutocompleteInput

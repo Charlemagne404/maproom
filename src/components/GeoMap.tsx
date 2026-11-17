@@ -22,6 +22,9 @@ interface GeoMapProps {
   className?: string
   compact?: boolean
   showHoverLabels?: boolean
+  hideFeatureNames?: boolean
+  focusCodes?: string[]
+  focusPadding?: number
 }
 
 export function GeoMap({
@@ -39,10 +42,12 @@ export function GeoMap({
   className = '',
   compact = false,
   showHoverLabels = true,
+  hideFeatureNames = false,
+  focusCodes,
+  focusPadding = 56,
 }: GeoMapProps) {
   const [hovered, setHovered] = useState<string | null>(null)
-  const [zoom, setZoom] = useState(1)
-  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [view, setView] = useState({ focusKey: '', zoom: 1, pan: { x: 0, y: 0 } })
   const drag = useRef<{ x: number; y: number; panX: number; panY: number; moved: boolean } | null>(null)
   const svg = useRef<SVGSVGElement>(null)
   const active = useMemo(() => new Set(activeCodes), [activeCodes])
@@ -50,10 +55,23 @@ export function GeoMap({
     type: 'FeatureCollection',
     features: features as unknown as GeoJSON.Feature[],
   }), [features])
+  const focusKey = focusCodes?.join('|') ?? ''
+  const zoom = view.focusKey === focusKey ? view.zoom : 1
+  const pan = view.focusKey === focusKey ? view.pan : { x: 0, y: 0 }
+  const focusSet = useMemo(() => new Set(focusKey ? focusKey.split('|') : []), [focusKey])
+  const focusCollection = useMemo<GeoJSON.FeatureCollection>(() => {
+    if (!focusSet.size) return collection
+    const focused = collection.features.filter((feature) => {
+      const properties = feature.properties as Record<string, unknown>
+      return focusSet.has(String(properties.iso3 ?? properties.id ?? properties.isoCode ?? ''))
+    })
+    return focused.length ? { type: 'FeatureCollection', features: focused } : collection
+  }, [collection, focusSet])
   const projection = useMemo<GeoProjection>(() => {
     const base = projectionName === 'mercator' ? geoMercator() : geoEqualEarth()
-    return base.fitExtent(EDGE, collection)
-  }, [collection, projectionName])
+    const padding = Math.max(24, Math.min(160, focusPadding))
+    return base.fitExtent(focusSet.size ? [[padding, padding], [WIDTH - padding, HEIGHT - padding]] : EDGE, focusCollection)
+  }, [focusCollection, focusPadding, focusSet.size, projectionName])
   const rotationTransform = useMemo(() => {
     const radians = rotationDegrees * Math.PI / 180
     const contentWidth = WIDTH - 32
@@ -93,7 +111,7 @@ export function GeoMap({
       const dx = event.clientX - current.x
       const dy = event.clientY - current.y
       if (Math.abs(dx) + Math.abs(dy) > 4) current.moved = true
-      if (current.moved) setPan({ x: current.panX + dx * WIDTH / (svg.current?.clientWidth || WIDTH), y: current.panY + dy * HEIGHT / (svg.current?.clientHeight || HEIGHT) })
+      if (current.moved) setView({ focusKey, zoom, pan: { x: current.panX + dx * WIDTH / (svg.current?.clientWidth || WIDTH), y: current.panY + dy * HEIGHT / (svg.current?.clientHeight || HEIGHT) } })
     }
   }
 
@@ -140,7 +158,7 @@ export function GeoMap({
                 key={`${code}-${String(feature.id ?? 'feature')}-${index}`}
                 d={path(feature as unknown as GeoPermissibleObjects) ?? undefined}
                 className={`map-country${isActive ? ' is-active' : ''}${isCorrect ? ' is-correct' : ''}${isWrong ? ' is-wrong' : ''}${hovered === code ? ' is-hovered' : ''}`}
-                aria-label={`${feature.properties.name}${isActive ? ', in the current route' : ''}`}
+                aria-label={hideFeatureNames ? `Unlabelled map region ${index + 1}${isActive ? ', selected' : ''}` : `${feature.properties.name}${isActive ? ', in the current route' : ''}`}
                 aria-pressed={onSelectCode && canSelect ? isActive : undefined}
                 role={onSelectCode && canSelect ? 'button' : undefined}
                 tabIndex={onSelectCode && canSelect ? 0 : -1}
@@ -172,16 +190,16 @@ export function GeoMap({
             <g key={`${marker.kind}-${index}`} className={`map-marker map-marker-${marker.kind}`} transform={`translate(${marker.screen[0]} ${marker.screen[1]})`}>
               <circle r={marker.kind === 'answer' ? 8 : 7} />
               <circle r="2.2" className="map-marker-core" />
-              <title>{marker.label}</title>
+              {!hideFeatureNames && <title>{marker.label}</title>}
             </g>
           ))}
         </g>
       </svg>
       {!compact && (
         <div className="map-tools" aria-label="Map controls">
-          <button type="button" className="map-tool" onClick={() => setZoom((value) => Math.min(4, value + 0.4))} aria-label="Zoom in"><Plus size={16} /></button>
-          <button type="button" className="map-tool" onClick={() => setZoom((value) => Math.max(1, value - 0.4))} aria-label="Zoom out"><Minus size={16} /></button>
-          <button type="button" className="map-tool" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }) }} aria-label="Reset map view"><LocateFixed size={16} /></button>
+          <button type="button" className="map-tool" onClick={() => setView((current) => ({ focusKey, zoom: Math.min(4, (current.focusKey === focusKey ? current.zoom : 1) + 0.4), pan: current.focusKey === focusKey ? current.pan : { x: 0, y: 0 } }))} aria-label="Zoom in"><Plus size={16} /></button>
+          <button type="button" className="map-tool" onClick={() => setView((current) => ({ focusKey, zoom: Math.max(1, (current.focusKey === focusKey ? current.zoom : 1) - 0.4), pan: current.focusKey === focusKey ? current.pan : { x: 0, y: 0 } }))} aria-label="Zoom out"><Minus size={16} /></button>
+          <button type="button" className="map-tool" onClick={() => setView({ focusKey, zoom: 1, pan: { x: 0, y: 0 } })} aria-label="Reset map view"><LocateFixed size={16} /></button>
         </div>
       )}
       {showHoverLabels && hovered && <div className="map-caption" aria-live="polite">{features.find((feature) => mapKey(feature) === hovered)?.properties.name}</div>}

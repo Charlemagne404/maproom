@@ -63,7 +63,7 @@ describe('normalization and daily identity', () => {
     expect(dateInTimeZone(new Date('2026-03-29T01:30:00Z'), 'Europe/Stockholm')).toBe('2026-03-29')
     expect(dateInTimeZone(new Date('2026-10-25T00:30:00Z'), 'Europe/Stockholm')).toBe('2026-10-25')
     expect(dateInTimeZone(new Date('2026-10-25T01:30:00Z'), 'Europe/Stockholm')).toBe('2026-10-25')
-    expect(dailyPuzzleId('flags', '2026-11-16')).toBe('flags:2026-11-16:v1')
+    expect(dailyPuzzleId('flags', '2026-11-16')).toBe('flags:2026-11-16:v2')
   })
 
   it('keeps daily identities deterministic across 400 calendar dates for every game', () => {

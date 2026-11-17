@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest'
 import type { City, Country } from '../src/geography/types'
 import { buildAdjacency, dailyPuzzleId, dailyPuzzleSeed, generateRoutePuzzle, gridCandidates, gridAnswerScore, seededShuffle, validGridPresets } from '../src/puzzles/engine'
 import { generateConnectionsPuzzle } from '../src/puzzles/connections'
+import { connectionsBoardIsUnambiguous } from '../src/puzzles/connections'
+import { eligibleCountries, isStandardCountry, standardCountryCount } from '../src/geography/eligibility'
 import { countryMeasure, makeHigherLowerQuestions, type CountryMeasure } from '../src/puzzles/higherLower'
 import { makeNeighbourQuestions, scoreNeighbourAnswer } from '../src/puzzles/neighbours'
 import { makeDistanceQuestions } from '../src/puzzles/distance'
@@ -38,8 +40,8 @@ function hasUniqueAnswerAssignment(cells: Country[][]): boolean {
 
 describe('expanded daily and practice puzzle builders', () => {
   it('builds a broad, solvable grid library and varies daily boards across a year', () => {
-    expect(dailyPuzzleId('grid', '2026-11-17')).toBe('grid:2026-11-17:v2')
-    expect(dailyPuzzleId('flags', '2026-11-17')).toBe('flags:2026-11-17:v1')
+    expect(dailyPuzzleId('grid', '2026-11-17')).toBe('grid:2026-11-17:v3')
+    expect(dailyPuzzleId('flags', '2026-11-17')).toBe('flags:2026-11-17:v2')
     const presets = validGridPresets(countries)
     expect(presets.length).toBeGreaterThan(50)
     const regionLabels = new Set(presets.flatMap((preset) => preset.columns.map((column) => column.label)))
@@ -62,6 +64,20 @@ describe('expanded daily and practice puzzle builders', () => {
     expect(gridAnswerScore(0)).toBe(0)
   })
 
+  it('applies the documented Standard 195-country set and keeps the full catalog in Extended', () => {
+    const standard = eligibleCountries(countries, 'standard')
+    const extended = eligibleCountries(countries, 'extended')
+    expect(standardCountryCount()).toBe(195)
+    expect(standard).toHaveLength(195)
+    expect(extended).toHaveLength(countries.length)
+    expect(standard.every((country) => isStandardCountry(country.iso3))).toBe(true)
+    expect(standard.map((country) => country.iso3)).toContain('VAT')
+    expect(standard.map((country) => country.iso3)).toContain('PSE')
+    expect(standard.map((country) => country.iso3)).not.toContain('XKX')
+    expect(standard.map((country) => country.iso3)).not.toContain('GGY')
+    expect(standard.map((country) => country.iso3)).not.toContain('FLK')
+  })
+
   it('generates deterministic Connections boards with four exact, non-overlapping groups', () => {
     const signatures = new Set<string>()
     for (let day = 0; day < 30; day += 1) {
@@ -80,6 +96,26 @@ describe('expanded daily and practice puzzle builders', () => {
       signatures.add(puzzle.groups.map((group) => group.id).sort().join('|'))
     }
     expect(signatures.size).toBeGreaterThan(5)
+  })
+
+  it('generates varied, unique-solution boards across all Connections difficulties', () => {
+    const scenarios = [
+      { difficulty: 'easy' as const, eligibility: 'standard' as const },
+      { difficulty: 'medium' as const, eligibility: 'standard' as const },
+      { difficulty: 'hard' as const, eligibility: 'extended' as const },
+    ]
+    for (const scenario of scenarios) {
+      const signatures = new Set<string>()
+      for (let index = 0; index < 12; index += 1) {
+        const puzzle = generateConnectionsPuzzle(countries, `connections:${scenario.difficulty}:${index}`, scenario.difficulty, scenario.eligibility)
+        expect(puzzle.groups).toHaveLength(4)
+        expect(puzzle.tiles).toHaveLength(16)
+        expect(new Set(puzzle.tiles.map((country) => country.iso3)).size).toBe(16)
+        expect(connectionsBoardIsUnambiguous(puzzle, countries)).toBe(true)
+        signatures.add(puzzle.groups.map((group) => group.id).sort().join('|'))
+      }
+      expect(signatures.size, `${scenario.difficulty} puzzle variety`).toBeGreaterThan(4)
+    }
   })
 
   it('creates strict higher-or-lower comparisons from available country facts', () => {
@@ -130,7 +166,8 @@ describe('expanded daily and practice puzzle builders', () => {
   })
 
   it('uses reciprocal land borders and penalizes missing or incorrect neighbors fairly', () => {
-    const questions = makeNeighbourQuestions(countries, 'neighbour-test', 20)
+    const standard = eligibleCountries(countries, 'standard')
+    const questions = makeNeighbourQuestions(standard, 'neighbour-test', 20)
     expect(questions).toHaveLength(20)
     for (const question of questions) {
       expect(question.neighbourCodes.length).toBeGreaterThanOrEqual(2)
@@ -139,9 +176,11 @@ describe('expanded daily and practice puzzle builders', () => {
     }
     expect(scoreNeighbourAnswer(['A', 'B'], ['A', 'B'])).toMatchObject({ points: 1000, exact: true, missed: 0, extra: 0 })
     expect(scoreNeighbourAnswer(['A', 'B'], ['A', 'C'])).toMatchObject({ points: 400, exact: false, matched: 1, missed: 1, extra: 1 })
-    const dense = makeNeighbourQuestions(countries, 'neighbour-dense', 20, 'Europe', 'dense')
+    const dense = makeNeighbourQuestions(standard, 'neighbour-dense', 20, 'Europe', 'dense')
     expect(dense.length).toBeGreaterThan(0)
     expect(dense.every((question) => question.country.continent === 'Europe' && question.neighbourCodes.length >= 5)).toBe(true)
+    const extended = makeNeighbourQuestions(eligibleCountries(countries, 'extended'), 'neighbour-extended', 250)
+    expect(extended.some((question) => !isStandardCountry(question.country.iso3))).toBe(true)
   })
 
   it('generates solvable city comparisons with correct geodesic and coordinate answers', () => {

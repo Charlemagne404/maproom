@@ -10,6 +10,7 @@ import { useAppData } from '../../app/useAppData'
 import { missedCountryCodes } from '../../statistics/mistakes'
 import { useGameSession } from '../session'
 import { adaptiveFlagQuestionSequence, flagAnswerChoices, flagCountryPool, type PracticeQuestionCount } from './questionPool'
+import type { GeographyEligibility } from '../../geography/eligibility'
 
 type Direction = 'flag-to-country' | 'country-to-flag'
 type AnswerStyle = 'choices' | 'typed'
@@ -17,6 +18,7 @@ type AnswerStyle = 'choices' | 'typed'
 export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const { state } = useAppData()
   const [round, setRound] = useState(0)
+  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
   const [continent, setContinent] = useState('All regions')
   const [direction, setDirection] = useState<Direction>('flag-to-country')
   const [answerStyle, setAnswerStyle] = useState<AnswerStyle>('choices')
@@ -25,12 +27,12 @@ export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode
   const [reviewMissed, setReviewMissed] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const missedCodes = useMemo(() => missedCountryCodes(state.history, 'flags'), [state.history])
-  const continents = useMemo(() => [...new Set(data.countries.filter((country) => country.flagCode).map((country) => country.continent).filter(Boolean) as string[])].sort(), [data.countries])
+  const continents = useMemo(() => [...new Set(flagCountryPool(data.countries, 'All regions', eligibility).map((country) => country.continent).filter((value): value is string => Boolean(value)))].sort(), [data.countries, eligibility])
   const scopeOptions = ['All regions', ...continents]
   // The daily seed string remains unchanged; practice settings get their own session identity.
   const roundSeed = mode === 'daily'
-    ? `${seed}:${round}:${continent}:${direction}:${answerStyle}:${progressive}`
-    : `${seed}:${round}:${continent}:${direction}:${answerStyle}:${progressive}:${reviewMissed}`
+    ? `${seed}:${round}:${continent}:${direction}:${answerStyle}:${progressive}:${eligibility}`
+    : `${seed}:${round}:${continent}:${direction}:${answerStyle}:${progressive}:${reviewMissed}:${eligibility}`
   const sessionSeed = mode === 'daily' ? roundSeed : `${roundSeed}:${questionCount}`
 
   function restartRound() {
@@ -38,6 +40,7 @@ export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode
   }
 
   const settingsControl = mode === 'practice' ? <GameSettingsMenu open={settingsOpen} onOpenChange={setSettingsOpen}><div className="practice-config flag-settings-config">
+    <label><span>Country pool</span><select value={eligibility} onChange={(event) => setEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
     <label><span>Region</span><select value={continent} onChange={(event) => setContinent(event.target.value)}>{scopeOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
     <label><span>Direction</span><select value={direction} onChange={(event) => setDirection(event.target.value as Direction)}><option value="flag-to-country">Flag → country</option><option value="country-to-flag">Country → flag</option></select></label>
     {direction === 'flag-to-country' && <label><span>Answer style</span><select value={answerStyle} onChange={(event) => setAnswerStyle(event.target.value as AnswerStyle)}><option value="choices">Multiple choice</option><option value="typed">Type a name</option></select></label>}
@@ -49,13 +52,14 @@ export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode
   return (
     <div className="game-body flag-game-body">
       <FlagRound
-        key={`${round}:${continent}:${direction}:${answerStyle}:${progressive}:${reviewMissed}:${questionCount}`}
+        key={`${round}:${continent}:${direction}:${answerStyle}:${progressive}:${reviewMissed}:${questionCount}:${eligibility}`}
         data={data}
         mode={mode}
         date={date}
         seed={sessionSeed}
         dailySeed={roundSeed}
         continent={continent}
+        eligibility={eligibility}
         direction={direction}
         answerStyle={answerStyle}
         questionCount={questionCount}
@@ -69,13 +73,14 @@ export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode
   )
 }
 
-function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, answerStyle, questionCount, progressive, reviewMissed, missedCodes, settingsControl, onPlayAgain }: {
+function FlagRound({ data, mode, date, seed, dailySeed, continent, eligibility, direction, answerStyle, questionCount, progressive, reviewMissed, missedCodes, settingsControl, onPlayAgain }: {
   data: GeographyData
   mode: GameMode
   date: string
   seed: string
   dailySeed: string
   continent: string
+  eligibility: GeographyEligibility
   direction: Direction
   answerStyle: AnswerStyle
   questionCount: PracticeQuestionCount
@@ -85,44 +90,77 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, an
   settingsControl: ReactNode
   onPlayAgain: () => void
 }) {
-  const pool = useMemo(() => flagCountryPool(data.countries, continent), [data.countries, continent])
-  const dailyQuestions = useMemo(() => seededShuffle(pool, `${dailySeed}:question-order`).slice(0, 8), [pool, dailySeed])
+  const session = useGameSession('flags', mode, date, seed)
+  const progress = mode === 'daily' ? session.progress : null
+  const readNumber = (key: string, fallback: number) => typeof progress?.[key] === 'number' ? progress[key] as number : fallback
+  const readString = (key: string, fallback: string) => typeof progress?.[key] === 'string' ? progress[key] as string : fallback
+  const readBoolean = (key: string, fallback: boolean) => typeof progress?.[key] === 'boolean' ? progress[key] as boolean : fallback
+  const pool = useMemo(() => flagCountryPool(data.countries, continent, eligibility), [data.countries, continent, eligibility])
+  const dailyQuestions = useMemo(() => {
+    const generated = seededShuffle(pool, `${dailySeed}:question-order`).slice(0, 8)
+    if (!Array.isArray(progress?.questionCodes)) return generated
+    const byCode = new Map(data.countries.map((country) => [country.iso3, country]))
+    const restored = progress.questionCodes.flatMap((code) => typeof code === 'string' && byCode.has(code) ? [byCode.get(code)!] : [])
+    return restored.length === generated.length ? restored : generated
+  }, [pool, dailySeed, progress, data.countries])
+  const dailyChoiceCodes = useMemo(() => {
+    if (Array.isArray(progress?.choiceCodes)) {
+      const known = new Set(data.countries.map((country) => country.iso3))
+      const restored = progress.choiceCodes.map((values) => Array.isArray(values) ? values.filter((code): code is string => typeof code === 'string' && known.has(code)) : [])
+      if (restored.length === dailyQuestions.length && restored.every((codes, index) => codes.length === 4 && codes.includes(dailyQuestions[index]!.iso3))) return restored
+    }
+    return dailyQuestions.map((question, questionIndex) => {
+    const distractors = seededShuffle(pool.filter((country) => country.iso3 !== question.iso3), `${dailySeed}:choice:${questionIndex}`).slice(0, 3)
+    return seededShuffle([question, ...distractors], `${dailySeed}:order:${questionIndex}`).map((country) => country.iso3)
+    })
+  }, [dailyQuestions, pool, dailySeed, progress, data.countries])
   const [practiceQuestions, setPracticeQuestions] = useState<Country[]>(() => {
     if (mode !== 'practice') return []
     return adaptiveFlagQuestionSequence(pool, reviewMissed ? missedCodes : [], questionCount === 'infinite' ? 40 : Number(questionCount))
   })
   const questions = mode === 'daily' ? dailyQuestions : practiceQuestions
   const infinitePractice = mode === 'practice' && questionCount === 'infinite'
-  const [index, setIndex] = useState(0)
-  const [questionNumber, setQuestionNumber] = useState(1)
-  const [locked, setLocked] = useState(false)
-  const [finished, setFinished] = useState(false)
-  const [answer, setAnswer] = useState('')
-  const [message, setMessage] = useState('')
-  const [correct, setCorrect] = useState(0)
-  const [score, setScore] = useState(0)
-  const [resolvedCount, setResolvedCount] = useState(0)
-  const [wrongCount, setWrongCount] = useState(0)
-  const [missedQuestions, setMissedQuestions] = useState<string[]>([])
-  const [reveal, setReveal] = useState(0)
-  const [input, setInput] = useState('')
+  const [index, setIndex] = useState(() => readNumber('index', 0))
+  const [questionNumber, setQuestionNumber] = useState(() => readNumber('questionNumber', 1))
+  const [locked, setLocked] = useState(() => readBoolean('locked', false))
+  const [finished, setFinished] = useState(() => readBoolean('finished', false))
+  const [answer, setAnswer] = useState(() => readString('answer', ''))
+  const [message, setMessage] = useState(() => readString('message', ''))
+  const [correct, setCorrect] = useState(() => readNumber('correct', 0))
+  const [score, setScore] = useState(() => readNumber('score', 0))
+  const [resolvedCount, setResolvedCount] = useState(() => readNumber('resolvedCount', 0))
+  const [wrongCount, setWrongCount] = useState(() => readNumber('wrongCount', 0))
+  const [missedQuestions, setMissedQuestions] = useState<string[]>(() => Array.isArray(progress?.missedQuestions) ? progress.missedQuestions.filter((item): item is string => typeof item === 'string') : [])
+  const [reveal, setReveal] = useState(() => readNumber('reveal', 0))
+  const [input, setInput] = useState(() => readString('input', ''))
   const mounted = useRef(false)
   const advanceTimer = useRef<number | null>(null)
   const advanceQuestion = useRef<(() => void) | null>(null)
   const completionStarted = useRef(false)
-  const { save, saveError } = useGameSession('flags', mode, date, seed)
+  const { save, saveError, saveProgress } = session
   const question = questions[index]
   const choiceCount = 4
   const choices = useMemo(() => {
     if (!question) return []
     if (mode === 'daily') {
+      const savedChoiceCodes = progress?.choiceCodes
+      if (Array.isArray(savedChoiceCodes) && Array.isArray(savedChoiceCodes[index])) {
+        const byCode = new Map(data.countries.map((country) => [country.iso3, country]))
+        const restored = (savedChoiceCodes[index] as unknown[]).flatMap((code) => typeof code === 'string' && byCode.has(code) ? [byCode.get(code)!] : [])
+        if (restored.length === choiceCount && restored.some((country) => country.iso3 === question.iso3)) return restored
+      }
       const distractors = seededShuffle(pool.filter((country) => country.iso3 !== question.iso3), `${dailySeed}:choice:${index}`).slice(0, choiceCount - 1)
       return seededShuffle([question, ...distractors], `${dailySeed}:order:${index}`)
     }
     return flagAnswerChoices(pool, question)
-  }, [question, pool, mode, dailySeed, index])
+  }, [question, pool, mode, dailySeed, index, progress, data.countries])
   const suggestions: Suggestion[] = useMemo(() => pool.map((country) => ({ value: country.iso3, label: country.name, aliases: country.aliases })), [pool])
   const accuracy = resolvedCount ? Math.round(correct / resolvedCount * 100) : 0
+
+  useEffect(() => {
+    if (mode !== 'daily' || finished) return
+    void saveProgress({ index, questionNumber, locked, finished, answer, message, correct, score, resolvedCount, wrongCount, missedQuestions, reveal, input, questionCodes: dailyQuestions.map((item) => item.iso3), choiceCodes: dailyChoiceCodes })
+  }, [mode, finished, index, questionNumber, locked, answer, message, correct, score, resolvedCount, wrongCount, missedQuestions, reveal, input, dailyQuestions, dailyChoiceCodes, saveProgress])
 
   useEffect(() => {
     mounted.current = true
@@ -245,13 +283,13 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, an
           {resolvedCount > 0 && <button className="flag-end-session" type="button" onClick={endInfinitePractice} disabled={locked || finished}>End session</button>}
         </div>}
         {direction === 'flag-to-country' && <div className={`flag-display${reveal ? ' has-reveal' : ''}`}>
-          <FlagIcon country={question} size="large" />
+          <FlagIcon country={question} size="large" accessibleLabel={locked ? `Flag of ${question.name}` : 'National flag to identify'} />
           {progressive && reveal > 0 && <div className="flag-cover" aria-hidden="true" style={{ clipPath: `inset(0 0 0 ${Math.min(100, reveal * 34)}%)` }} />}
         </div>}
         {direction === 'country-to-flag' || answerStyle === 'choices' ? (
           <div className={`flag-choice-grid${direction === 'country-to-flag' ? ' image-choice-grid' : ''}`} role="group" aria-label="Choose an answer">
-            {choices.map((choice) => <button key={choice.iso3} type="button" className={`flag-choice${answer === choice.iso3 ? (choice.iso3 === question.iso3 ? ' is-right' : ' is-wrong') : ''}`} onClick={() => attempt(choice.iso3)} disabled={locked || finished} aria-pressed={answer === choice.iso3} aria-label={direction === 'country-to-flag' ? `Flag of ${choice.name}` : undefined}>
-              {direction === 'country-to-flag' ? <FlagIcon country={choice} /> : <span className="flag-choice-name">{choice.name}</span>}
+            {choices.map((choice, choiceIndex) => <button key={choice.iso3} type="button" className={`flag-choice${answer === choice.iso3 ? (choice.iso3 === question.iso3 ? ' is-right' : ' is-wrong') : ''}`} onClick={() => attempt(choice.iso3)} disabled={locked || finished} aria-pressed={answer === choice.iso3} aria-label={direction === 'country-to-flag' ? locked ? `Flag of ${choice.name}` : `Flag choice ${choiceIndex + 1}` : undefined}>
+              {direction === 'country-to-flag' ? <FlagIcon country={choice} accessibleLabel={locked ? `Flag of ${choice.name}` : `Unidentified flag choice ${choiceIndex + 1}`} /> : <span className="flag-choice-name">{choice.name}</span>}
             </button>)}
           </div>
         ) : <AutocompleteInput id="flag-answer" label="Country name for the flag" placeholder="Type a country name" value={input} onChange={setInput} suggestions={suggestions} onPick={(suggestion) => { setInput(suggestion.label); attempt(suggestion.value) }} onSubmit={() => {
@@ -269,6 +307,6 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, direction, an
   )
 }
 
-function FlagIcon({ country, size }: { country: Country; size?: 'large' }) {
-  return <span className={`flag-frame${size === 'large' ? ' flag-frame-large' : ''}`}><span className={`fi fi-${country.flagCode}`} role="img" aria-label={`Flag of ${country.name}`} /></span>
+function FlagIcon({ country, size, accessibleLabel }: { country: Country; size?: 'large'; accessibleLabel: string }) {
+  return <span className={`flag-frame${size === 'large' ? ' flag-frame-large' : ''}`}><span className={`fi fi-${country.flagCode}`} role="img" aria-label={accessibleLabel} /></span>
 }

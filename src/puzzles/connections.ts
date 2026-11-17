@@ -1,10 +1,14 @@
 import type { Country } from '../geography/types'
-import { seededShuffle } from './engine'
+import { eligibleCountries, type GeographyEligibility } from '../geography/eligibility'
+import { buildAdjacency, seededShuffle } from './engine'
+
+export type ConnectionsDifficulty = 'easy' | 'medium' | 'hard'
+type CategoryTier = 1 | 2 | 3
 
 export interface ConnectionsGroup {
   id: string
   label: string
-  difficulty: 1 | 2 | 3 | 4
+  difficulty: CategoryTier
   countryCodes: string[]
   explanation: string
 }
@@ -12,117 +16,144 @@ export interface ConnectionsGroup {
 export interface ConnectionsPuzzle {
   groups: ConnectionsGroup[]
   tiles: Country[]
+  difficulty: ConnectionsDifficulty
+  eligibility: GeographyEligibility
 }
 
 interface CandidateGroup extends ConnectionsGroup {
   members: Country[]
 }
 
-export function generateConnectionsPuzzle(countries: Country[], seed: string): ConnectionsPuzzle {
-  const eligible = countries.filter((country) => country.hasGeometry)
-  const categories = buildCategories(eligible)
-  const byDifficulty = new Map<number, CandidateGroup[]>()
-  for (const category of categories) {
-    const values = byDifficulty.get(category.difficulty) ?? []
-    values.push(category)
-    byDifficulty.set(category.difficulty, values)
-  }
+const FAMILIAR_BORDERING_COUNTRIES = ['ARG', 'BRA', 'CHN', 'DEU', 'FRA', 'IND', 'RUS', 'ZAF']
 
-  for (let attempt = 0; attempt < 1_200; attempt += 1) {
+export function generateConnectionsPuzzle(
+  countries: Country[],
+  seed: string,
+  difficulty: ConnectionsDifficulty = 'easy',
+  eligibility: GeographyEligibility = 'standard',
+): ConnectionsPuzzle {
+  const eligible = eligibleCountries(countries, eligibility)
+  const categories = availableCategories(eligible, difficulty)
+
+  for (let attempt = 0; attempt < 2_000; attempt += 1) {
     const groups: CandidateGroup[] = []
     const used = new Set<string>()
-    for (const difficulty of [1, 2, 3, 4] as const) {
-      const options = seededShuffle(byDifficulty.get(difficulty) ?? [], `${seed}:category:${attempt}:${difficulty}`)
-      let chosen: CandidateGroup | undefined
-      for (const option of options) {
-        const available = option.members.filter((country) => !used.has(country.iso3))
-        if (available.length < 4) continue
-        const members = seededShuffle(available, `${seed}:members:${attempt}:${option.id}`).slice(0, 4)
-        const codes = members.map((country) => country.iso3).sort()
-        chosen = { ...option, members, countryCodes: codes }
-        for (const code of codes) used.add(code)
-        break
-      }
-      if (!chosen) break
-      groups.push(chosen)
+    const options = seededShuffle(categories, `${seed}:categories:${attempt}`)
+    for (const option of options) {
+      const available = option.members.filter((country) => !used.has(country.iso3))
+      if (available.length < 4) continue
+      const members = seededShuffle(available, `${seed}:members:${attempt}:${option.id}`).slice(0, 4)
+      const codes = members.map((country) => country.iso3).sort()
+      groups.push({ ...option, members, countryCodes: codes })
+      for (const code of codes) used.add(code)
+      if (groups.length === 4) break
     }
 
     if (groups.length !== 4 || used.size !== 16 || !hasUniqueGrouping(groups, categories, used)) continue
     const tiles = seededShuffle(groups.flatMap((group) => group.members), `${seed}:tile-order`)
     return {
-      groups: groups.map((group) => ({
-        id: group.id,
-        label: group.label,
-        difficulty: group.difficulty,
-        countryCodes: group.countryCodes,
-        explanation: group.explanation,
-      })),
+      groups: groups.map(({ members: _members, ...group }) => group),
       tiles,
+      difficulty,
+      eligibility,
     }
   }
 
-  throw new Error('No unambiguous worldwide Connections puzzle is available from the current country facts.')
+  throw new Error(`No unambiguous ${difficulty} Connections puzzle is available from this country pool.`)
 }
 
-function buildCategories(countries: Country[]): CandidateGroup[] {
+export function connectionsBoardIsUnambiguous(puzzle: ConnectionsPuzzle, countries: Country[]): boolean {
+  if (puzzle.groups.length !== 4 || puzzle.tiles.length !== 16) return false
+  const used = new Set(puzzle.tiles.map((country) => country.iso3))
+  if (used.size !== 16) return false
+  const categories = availableCategories(eligibleCountries(countries, puzzle.eligibility), puzzle.difficulty)
+  const groups = puzzle.groups.map((group) => ({ ...group, members: group.countryCodes.flatMap((code) => {
+    const country = countries.find((item) => item.iso3 === code)
+    return country ? [country] : []
+  }) }))
+  return groups.every((group) => group.members.length === 4 && new Set(group.countryCodes).size === 4)
+    && hasUniqueGrouping(groups, categories, used)
+}
+
+function buildCategories(countries: Country[], difficulty: ConnectionsDifficulty): CandidateGroup[] {
   const categories: CandidateGroup[] = []
-  const add = (difficulty: 1 | 2 | 3 | 4, id: string, label: string, explanation: string, matches: (country: Country) => boolean) => {
+  const adjacency = buildAdjacency(countries)
+  const add = (tier: CategoryTier, id: string, label: string, explanation: string, matches: (country: Country) => boolean) => {
     const members = countries.filter(matches)
-    if (members.length < 4 || members.length > 32) return
-    categories.push({ id, label, explanation, difficulty, countryCodes: [], members })
+    if (members.length >= 4) categories.push({ id, label, explanation, difficulty: tier, countryCodes: [], members })
   }
 
-  for (const subregion of [...new Set(countries.map((country) => country.subregion).filter(Boolean) as string[])].sort()) {
-    const key = slug(subregion)
-    add(1, `subregion:${key}`, `In ${subregion}`, `These countries are all catalogued in the ${subregion} subregion.`, (country) => country.subregion === subregion)
-    add(2, `landlocked:${key}`, `Landlocked in ${subregion}`, `Each is landlocked and belongs to ${subregion}.`, (country) => country.subregion === subregion && country.landlocked)
-    add(2, `island:${key}`, `No recorded land borders in ${subregion}`, `Each has no land-border neighbors in the country catalog and belongs to ${subregion}.`, (country) => country.subregion === subregion && country.borders.length === 0)
-  }
-  add(2, 'borders:1-2', 'One or two land neighbors', 'Each country has one or two recorded land-border neighbors.', (country) => country.borders.length >= 1 && country.borders.length <= 2)
-  add(2, 'borders:3-5', 'Three to five land neighbors', 'Each country has three to five recorded land-border neighbors.', (country) => country.borders.length >= 3 && country.borders.length <= 5)
-  add(2, 'borders:6-plus', 'Six or more land neighbors', 'Each country has at least six recorded land-border neighbors.', (country) => country.borders.length >= 6)
-  add(2, 'landlocked', 'Landlocked countries', 'Each country is recorded as landlocked in the country catalog.', (country) => country.landlocked)
-
-  const populationBands: Array<[string, string, (value: number) => boolean]> = [
-    ['under-1m', 'Population under 1 million', (value) => value < 1_000_000],
-    ['1m-5m', 'Population from 1 to 5 million', (value) => value >= 1_000_000 && value < 5_000_000],
-    ['5m-25m', 'Population from 5 to 25 million', (value) => value >= 5_000_000 && value < 25_000_000],
-    ['25m-100m', 'Population from 25 to 100 million', (value) => value >= 25_000_000 && value < 100_000_000],
-    ['over-100m', 'Population over 100 million', (value) => value >= 100_000_000],
-  ]
-  for (const [id, label, within] of populationBands) {
-    add(3, `population:${id}`, label, `The 2023 World Bank country-population estimates fall in the ${label.toLocaleLowerCase('en')} band.`, (country) => country.population !== null && within(country.population))
+  const continents = [...new Set(countries.map((country) => country.continent).filter((value): value is string => Boolean(value)))].sort()
+  if (difficulty === 'easy') {
+    for (const continent of continents) {
+      add(1, `continent:${slug(continent)}`, `In ${continent}`, `All four are in ${continent}.`, (country) => country.continent === continent)
+      add(1, `landlocked-continent:${slug(continent)}`, `Landlocked in ${continent}`, `Each has no coastline and is in ${continent}.`, (country) => country.continent === continent && country.landlocked)
+    }
+    add(1, 'landlocked', 'Landlocked countries', 'Each has no coastline.', (country) => country.landlocked)
+    for (const code of FAMILIAR_BORDERING_COUNTRIES) {
+      const anchor = countries.find((country) => country.iso3 === code)
+      if (!anchor) continue
+      const neighbors = new Set(adjacency.get(code) ?? [])
+      add(1, `borders:${code}`, `Border ${anchor.name}`, `Each shares a recorded land border with ${anchor.name}.`, (country) => neighbors.has(country.iso3))
+    }
   }
 
-  const areaBands: Array<[string, string, (value: number) => boolean]> = [
-    ['under-10k', 'Area under 10,000 km²', (value) => value < 10_000],
-    ['10k-100k', 'Area from 10,000 to 100,000 km²', (value) => value >= 10_000 && value < 100_000],
-    ['100k-500k', 'Area from 100,000 to 500,000 km²', (value) => value >= 100_000 && value < 500_000],
-    ['500k-2m', 'Area from 500,000 to 2 million km²', (value) => value >= 500_000 && value < 2_000_000],
-    ['over-2m', 'Area over 2 million km²', (value) => value >= 2_000_000],
-  ]
-  for (const [id, label, within] of areaBands) {
-    add(3, `area:${id}`, label, `The country catalog places each in the ${label.toLocaleLowerCase('en')} area band.`, (country) => country.areaKm2 !== null && country.areaKm2 > 0 && within(country.areaKm2))
+  if (difficulty === 'medium' || difficulty === 'hard') {
+    for (const subregion of [...new Set(countries.map((country) => country.subregion).filter((value): value is string => Boolean(value)))].sort()) {
+      const key = slug(subregion)
+      add(2, `subregion:${key}`, `In ${subregion}`, `Each is catalogued in ${subregion}.`, (country) => country.subregion === subregion)
+      add(2, `landlocked-subregion:${key}`, `Landlocked in ${subregion}`, `Each is landlocked and in ${subregion}.`, (country) => country.subregion === subregion && country.landlocked)
+    }
+    for (const code of FAMILIAR_BORDERING_COUNTRIES) {
+      const anchor = countries.find((country) => country.iso3 === code)
+      if (!anchor) continue
+      const neighbors = new Set(adjacency.get(code) ?? [])
+      add(2, `borders-medium:${code}`, `Border ${anchor.name}`, `Each shares a recorded land border with ${anchor.name}.`, (country) => neighbors.has(country.iso3))
+    }
   }
 
-  for (const letter of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
-    add(4, `capital:${letter}`, `Capitals beginning with ${letter}`, `Each listed capital begins with ${letter}.`, (country) => country.capital?.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLocaleUpperCase('en').startsWith(letter) ?? false)
-    add(4, `country:${letter}`, `Country names beginning with ${letter}`, `Each common country name begins with ${letter}.`, (country) => country.name.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLocaleUpperCase('en').startsWith(letter))
+  if (difficulty === 'hard') {
+    const populationBands: Array<[string, string, (value: number) => boolean]> = [
+      ['pop-under-1m', 'Population under 1m', (value) => value < 1_000_000],
+      ['pop-1m-5m', 'Population 1–5m', (value) => value >= 1_000_000 && value < 5_000_000],
+      ['pop-5m-25m', 'Population 5–25m', (value) => value >= 5_000_000 && value < 25_000_000],
+      ['pop-25m-100m', 'Population 25–100m', (value) => value >= 25_000_000 && value < 100_000_000],
+      ['pop-over-100m', 'Population over 100m', (value) => value >= 100_000_000],
+    ]
+    for (const [id, label, within] of populationBands) add(3, id, label, `Each falls in the ${label.toLocaleLowerCase('en')} band.`, (country) => country.population !== null && within(country.population))
+    const areaBands: Array<[string, string, (value: number) => boolean]> = [
+      ['area-under-10k', 'Area under 10,000 km²', (value) => value < 10_000],
+      ['area-10k-100k', 'Area 10,000–100,000 km²', (value) => value >= 10_000 && value < 100_000],
+      ['area-100k-500k', 'Area 100,000–500,000 km²', (value) => value >= 100_000 && value < 500_000],
+      ['area-500k-2m', 'Area 500,000–2m km²', (value) => value >= 500_000 && value < 2_000_000],
+      ['area-over-2m', 'Area over 2m km²', (value) => value >= 2_000_000],
+    ]
+    for (const [id, label, within] of areaBands) add(3, id, label, `Each falls in the ${label.toLocaleLowerCase('en')} band.`, (country) => country.areaKm2 !== null && country.areaKm2 > 0 && within(country.areaKm2))
   }
   return categories
 }
 
+function availableCategories(countries: Country[], difficulty: ConnectionsDifficulty): CandidateGroup[] {
+  const categories = buildCategories(countries, difficulty)
+  // Hard boards stay inferable by using smaller, more specific fact groups.
+  // A category with dozens of possible countries would make a 16-tile board
+  // feel like a database filter rather than a solvable grouping puzzle.
+  return difficulty === 'hard' ? categories.filter((category) => category.members.length <= 32) : categories
+}
+
 function hasUniqueGrouping(groups: CandidateGroup[], categories: CandidateGroup[], codes: Set<string>): boolean {
   const intended = groups.map((group) => new Set(group.countryCodes))
-  const board = [...codes]
   for (const category of categories) {
-    const matched = new Set(board.filter((code) => category.members.some((country) => country.iso3 === code)))
+    const categoryMembers = new Set(category.members.map((country) => country.iso3))
+    const matched = new Set([...codes].filter((code) => categoryMembers.has(code)))
     if (matched.size < 4) continue
     if (!intended.some((group) => sameSet(group, matched))) return false
   }
   return groups.every((group) => {
     const category = categories.find((item) => item.id === group.id)
-    return category && sameSet(new Set(group.countryCodes), new Set(board.filter((code) => category.members.some((country) => country.iso3 === code))))
+    if (!category) return false
+    const categoryMembers = new Set(category.members.map((country) => country.iso3))
+    return sameSet(new Set(group.countryCodes), new Set([...codes].filter((code) => categoryMembers.has(code))))
   })
 }
 

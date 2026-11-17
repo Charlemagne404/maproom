@@ -10,6 +10,7 @@ import type { City, Coordinates, GeographyData, GameMode } from '../../geography
 import { distanceScore, directionFromTo, greatCircleKm, normalizeAnswer, resolveCountryAnswer, seededShuffle } from '../../puzzles/engine'
 import { useAppData } from '../../app/useAppData'
 import { useGameSession } from '../session'
+import { eligibleCountries, type GeographyEligibility } from '../../geography/eligibility'
 
 type CityTask = 'capitals' | 'locate' | 'identify'
 type PracticeCount = '10' | '20' | '50' | 'infinite'
@@ -26,6 +27,7 @@ export function CitiesGame({ data, mode, date, seed }: { data: GeographyData; mo
   const [cityData, setCityData] = useState<Awaited<ReturnType<typeof loadCities>> | null>(null)
   const [loadError, setLoadError] = useState('')
   const [task, setTask] = useState<CityTask>('capitals')
+  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
   const [continent, setContinent] = useState('All regions')
   const [direction, setDirection] = useState<CapitalDirection>('country-to-capital')
   const [answerStyle, setAnswerStyle] = useState<AnswerStyle>('typed')
@@ -42,7 +44,7 @@ export function CitiesGame({ data, mode, date, seed }: { data: GeographyData; mo
     return () => { active = false }
   }, [])
 
-  const continents = useMemo(() => [...new Set(data.countries.map((country) => country.continent).filter(Boolean) as string[])].sort(), [data.countries])
+  const continents = useMemo(() => [...new Set(eligibleCountries(data.countries, eligibility).map((country) => country.continent).filter((value): value is string => Boolean(value)))].sort(), [data.countries, eligibility])
   if (loadError) return <InlineNotice title="The city gazetteer could not open" tone="warning">{loadError}</InlineNotice>
   if (!cityData) return <LoadingState label="Opening the city gazetteer…" />
   return <CitiesRound
@@ -53,6 +55,7 @@ export function CitiesGame({ data, mode, date, seed }: { data: GeographyData; mo
     date={date}
     seed={mode === 'daily' ? `${seed}:${round}:${task}:${continent}:${direction}:${answerStyle}` : `${seed}:${round}:${task}:${continent}:${direction}:${answerStyle}:${minimumPopulation}:${questionCount}:${timed}`}
     task={task}
+    eligibility={eligibility}
     continent={continent}
     direction={direction}
     answerStyle={answerStyle}
@@ -61,6 +64,7 @@ export function CitiesGame({ data, mode, date, seed }: { data: GeographyData; mo
     timed={timed}
     continents={continents}
     onTask={setTask}
+    onEligibility={setEligibility}
     onContinent={setContinent}
     onDirection={setDirection}
     onAnswerStyle={setAnswerStyle}
@@ -71,13 +75,14 @@ export function CitiesGame({ data, mode, date, seed }: { data: GeographyData; mo
   />
 }
 
-function CitiesRound({ data, cities, mode, date, seed, task, continent, direction, answerStyle, minimumPopulation, questionCount, timed, continents, onTask, onContinent, onDirection, onAnswerStyle, onMinimumPopulation, onQuestionCount, onTimed, onNextRound }: {
+function CitiesRound({ data, cities, mode, date, seed, task, eligibility, continent, direction, answerStyle, minimumPopulation, questionCount, timed, continents, onTask, onEligibility, onContinent, onDirection, onAnswerStyle, onMinimumPopulation, onQuestionCount, onTimed, onNextRound }: {
   data: GeographyData
   cities: City[]
   mode: GameMode
   date: string
   seed: string
   task: CityTask
+  eligibility: GeographyEligibility
   continent: string
   direction: CapitalDirection
   answerStyle: AnswerStyle
@@ -86,6 +91,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
   timed: boolean
   continents: string[]
   onTask: (task: CityTask) => void
+  onEligibility: (eligibility: GeographyEligibility) => void
   onContinent: (continent: string) => void
   onDirection: (direction: CapitalDirection) => void
   onAnswerStyle: (style: AnswerStyle) => void
@@ -95,48 +101,56 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
   onNextRound: () => void
 }) {
   const { state } = useAppData()
-  const [index, setIndex] = useState(0)
-  const [cycle, setCycle] = useState(0)
-  const [locked, setLocked] = useState(false)
-  const [finished, setFinished] = useState(false)
-  const [correct, setCorrect] = useState(0)
-  const [score, setScore] = useState(0)
-  const [resolved, setResolved] = useState(0)
-  const [seconds, setSeconds] = useState(60)
-  const [message, setMessage] = useState('')
-  const [input, setInput] = useState('')
-  const [selected, setSelected] = useState('')
-  const [questionCorrect, setQuestionCorrect] = useState(false)
-  const [guess, setGuess] = useState<Coordinates | null>(null)
-  const [latitude, setLatitude] = useState('')
-  const [longitude, setLongitude] = useState('')
+  const session = useGameSession('cities', mode, date, seed)
+  const progress = mode === 'daily' ? session.progress : null
+  const readNumber = (key: string, fallback: number) => typeof progress?.[key] === 'number' ? progress[key] as number : fallback
+  const readString = (key: string, fallback: string) => typeof progress?.[key] === 'string' ? progress[key] as string : fallback
+  const readBoolean = (key: string, fallback: boolean) => typeof progress?.[key] === 'boolean' ? progress[key] as boolean : fallback
+  const [index, setIndex] = useState(() => readNumber('index', 0))
+  const [cycle, setCycle] = useState(() => readNumber('cycle', 0))
+  const [locked, setLocked] = useState(() => readBoolean('locked', false))
+  const [finished, setFinished] = useState(() => readBoolean('finished', false))
+  const [correct, setCorrect] = useState(() => readNumber('correct', 0))
+  const [score, setScore] = useState(() => readNumber('score', 0))
+  const [resolved, setResolved] = useState(() => readNumber('resolved', 0))
+  const [seconds, setSeconds] = useState(() => readNumber('seconds', 60))
+  const [message, setMessage] = useState(() => readString('message', ''))
+  const [input, setInput] = useState(() => readString('input', ''))
+  const [selected, setSelected] = useState(() => readString('selected', ''))
+  const [questionCorrect, setQuestionCorrect] = useState(() => readBoolean('questionCorrect', false))
+  const [guess, setGuess] = useState<Coordinates | null>(() => progress?.guess && typeof progress.guess === 'object' && typeof (progress.guess as Coordinates).lat === 'number' && typeof (progress.guess as Coordinates).lon === 'number' ? progress.guess as Coordinates : null)
+  const [latitude, setLatitude] = useState(() => readString('latitude', ''))
+  const [longitude, setLongitude] = useState(() => readString('longitude', ''))
   const infinitePractice = mode === 'practice' && questionCount === 'infinite'
   const requestedCount = mode === 'daily' ? 6 : questionCount === 'infinite' ? 40 : Number(questionCount)
-  const { save, saveError } = useGameSession('cities', mode, date, seed)
+  const { save, saveError, saveProgress } = session
+  const eligible = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
+  const eligibleCodes = useMemo(() => new Set(eligible.map((country) => country.iso3)), [eligible])
 
   const filteredCities = useMemo(() => cities.filter((city) => {
     const country = data.countriesByCode.get(city.countryIso3)
-    return country && (continent === 'All regions' || country.continent === continent)
-  }), [cities, continent, data.countriesByCode])
-  const capitals = useMemo(() => data.countries.filter((country) => country.capital && country.capitalCoordinates && (continent === 'All regions' || country.continent === continent)), [data.countries, continent])
+    return country && eligibleCodes.has(country.iso3) && (continent === 'All regions' || country.continent === continent)
+  }), [cities, continent, data.countriesByCode, eligibleCodes])
+  const capitals = useMemo(() => eligible.filter((country) => country.capital && country.capitalCoordinates && (continent === 'All regions' || country.continent === continent)), [eligible, continent])
   const questions = useMemo<Question[]>(() => {
     if (mode === 'daily') {
-      const capitalPool = data.countries.filter((country) => country.capital && country.capitalCoordinates)
-      const majorCities = cities.filter((city) => city.population >= 100_000)
+      const capitalPool = eligible.filter((country) => country.capital && country.capitalCoordinates)
+      const majorCities = cities.filter((city) => eligibleCodes.has(city.countryIso3) && city.population >= 100_000)
       const capitalQuestions = seededShuffle(capitalPool, `${seed}:capitals`).slice(0, 2).map((country) => ({ kind: 'capitals' as const, country, direction: 'country-to-capital' as const }))
       const locationQuestions = seededShuffle(majorCities, `${seed}:locations`).slice(0, 2).map((city) => ({ kind: 'locate' as const, city }))
       const identificationQuestions = seededShuffle(majorCities, `${seed}:identifications`).slice(2, 4).map((city) => ({ kind: 'identify' as const, city }))
-      return seededShuffle([...capitalQuestions, ...locationQuestions, ...identificationQuestions], `${seed}:daily-order`)
+      const generated = seededShuffle([...capitalQuestions, ...locationQuestions, ...identificationQuestions], `${seed}:daily-order`)
+      return restoreCityQuestionOrder(generated, progress?.questions, data, cities)
     }
     if (task === 'capitals') {
       return seededShuffle(capitals, `${seed}:capital-practice:${cycle}`).slice(0, requestedCount).map((country) => ({ kind: 'capitals', country, direction }))
     }
     const pool = filteredCities.filter((city) => city.population >= minimumPopulation || city.capital)
     return seededShuffle(pool, `${seed}:${task}:${cycle}`).slice(0, requestedCount).map((city) => ({ kind: task, city }))
-  }, [mode, data.countries, cities, seed, capitals, task, direction, filteredCities, minimumPopulation, requestedCount, cycle])
+  }, [mode, eligible, eligibleCodes, cities, seed, capitals, task, direction, filteredCities, minimumPopulation, requestedCount, cycle, progress, data])
 
   const question = questions[index]
-  const countrySuggestions: Suggestion[] = useMemo(() => data.countries.map((country) => ({ value: country.iso3, label: country.name, detail: country.continent ?? undefined, aliases: country.aliases })), [data.countries])
+  const countrySuggestions: Suggestion[] = useMemo(() => eligible.map((country) => ({ value: country.iso3, label: country.name, detail: country.continent ?? undefined, aliases: country.aliases })), [eligible])
   const capitalSuggestions: Suggestion[] = useMemo(() => capitals.map((country) => ({ value: country.iso3, label: country.capital ?? '', detail: country.name, aliases: country.capitals })), [capitals])
   const identifySuggestions: Suggestion[] = useMemo(() => question?.city
     ? cities.filter((city) => city.countryIso3 === question.city?.countryIso3).map((city) => ({ value: city.id, label: city.name, detail: data.countriesByCode.get(city.countryIso3)?.name, aliases: city.aliases }))
@@ -147,6 +161,11 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
     const others = seededShuffle(pool, `${seed}:capital-options:${index}`).slice(0, 3)
     return seededShuffle([question.country, ...others], `${seed}:capital-choice-order:${index}`)
   }, [question, capitals, seed, index])
+
+  useEffect(() => {
+    if (mode !== 'daily' || finished) return
+    void saveProgress({ index, cycle, locked, finished, correct, score, resolved, seconds, message, input, selected, questionCorrect, guess, latitude, longitude, questions: questions.map((item) => ({ kind: item.kind, country: item.country?.iso3, city: item.city?.id })) })
+  }, [mode, finished, index, cycle, locked, correct, score, resolved, seconds, message, input, selected, questionCorrect, guess, latitude, longitude, questions, saveProgress])
   function setCorrectAnswer(points: number, text: string) {
     setCorrect((value) => value + 1)
     setResolved((value) => value + 1)
@@ -295,6 +314,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
         <div className="question-toolbar-tools">
           {mode === 'practice' && <GameSettingsMenu><div className="practice-config cities-config">
             <label><span>Practice task</span><select value={task} onChange={(event) => onTask(event.target.value as CityTask)}><option value="capitals">Capitals</option><option value="locate">City location</option><option value="identify">City identification</option></select></label>
+            <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
             <label><span>Region</span><select value={continent} onChange={(event) => onContinent(event.target.value)}><option>All regions</option>{continents.map((item) => <option key={item}>{item}</option>)}</select></label>
             {task === 'capitals' && <><label><span>Direction</span><select value={direction} onChange={(event) => onDirection(event.target.value as CapitalDirection)}><option value="country-to-capital">Country → capital</option><option value="capital-to-country">Capital → country</option></select></label><label><span>Answer style</span><select value={answerStyle} onChange={(event) => onAnswerStyle(event.target.value as AnswerStyle)}><option value="typed">Type a name</option><option value="choices">Multiple choice</option></select></label></>}
             {task !== 'capitals' && <label><span>City population from</span><select value={minimumPopulation} onChange={(event) => onMinimumPopulation(Number(event.target.value))}><option value={50000}>50,000</option><option value={100000}>100,000</option><option value={250000}>250,000</option><option value={1000000}>1 million</option></select></label>}
@@ -322,6 +342,27 @@ function CitiesRound({ data, cities, mode, date, seed, task, continent, directio
       <GameResultsDialog complete={finished} gameId="cities" mode={mode} score={score} correct={correct} total={infinitePractice ? resolved : questions.length} title={timed && seconds === 0 ? 'Time is up.' : 'City round complete.'} message="Places have a way of sticking." saveError={saveError} onReplay={mode === 'practice' ? onNextRound : undefined} replayLabel="New city round" />
     </div>
   )
+}
+
+function restoreCityQuestionOrder(generated: Question[], saved: unknown, data: GeographyData, cities: City[]): Question[] {
+  if (!Array.isArray(saved)) return generated
+  const countries = data.countriesByCode
+  const citiesById = new Map(cities.map((city) => [city.id, city]))
+  const restored: Question[] = []
+  for (const raw of saved) {
+    if (!raw || typeof raw !== 'object') return generated
+    const item = raw as { kind?: unknown; country?: unknown; city?: unknown }
+    if (item.kind === 'capitals' && typeof item.country === 'string') {
+      const country = countries.get(item.country)
+      if (!country) return generated
+      restored.push({ kind: 'capitals', country, direction: 'country-to-capital' })
+    } else if ((item.kind === 'locate' || item.kind === 'identify') && typeof item.city === 'string') {
+      const city = citiesById.get(item.city)
+      if (!city) return generated
+      restored.push({ kind: item.kind, city })
+    } else return generated
+  }
+  return restored.length === generated.length ? restored : generated
 }
 
 function countryChoicesFromCapitals(capitals: GeographyData['countries'], answerCode: string, seed: string, index: number) {

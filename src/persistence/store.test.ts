@@ -4,15 +4,17 @@ import 'fake-indexeddb/auto'
 import { indexedDB } from 'fake-indexeddb'
 import {
   defaultSettings,
+  deleteGameSession,
   exportProgress,
   importProgress,
   loadAppData,
   resetProgress,
+  saveGameSession,
   saveFavorites,
   saveGameResult,
   saveSettings,
 } from './store'
-import type { GameResult } from '../geography/types'
+import type { GameResult, GameSessionSnapshot } from '../geography/types'
 
 function result(id: string): GameResult {
   return {
@@ -53,9 +55,28 @@ describe('local progress storage', () => {
     expect(state.favorites).toEqual(['flags', 'cities', 'connections', 'distance'])
     expect(state.history).toHaveLength(2)
     expect(state.history.find((item) => item.gameId === 'connections')?.score).toBe(700)
+    expect(state.history.find((item) => item.id === 'daily-result')?.puzzleId).toBe('countries:2026-11-16:v1')
+
+    const session: GameSessionSnapshot = {
+      id: 'flags:2026-11-17',
+      gameId: 'flags',
+      mode: 'daily',
+      puzzleId: 'flags:2026-11-17:v2',
+      seed: 'flags:2026-11-17:v2',
+      date: '2026-11-17',
+      startedAt: '2026-11-17T10:00:00.000Z',
+      updatedAt: '2026-11-17T10:01:00.000Z',
+      version: 1,
+      payload: { questionIndex: 2, answers: ['SWE', 'NOR'], score: 100 },
+    }
+    await saveGameSession(session)
+    await saveGameSession({ ...session, id: `${session.id}:legacy`, puzzleId: 'flags:2026-11-17:v1', seed: 'flags:2026-11-17:v1' })
+    await deleteGameSession('flags', 'daily', session.date, session.puzzleId)
+    state = await loadAppData()
+    expect(state.sessions).toEqual([session])
 
     const backup = await exportProgress()
-    expect(JSON.parse(backup)).toMatchObject({ format: 'maproom-progress', version: 1 })
+    expect(JSON.parse(backup)).toMatchObject({ format: 'maproom-progress', version: 2, sessions: [session] })
     await expect(importProgress('{')).rejects.toThrow('valid JSON')
     await expect(importProgress(JSON.stringify({ format: 'maproom-progress', version: 1, settings: {}, favorites: ['bogus'], history: [] })))
       .rejects.toThrow('valid Maproom progress export')
@@ -68,11 +89,36 @@ describe('local progress storage', () => {
     expect(state.settings.timeZone).toBe('Europe/London')
     expect(state.favorites).toEqual(['flags', 'cities', 'connections', 'distance'])
     expect(state.history).toHaveLength(2)
+    expect(state.sessions).toEqual([session])
+
+    await saveGameResult({ ...result('flags-result'), gameId: 'flags', puzzleId: session.puzzleId, date: session.date })
+    expect((await loadAppData()).sessions).toEqual([])
+    expect(await saveGameResult({ ...result('flags-next-version'), gameId: 'flags', puzzleId: 'flags:2026-11-17:v3', date: session.date })).toBe(false)
+    expect((await loadAppData()).history.filter((item) => item.mode === 'daily' && item.gameId === 'flags' && item.date === session.date)).toHaveLength(1)
+    expect(await saveGameSession({ ...session, payload: { questionIndex: 7 } })).toBe(false)
+    expect((await loadAppData()).sessions).toEqual([])
+
+    await importProgress(JSON.stringify({
+      format: 'maproom-progress',
+      version: 1,
+      settings: defaultSettings(),
+      favorites: [],
+      history: [],
+    }))
+    expect((await loadAppData()).sessions).toEqual([])
+
+    const recovered = { ...session, updatedAt: '2026-11-17T10:02:00.000Z', payload: { questionIndex: 3, score: 250 } }
+    window.localStorage.setItem('maproom-sessions-v1', JSON.stringify([recovered]))
+    expect((await loadAppData()).sessions).toEqual([recovered])
+    await saveGameResult({ ...result('flags-result-after-recovery'), gameId: 'flags', puzzleId: session.puzzleId, date: session.date })
+    window.localStorage.setItem('maproom-sessions-v1', JSON.stringify([recovered]))
+    expect((await loadAppData()).sessions).toEqual([])
 
     await resetProgress()
     state = await loadAppData()
     expect(state.settings).toEqual(defaultSettings())
     expect(state.favorites).toEqual([])
     expect(state.history).toEqual([])
+    expect(state.sessions).toEqual([])
   })
 })

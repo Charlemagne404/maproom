@@ -1,6 +1,13 @@
 import { ArrowDownUp, Compass, Flag, Globe2, Grid3X3, Map, MapPin, Route, Shuffle, type LucideIcon } from 'lucide-react'
 import type { GameId } from '../geography/types'
 
+// Daily games are curated explicitly. Registering a game in `games` never opts it in.
+export const DAILY_GAME_IDS: readonly GameId[] = ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities']
+
+export function isDailyGame(gameId: GameId): boolean {
+  return DAILY_GAME_IDS.includes(gameId)
+}
+
 export interface GameInfo {
   id: GameId
   title: string

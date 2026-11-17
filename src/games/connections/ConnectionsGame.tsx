@@ -1,33 +1,42 @@
 import { useMemo, useState } from 'react'
-import { Check, RotateCcw } from 'lucide-react'
+import { RotateCcw } from 'lucide-react'
 import { GameResultsDialog } from '../../components/GameResults'
+import { GameSettingsMenu } from '../../components/GameControls'
 import { InlineNotice } from '../../components/Kit'
 import type { GameMode, GeographyData } from '../../geography/types'
-import { generateConnectionsPuzzle } from '../../puzzles/connections'
+import { eligibleCountries, type GeographyEligibility } from '../../geography/eligibility'
+import { generateConnectionsPuzzle, type ConnectionsDifficulty } from '../../puzzles/connections'
 import { useGameSession } from '../session'
 
 export function ConnectionsGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const [round, setRound] = useState(0)
+  const [difficulty, setDifficulty] = useState<ConnectionsDifficulty>('easy')
+  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const countries = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
   const puzzle = useMemo(() => {
-    try { return { value: generateConnectionsPuzzle(data.countries, `${seed}:${round}`), error: '' } }
+    try { return { value: generateConnectionsPuzzle(countries, `${seed}:${round}`, difficulty, eligibility), error: '' } }
     catch (error) { return { value: null, error: error instanceof Error ? error.message : 'This grouping could not be generated.' } }
-  }, [data.countries, seed, round])
+  }, [countries, seed, round, difficulty, eligibility])
   if (!puzzle.value) return <div className="game-body"><InlineNotice title="A fresh set is not available" tone="warning">{puzzle.error}</InlineNotice></div>
-  return <ConnectionsRound key={round} data={data} puzzle={puzzle.value} mode={mode} date={date} seed={`${seed}:${round}`} onReplay={() => setRound((value) => value + 1)} />
+  return <ConnectionsRound key={`${round}:${difficulty}:${eligibility}`} data={data} puzzle={puzzle.value} mode={mode} date={date} seed={`${seed}:${round}`} difficulty={difficulty} eligibility={eligibility} onDifficulty={setDifficulty} onEligibility={setEligibility} onReplay={() => setRound((value) => value + 1)} />
 }
 
-function ConnectionsRound({ data, puzzle, mode, date, seed, onReplay }: {
+function ConnectionsRound({ data, puzzle, mode, date, seed, difficulty, eligibility, onDifficulty, onEligibility, onReplay }: {
   data: GeographyData
   puzzle: ReturnType<typeof generateConnectionsPuzzle>
   mode: GameMode
   date: string
   seed: string
+  difficulty: ConnectionsDifficulty
+  eligibility: GeographyEligibility
+  onDifficulty: (value: ConnectionsDifficulty) => void
+  onEligibility: (value: GeographyEligibility) => void
   onReplay: () => void
 }) {
   const [selected, setSelected] = useState<string[]>([])
   const [solved, setSolved] = useState<string[]>([])
   const [mistakes, setMistakes] = useState(0)
-  const [message, setMessage] = useState('Select four places that share a geographic connection.')
+  const [message, setMessage] = useState('Select four countries that share a connection.')
   const finished = solved.length === 4 || mistakes >= 4
   const score = Math.max(0, solved.length * 250 - mistakes * 40)
   const { save, saveError } = useGameSession('connections', mode, date, seed)
@@ -41,7 +50,7 @@ function ConnectionsRound({ data, puzzle, mode, date, seed, onReplay }: {
       setSolved(nextSolved)
       setSelected([])
       setMessage(`${group.label}: ${group.explanation}`)
-      if (nextSolved.length === 4) await save(nextScore, 4, 4, { groups: puzzle.groups.map((item) => item.id), mistakes })
+      if (nextSolved.length === 4) await save(nextScore, 4, 4, { groups: puzzle.groups.map((item) => item.id), mistakes, difficulty, eligibility })
       return
     }
     const oneAway = puzzle.groups.some((candidate) => selected.filter((code) => candidate.countryCodes.includes(code)).length === 3)
@@ -49,32 +58,49 @@ function ConnectionsRound({ data, puzzle, mode, date, seed, onReplay }: {
     const nextScore = Math.max(0, solved.length * 250 - nextMistakes * 40)
     setMistakes(nextMistakes)
     setSelected([])
-    setMessage(oneAway ? 'One away. Three places belong together.' : 'Those four do not make a group. Try another connection.')
-    if (nextMistakes >= 4) await save(nextScore, solved.length, 4, { groups: puzzle.groups.map((item) => item.id), mistakes: nextMistakes })
+    setMessage(oneAway ? 'One away. Three countries share a connection.' : 'Those four do not make a group. Try another connection.')
+    if (nextMistakes >= 4) await save(nextScore, solved.length, 4, { groups: puzzle.groups.map((item) => item.id), mistakes: nextMistakes, difficulty, eligibility })
   }
+
+  const solvedGroups = solved.flatMap((id) => {
+    const group = puzzle.groups.find((candidate) => candidate.id === id)
+    return group ? [group] : []
+  })
+  const solvedCodes = new Set(solvedGroups.flatMap((group) => group.countryCodes))
 
   return <div className="game-body connections-game-body">
     <div className="question-toolbar">
-      <div><span className="eyebrow">Geography Connections · World</span><h2>Find four groups of four</h2><p>Every place belongs to one group. Select four tiles and check your hunch.</p></div>
-      <div className="question-toolbar-tools"><div className="question-count"><strong>{solved.length}</strong><span>of 4 groups</span></div></div>
+      <div><h2>Find four groups of four</h2><p>Choose four countries with a shared geographic connection.</p></div>
+      <div className="question-toolbar-tools">
+        {mode === 'practice' && <GameSettingsMenu><div className="practice-config">
+          <label><span>Difficulty</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as ConnectionsDifficulty)}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></label>
+          <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
+        </div></GameSettingsMenu>}
+        <div className="question-count"><strong>{solved.length}</strong><span>of 4 groups</span></div>
+      </div>
     </div>
     <div className="connections-status" aria-live="polite"><span>{message}</span><span className="connections-mistakes" aria-label={`${mistakes} of 4 mistakes used`}>{Array.from({ length: 4 }, (_, index) => <i key={index} className={index < mistakes ? 'is-used' : ''} />)}</span></div>
-    <div className="connections-board" role="group" aria-label="Sixteen country tiles">
-      {puzzle.tiles.map((country) => {
-        const solvedGroup = puzzle.groups.find((group) => solved.includes(group.id) && group.countryCodes.includes(country.iso3))
+    {solvedGroups.length > 0 && <div className="connections-solved-rows" aria-label="Solved groups">
+      {solvedGroups.map((group, index) => <section key={group.id} className={`connections-solved-group connections-color-${index}`} aria-label={`${group.label}: ${group.explanation}`}>
+        <strong>{group.label}</strong>
+        <div className="connections-solved-countries">{group.countryCodes.map((code) => <span key={code}>{data.countriesByCode.get(code)?.name ?? code}</span>)}</div>
+      </section>)}
+    </div>}
+    <div className="connections-board" role="group" aria-label="Unsolved country tiles">
+      {puzzle.tiles.filter((country) => !solvedCodes.has(country.iso3)).map((country) => {
         const isSelected = selected.includes(country.iso3)
-        return <button key={country.iso3} type="button" className={`connections-tile${isSelected ? ' is-selected' : ''}${solvedGroup ? ' is-solved' : ''}`} aria-pressed={isSelected} disabled={finished || Boolean(solvedGroup)} onClick={() => {
-          setMessage('Select four places that share a geographic connection.')
+        return <button key={country.iso3} type="button" className={`connections-tile${isSelected ? ' is-selected' : ''}`} aria-pressed={isSelected} disabled={finished} onClick={() => {
+          setMessage('Select four countries that share a connection.')
           setSelected((current) => isSelected ? current.filter((code) => code !== country.iso3) : current.length < 4 ? [...current, country.iso3] : current)
-        }}>{solvedGroup ? <><strong>{country.name}</strong><small>{solvedGroup.label}</small><Check size={14} aria-hidden="true" /></> : country.name}</button>
+        }}>{country.name}</button>
       })}
     </div>
     <div className="connections-actions">
       <span>{selected.length} of 4 selected</span>
       {!finished && <button className="button button-dark" type="button" disabled={selected.length !== 4} onClick={() => void submit()}>Check group</button>}
-      {!finished && <button className="button button-outline" type="button" disabled={!selected.length} onClick={() => { setSelected([]); setMessage('Selection cleared. Look for another shared geographic fact.') }}><RotateCcw size={15} /> Clear</button>}
+      {!finished && <button className="button button-outline" type="button" disabled={!selected.length} onClick={() => { setSelected([]); setMessage('Selection cleared. Look for another shared connection.') }}><RotateCcw size={15} /> Clear</button>}
     </div>
-    {finished && <div className="connections-review" aria-label="Group answers">{puzzle.groups.filter((group) => !solved.includes(group.id)).map((group) => <p key={group.id}><strong>{group.label}:</strong> {group.countryCodes.map((code) => data.countriesByCode.get(code)?.name).join(', ')}<span>{group.explanation}</span></p>)}</div>}
+    {finished && mistakes >= 4 && <div className="connections-review" aria-label="Remaining group answers">{puzzle.groups.filter((group) => !solved.includes(group.id)).map((group) => <p key={group.id}><strong>{group.label}:</strong> {group.countryCodes.map((code) => data.countriesByCode.get(code)?.name).join(', ')}<span>{group.explanation}</span></p>)}</div>}
     <GameResultsDialog complete={finished} gameId="connections" mode={mode} score={score} correct={solved.length} total={4} title={solved.length === 4 ? 'All the connections found.' : 'The groups are revealed.'} message={`${mistakes} ${mistakes === 1 ? 'mistake' : 'mistakes'} used.`} saveError={saveError} onReplay={mode === 'practice' ? onReplay : undefined} replayLabel="Play another set" />
   </div>
 }

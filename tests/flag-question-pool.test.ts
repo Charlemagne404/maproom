@@ -27,7 +27,8 @@ describe('flag practice question pools', () => {
 
   it('gives every eligible bundled country one turn per shuffled deck before cycling', () => {
     const pool = flagCountryPool(catalog.countries, 'All regions')
-    expect(pool.length).toBeGreaterThan(240)
+    expect(pool).toHaveLength(195)
+    expect(flagCountryPool(catalog.countries, 'All regions', 'extended').length).toBeGreaterThan(240)
 
     const questions = practiceQuestionSequence(pool, pool.length * 2 + 7, randomFrom(2026))
     for (const deck of [questions.slice(0, pool.length), questions.slice(pool.length, pool.length * 2)]) {

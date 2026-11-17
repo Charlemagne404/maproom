@@ -2,6 +2,8 @@
 
 Maproom is a self-hosted geography game library built around six daily puzzles and unlimited practice: country and region maps, country outlines, land-border routes, flags, a 3×3 geography grid, and capitals and cities. It is a client-only React application. Game history, favorites and preferences stay in the browser; no account or gameplay backend is required.
 
+Four additional games—Geography Connections, Higher or Lower, Neighbour Challenge, and Distance & Direction—are available as unlimited practice from the home carousel and Explore. Adding a game to the library does not opt it into the curated daily set. Standard country practice uses the 193 UN members and two UN observer states; Extended includes the full country and territory catalogue.
+
 The interface uses a locally bundled Nunito Sans type system, a warm cream, charcoal and orange palette, and map-led illustrations drawn from the bundled geography data. The daily home opens with a Stockholm-time greeting and a varied set of puzzle tiles. Each game keeps a composition fitted to the way it is played.
 
 ## Local development

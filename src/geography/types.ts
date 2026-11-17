@@ -113,6 +113,19 @@ export interface GameResult {
   detail?: Record<string, unknown>
 }
 
+export interface GameSessionSnapshot {
+  id: string
+  gameId: GameId
+  mode: GameMode
+  puzzleId: string
+  seed: string
+  date: string
+  startedAt: string
+  updatedAt: string
+  version: number
+  payload: Record<string, unknown>
+}
+
 export interface UserSettings {
   timeZone: string
   mapLabels: boolean
@@ -124,5 +137,6 @@ export interface AppState {
   settings: UserSettings
   favorites: GameId[]
   history: GameResult[]
+  sessions: GameSessionSnapshot[]
   storageAvailable: boolean
 }
