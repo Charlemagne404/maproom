@@ -14,7 +14,6 @@ export function DailyPage() {
   const date = usePuzzleDate(state.settings.timeZone)
   if (!date) return <div className="page daily-page"><LoadingState label="Setting today’s date…" /></div>
   const dailyGames = DAILY_GAME_IDS.map((id) => games.find((game) => game.id === id)).filter((game) => game !== undefined)
-  const otherGames = games.filter((game) => !DAILY_GAME_IDS.includes(game.id))
   const done = new Set(state.history
     .filter((result) => result.mode === 'daily' && result.completed && result.date === date)
     .map((result) => result.gameId))
@@ -29,7 +28,7 @@ export function DailyPage() {
       </section>
       <section className="daily-puzzles" aria-labelledby="daily-puzzles-heading">
         <div className="daily-section-heading">
-          <h2 id="daily-puzzles-heading">Today’s puzzles</h2>
+            <div><h2 id="daily-puzzles-heading">Today’s puzzles</h2><span className="daily-section-subtitle">Six daily challenges</span></div>
           <div className="daily-progress" aria-label={`${dailyCount} of ${dailyGames.length} daily puzzles complete`}>
             <div className="daily-progress-label"><span>{dailyCount} / {dailyGames.length}</span><span>complete</span></div>
             <div className="progress-track"><span style={{ width: `${dailyCount / dailyGames.length * 100}%` }} /></div>
@@ -48,19 +47,22 @@ export function DailyPage() {
           ))}
         </section>
       </section>
-      <section className="other-games-section" aria-label="Other games">
-        <div className="other-games-controls">
-          <button type="button" aria-label="Scroll games left" onClick={() => carousel.current?.scrollBy({ left: -260, behavior: 'smooth' })}><ChevronLeft size={18} /></button>
-          <button type="button" aria-label="Scroll games right" onClick={() => carousel.current?.scrollBy({ left: 260, behavior: 'smooth' })}><ChevronRight size={18} /></button>
+      <section className="other-games-section" aria-labelledby="play-anytime-heading">
+        <div className="play-anytime-heading">
+          <div><span className="eyebrow">Free play</span><h2 id="play-anytime-heading">Play anytime</h2></div>
+          <div className="other-games-controls" aria-label="Play anytime carousel controls">
+            <button type="button" aria-label="Scroll games left" title="Scroll games left" onClick={() => carousel.current?.scrollBy({ left: -260, behavior: 'smooth' })}><ChevronLeft size={18} aria-hidden="true" /></button>
+            <button type="button" aria-label="Scroll games right" title="Scroll games right" onClick={() => carousel.current?.scrollBy({ left: 260, behavior: 'smooth' })}><ChevronRight size={18} aria-hidden="true" /></button>
+          </div>
         </div>
-        <div className="other-games-carousel" ref={carousel} role="region" tabIndex={0} aria-label="Practice games; scroll horizontally" onKeyDown={(event) => {
+        <div className="other-games-carousel" ref={carousel} role="region" tabIndex={0} aria-label="Free play games; scroll horizontally" onKeyDown={(event) => {
           if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
           event.preventDefault()
           carousel.current?.scrollBy({ left: event.key === 'ArrowRight' ? 240 : -240, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
         }}>
-          {otherGames.map((game) => <GameCard key={game.id} game={game} mode="practice" favorite={state.favorites.includes(game.id)} onFavorite={(gameId) => { void toggleFavorite(gameId) }} compact />)}
+          {games.map((game) => <GameCard key={game.id} game={game} mode="freeplay" favorite={state.favorites.includes(game.id)} onFavorite={(gameId) => { void toggleFavorite(gameId) }} compact />)}
         </div>
-        <div className="daily-underbar"><Link className="text-link" to="/explore">Explore all games <ArrowRight size={15} /></Link></div>
+        <div className="daily-underbar"><Link className="text-link" to="/explore">Explore all games <ArrowRight size={15} aria-hidden="true" /></Link></div>
       </section>
     </div>
   )

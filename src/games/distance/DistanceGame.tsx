@@ -8,15 +8,17 @@ import type { City, GameMode, GeographyData } from '../../geography/types'
 import { hashSeed } from '../../puzzles/engine'
 import { distancePrompt, makeDistanceQuestions, type DistanceDifficulty, type DistanceMeasure } from '../../puzzles/distance'
 import { useGameSession } from '../session'
-import { eligibleCountries, type GeographyEligibility } from '../../geography/eligibility'
+import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
+import { useAppData } from '../../app/useAppData'
 
 type CountOption = '10' | '20' | '50' | 'infinite'
 
 export function DistanceGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
+  const { state } = useAppData()
   const [cities, setCities] = useState<City[] | null>(null)
   const [error, setError] = useState('')
   const [measure, setMeasure] = useState<DistanceMeasure>('distance')
-  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const [eligibility, setEligibility] = useState<GeographyEligibility>(initialGeographyEligibility(mode, state.settings.catalogue))
   const [scope, setScope] = useState('World')
   const [minimumPopulation, setMinimumPopulation] = useState(50_000)
   const [difficulty, setDifficulty] = useState<DistanceDifficulty>('standard')
@@ -77,7 +79,7 @@ function DistanceRound({ data, cities, countries, mode, date, seed, measure, sco
   const [message, setMessage] = useState('Use the coordinates and scale of the world to compare these places.')
   const [seconds, setSeconds] = useState(60)
   const [finished, setFinished] = useState(false)
-  const infinite = mode === 'practice' && count === 'infinite'
+  const infinite = mode === 'freeplay' && count === 'infinite'
   const question = deck[index]
   const { save, saveError } = useGameSession('distance', mode, date, seed)
 
@@ -108,7 +110,7 @@ function DistanceRound({ data, cities, countries, mode, date, seed, measure, sco
     return () => window.removeEventListener('keydown', onKeyDown)
   })
 
-  if (!question) return <div className="game-body"><InlineNotice title="No city comparisons fit those settings" tone="warning"><span>Choose a wider region, a lower population threshold or standard difficulty. Distances use the bundled GeoNames city coordinates.</span>{mode === 'practice' && <div className="empty-game-actions"><button className="button button-outline" type="button" onClick={() => { onScope('World'); onPopulation(50_000); onDifficulty('standard') }}>Use standard world comparisons</button></div>}</InlineNotice></div>
+  if (!question) return <div className="game-body"><InlineNotice title="No city comparisons fit those settings" tone="warning"><span>Choose a wider region, a lower population threshold or standard difficulty. Distances use the bundled GeoNames city coordinates.</span>{mode === 'freeplay' && <div className="empty-game-actions"><button className="button button-outline" type="button" onClick={() => { onScope('World'); onPopulation(50_000); onDifficulty('standard') }}>Use standard world comparisons</button></div>}</InlineNotice></div>
 
   async function answer(side: 'left' | 'right') {
     if (!question || choice || finished) return
@@ -144,7 +146,7 @@ function DistanceRound({ data, cities, countries, mode, date, seed, measure, sco
     setMessage('Use the coordinates and scale of the world to compare these places.')
   }
 
-  const settings = mode === 'practice' && !finished ? <GameSettingsMenu><div className="practice-config">
+  const settings = mode === 'freeplay' && !finished ? <GameSettingsMenu><div className="practice-config">
     <label><span>Challenge</span><select value={measure} onChange={(event) => onMeasure(event.target.value as DistanceMeasure)}><option value="distance">Closer to the origin</option><option value="latitude">Farther north</option><option value="longitude">Farther east of Greenwich</option></select></label>
     <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
     <label><span>City region</span><select value={scope} onChange={(event) => onScope(event.target.value)}><option>World</option>{scopes.map((item) => <option key={item}>{item}</option>)}</select></label>
@@ -167,7 +169,7 @@ function DistanceRound({ data, cities, countries, mode, date, seed, measure, sco
       <CityChoice city={question.right} side="right" countryName={data.countriesByCode.get(question.right.countryIso3)?.name ?? ''} distance={question.rightDistanceKm} direction={question.rightDirection} revealed={revealed} selected={selectedCity?.id === question.right.id} correct={question.answer === 'right'} disabled={revealed || finished} onChoose={answer} />
     </div>
     <div className={`answer-feedback${choice ? choice === question.answer ? ' is-correct' : ' is-incorrect' : ''}`} role="status"><span className="feedback-icon">{choice ? <Check size={17} /> : <Compass size={16} />}</span><span>{message}{revealed && <small className="distance-reveal">{question.left.name}: {Math.round(question.leftDistanceKm).toLocaleString()} km {question.leftDirection} · {question.right.name}: {Math.round(question.rightDistanceKm).toLocaleString()} km {question.rightDirection}</small>}</span>{revealed && !finished && <button className="button button-dark" type="button" onClick={nextQuestion}>{index === deck.length - 1 && !infinite ? 'See result' : 'Next comparison'}</button>}</div>
-    <GameResultsDialog complete={finished} gameId="distance" mode={mode} score={score} correct={correct} total={resolved} title={timed && seconds === 0 ? 'Time is up.' : 'City comparison complete.'} message={`Best streak: ${bestStreak}. Great-circle distances use the Haversine calculation.`} saveError={saveError} onReplay={mode === 'practice' ? onReplay : undefined} replayLabel="Compare more cities" />
+    <GameResultsDialog complete={finished} gameId="distance" mode={mode} score={score} correct={correct} total={resolved} title={timed && seconds === 0 ? 'Time is up.' : 'City comparison complete.'} message={`Best streak: ${bestStreak}. Great-circle distances use the Haversine calculation.`} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Compare more cities" />
   </div>
 }
 

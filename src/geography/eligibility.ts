@@ -1,6 +1,10 @@
-import type { Country, GeoFeature } from './types'
+import type { Country, GameMode, GeoFeature } from './types'
 
 export type GeographyEligibility = 'standard' | 'extended'
+
+export function initialGeographyEligibility(mode: GameMode, preference: GeographyEligibility): GeographyEligibility {
+  return mode === 'daily' ? 'standard' : preference
+}
 
 // 193 UN members plus the Holy See and Palestine as the two observer states.
 // The catalogue marks 194 ISO records independent; Palestine is added explicitly.

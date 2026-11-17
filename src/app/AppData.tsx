@@ -78,7 +78,7 @@ export function AppDataProvider({ children }: PropsWithChildren) {
     })
   }, [])
 
-  const deleteSession = useCallback(async (gameId: GameId, mode: 'daily' | 'practice', date: string, keepPuzzleId?: string) => {
+  const deleteSession = useCallback(async (gameId: GameId, mode: 'daily' | 'freeplay', date: string, keepPuzzleId?: string) => {
     await deleteGameSession(gameId, mode, date, keepPuzzleId)
     setState((current) => ({ ...current, sessions: current.sessions.filter((session) => !(session.gameId === gameId && session.mode === mode && session.date === date && !(session.puzzleId === keepPuzzleId && session.version === 1))) }))
   }, [])

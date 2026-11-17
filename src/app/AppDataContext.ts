@@ -8,7 +8,7 @@ export interface AppDataValue {
   toggleFavorite: (gameId: GameId) => Promise<void>
   completeGame: (result: GameResult) => Promise<void>
   saveSession: (snapshot: GameSessionSnapshot) => Promise<void>
-  deleteSession: (gameId: GameId, mode: 'daily' | 'practice', date: string, keepPuzzleId?: string) => Promise<void>
+  deleteSession: (gameId: GameId, mode: 'daily' | 'freeplay', date: string, keepPuzzleId?: string) => Promise<void>
   exportData: () => Promise<string>
   importData: (input: string) => Promise<void>
   resetData: () => Promise<void>

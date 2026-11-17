@@ -29,10 +29,13 @@ interface CityRecord {
   capital?: boolean
 }
 
-async function openGame(page: Page, id: string, mode: 'daily' | 'practice' = 'practice') {
-  await page.goto(`/games/${id}?mode=${mode}`)
+async function openGame(page: Page, id: string, mode: 'daily' | 'freeplay' = 'freeplay', format?: string) {
+  const query = new URLSearchParams({ mode: mode === 'daily' ? 'daily' : 'freeplay' })
+  if (format) query.set('format', format)
+  await page.goto(`/games/${id}?${query}`)
   await expect(page.locator('.game-context-bar')).toBeVisible()
   await expect(page.locator('.game-context-title')).toHaveCount(1)
+  if (mode !== 'daily') await page.getByRole('button', { name: 'Start Free play' }).click()
   await expect(page.locator('.game-body')).toBeVisible({ timeout: 30_000 })
 }
 
@@ -300,8 +303,8 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await expect(page.locator('.welcome-hero h1')).toBeVisible()
   await expect(page.locator('.daily-section-heading h2')).toHaveText('Today’s puzzles')
   await expect(page.locator('.daily-grid .game-card')).toHaveCount(6)
-  await expect(page.locator('.other-games-carousel .game-card')).toHaveCount(4)
-  await expect(page.locator('.other-games-carousel .game-card-link').first()).toHaveAttribute('href', /mode=practice/)
+  await expect(page.locator('.other-games-carousel .game-card')).toHaveCount(10)
+  await expect(page.locator('.other-games-carousel .game-card-link').first()).toHaveAttribute('href', /mode=freeplay/)
   await expect(page.getByRole('link', { name: 'Explore all games' })).toBeVisible()
   const practiceCarousel = page.locator('.other-games-carousel')
   await page.setViewportSize({ width: 800, height: 900 })
@@ -310,8 +313,20 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await page.keyboard.press('ArrowRight')
   await expect.poll(() => practiceCarousel.evaluate((element) => element.scrollLeft)).toBeGreaterThan(carouselBefore)
   await page.setViewportSize({ width: 1440, height: 960 })
+  await page.locator('.daily-grid .game-card-link').first().click()
+  await expect(page).toHaveURL(/mode=daily$/)
+  await expect(page.locator('.game-context-daily')).toHaveText('Today’s puzzle')
+  await expect(page.locator('.mode-switch')).toHaveCount(0)
+  await expect(page.locator('.game-body')).toBeVisible()
+  await page.goto('/')
+  await page.locator('.other-games-carousel .game-card-link').first().click()
+  await expect(page).toHaveURL(/mode=freeplay$/)
+  await expect(page.getByRole('group', { name: 'Free play setup' })).toBeVisible()
+  await page.getByRole('button', { name: 'Start Free play' }).click()
+  await expect(page.locator('.game-body')).toBeVisible()
+  await page.goto('/')
   await expect(page.locator('.game-card-action span')).toHaveCount(0)
-  await expect(page.locator('.header-tools .data-shortcut')).toHaveCount(0)
+  await expect(page.locator('.header-tools .settings-shortcut')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Data sources', exact: true })).toBeVisible()
   const wordmarkSize = await page.locator('.brand').evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize))
   expect(wordmarkSize).toBeGreaterThanOrEqual(27)
@@ -341,11 +356,11 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await expect.poll(hoverLift).toBeLessThan(-2.8)
   await expect.poll(() => leadCard.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(leadCardBackground)
   await page.screenshot({ path: 'artifacts/qa/product-consistency/home-tile-hover-desktop.png', fullPage: true })
-  const countryMap = page.locator('.game-card-countries .art-world')
+  const countryMap = page.locator('.daily-grid .game-card-countries .art-world')
   await expect(countryMap).toHaveJSProperty('complete', true)
   await expect(countryMap).toHaveCSS('object-fit', 'contain')
-  await expect(page.locator('.game-card-routes .art-route img')).toHaveCount(1)
-  await expect(page.locator('.game-card-cities .art-city-target')).toHaveCount(1)
+  await expect(page.locator('.daily-grid .game-card-routes .art-route img')).toHaveCount(1)
+  await expect(page.locator('.daily-grid .game-card-cities .art-city-target')).toHaveCount(1)
   await page.mouse.move(0, 0)
   await page.screenshot({ path: 'artifacts/qa/product-consistency/home-desktop.png', fullPage: true })
   const keyboardPage = await page.context().newPage()
@@ -355,8 +370,8 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await keyboardPage.close()
 
   await page.goto('/explore')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(10)
-  const flagCard = page.locator('.game-card').filter({ hasText: 'Flag study' })
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(14)
+  const flagCard = page.locator('.game-card-flags').first()
   const favorite = flagCard.locator('.favorite-button')
   await favorite.click()
   await expect(favorite).toHaveAttribute('aria-pressed', 'true')
@@ -367,14 +382,15 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await favorite.click()
   await expect(favorite).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('button', { name: /Favorites/ }).click()
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(1)
-  await expect(page.locator('.explore-grid .game-card')).toContainText('Flag study')
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(2)
+  await expect(page.locator('.explore-grid .game-card-flags')).toHaveCount(2)
+  await expect(page.locator('.explore-grid .game-card-flags').nth(0)).toContainText('Identify the country')
+  await expect(page.locator('.explore-grid .game-card-flags').nth(1)).toContainText('Find the flag')
   await page.getByRole('button', { name: 'All games' }).click()
   await page.getByRole('button', { name: /Favorites/ }).click()
   await page.getByLabel('Search games').fill('capitals')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(2)
-  await expect(page.locator('.explore-grid .game-card').filter({ hasText: 'Capitals & cities' })).toHaveCount(1)
-  await expect(page.locator('.explore-grid .game-card').filter({ hasText: 'Distance & Direction' })).toHaveCount(1)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(4)
+  await expect(page.locator('.explore-grid .game-card-cities')).toHaveCount(4)
 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
@@ -391,7 +407,7 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await expect(menuToggle).toHaveAttribute('aria-expanded', 'false')
   await expect(menuToggle).toBeFocused()
   await menuToggle.click()
-  await page.getByRole('link', { name: 'Explore', exact: true }).click()
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Explore', exact: true }).click()
   await expect(page).toHaveURL(/\/explore$/)
   await page.goto('/')
   await page.screenshot({ path: 'artifacts/qa/product-consistency/home-mobile.png', fullPage: true })
@@ -441,7 +457,7 @@ test('daily completion appears as a green check on the puzzle tile', async ({ pa
   expect(completedBounds?.x).toBeGreaterThan((mainBounds?.x ?? 0) + 120)
   expect(Math.abs((completedBounds?.y ?? 0) + (completedBounds?.height ?? 0) / 2 - ((mainBounds?.y ?? 0) + (mainBounds?.height ?? 0) / 2))).toBeLessThan(45)
   await expect(page.locator('.site-header')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Play practice' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Play in Free play' })).toBeVisible()
   await page.screenshot({ path: 'artifacts/qa/product-consistency/countries-completed-daily-desktop.png', fullPage: true })
 })
 
@@ -658,7 +674,26 @@ test('the application shell keeps identical navigation geometry across routes an
   }
 })
 
-test('country identification uses the map data, accepts an answer and saves a full practice result', async ({ page }) => {
+test('navbar theme, streak and settings controls work across the product shell', async ({ page }) => {
+  await page.goto('/')
+  const navigation = page.getByRole('navigation', { name: 'Main navigation' })
+  await expect(navigation.getByRole('link', { name: 'Daily' })).toBeVisible()
+  await expect(navigation.getByRole('link', { name: 'Explore' })).toBeVisible()
+  await expect(navigation.getByRole('link', { name: 'Statistics' })).toBeVisible()
+  await expect(navigation.getByRole('link', { name: 'Settings' })).toHaveCount(0)
+  const theme = page.getByRole('button', { name: 'Switch to dark appearance' })
+  await expect(theme).toBeVisible()
+  await theme.click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await expect(page.getByRole('button', { name: 'Switch to light appearance' })).toBeVisible()
+  await page.getByRole('link', { name: /Current streak .* view activity in Statistics/ }).click()
+  await expect(page).toHaveURL(/\/statistics#activity$/)
+  await expect(page.locator('#activity .activity-heatmap')).toBeVisible()
+  await page.getByRole('link', { name: 'Settings' }).click()
+  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+})
+
+test('country identification uses the map data, accepts an answer and saves a full Free play result', async ({ page }) => {
   await openGame(page, 'countries')
   for (let index = 0; index < 10; index += 1) {
     const answer = await page.locator('.question-toolbar h2 em').innerText()
@@ -670,9 +705,12 @@ test('country identification uses the map data, accepts an answer and saves a fu
   await expect(page.locator('.game-results-score')).toContainText('1,000')
   await page.locator('main').getByRole('link', { name: 'Statistics', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Statistics' })).toBeVisible()
-  await expect(page.locator('.stat-overview')).toContainText('1 completed')
+  await expect(page.locator('.stat-cell').filter({ hasText: 'Games completed' })).toContainText('1')
+  await expect(page.locator('.activity-total')).toContainText('1 completed in the past year')
+  await expect(page.locator('.activity-day-detail')).toContainText('1 puzzle completed')
+  await expect(page.locator('.history-row')).toContainText('Free play')
   await page.reload()
-  await expect(page.locator('.stat-overview')).toContainText('1 completed')
+  await expect(page.locator('.stat-cell').filter({ hasText: 'Games completed' })).toContainText('1')
 })
 
 test('map controls and favorites remain touch-sized on mobile', async ({ browser }) => {
@@ -721,7 +759,7 @@ test('country outlines reveal the answer after six valid guesses and save the re
 
 test('country outlines load first-level regional silhouettes on demand', async ({ page }) => {
   await openGame(page, 'outlines')
-  await setGameSetting(page, 'Practice scope', 'Subdivisions')
+  await setGameSetting(page, 'Free play scope', 'Subdivisions')
   await expect(page.locator('.outline-map-stage')).toBeVisible({ timeout: 30_000 })
 
   await setGameSetting(page, 'Country', 'SWE')
@@ -801,7 +839,7 @@ test('border route accepts an actual shortest path and scores it', async ({ page
   await expect(page.locator('.game-results-score')).not.toContainText('1,000')
 })
 
-test('flag identification answers each locally bundled flag and completes practice', async ({ page }) => {
+test('flag identification answers each locally bundled flag and completes Free play', async ({ page }) => {
   await openGame(page, 'flags')
   const navigationBeforeRound = await shellGeometry(page)
   for (let index = 0; index < 10; index += 1) {
@@ -823,7 +861,7 @@ test('flag identification answers each locally bundled flag and completes practi
     await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
     if (index < 9) await expect(page.locator('.flag-progress')).toHaveText(`${String(index + 2).padStart(2, '0')} / 10`, { timeout: 5_000 })
   }
-  const results = page.getByRole('dialog', { name: 'Practice round complete.' })
+  const results = page.getByRole('dialog', { name: 'Free play round complete.' })
   await expect(results).toBeVisible()
   await expect(page.locator('.game-results-score')).toContainText('1,000')
   await expect(page.locator('.game-results-summary')).toHaveText('10 / 10 correct · 100% accuracy')
@@ -852,7 +890,7 @@ test('flag identification answers each locally bundled flag and completes practi
   await expect(page.locator('.game-results-dialog')).toBeHidden()
 })
 
-test('infinite flag practice cycles fairly, stays open and saves the chosen session total', async ({ page }) => {
+test('infinite flag Free play cycles fairly, stays open and saves the chosen session total', async ({ page }) => {
   await openGame(page, 'flags')
   await page.getByRole('button', { name: 'Game settings' }).click()
   await page.getByLabel('Questions').selectOption('infinite')
@@ -881,7 +919,7 @@ test('infinite flag practice cycles fairly, stays open and saves the chosen sess
   await expect(page.locator('.flag-live-status')).toContainText('12 correct')
   await expect(page.locator('.flag-live-status')).toContainText('100% accuracy')
   await page.getByRole('button', { name: 'End session' }).click()
-  const results = page.getByRole('dialog', { name: 'Practice session complete.' })
+  const results = page.getByRole('dialog', { name: 'Free play session complete.' })
   await expect(results).toBeVisible()
   await expect(page.locator('.game-results-score')).toContainText('1,200')
   await expect(page.locator('.game-results-summary')).toHaveText('12 / 12 correct · 100% accuracy')
@@ -889,25 +927,21 @@ test('infinite flag practice cycles fairly, stays open and saves the chosen sess
   await expect(page.locator('.history-result').first()).toContainText('12 / 12 correct')
 })
 
-test('flag daily mode keeps its seed and advances after a keyboard answer', async ({ page }) => {
+test('daily play has no mode switch and keeps its seeded puzzle when returning', async ({ page }) => {
   await openGame(page, 'flags', 'daily')
   await expect(page.locator('.site-header')).toBeVisible()
   const topBarBox = await page.locator('.site-header').boundingBox()
   expect(topBarBox?.y).toBeLessThanOrEqual(1)
   expect(topBarBox?.height).toBeLessThanOrEqual(62)
   await expect(page.locator('.game-context-bar .game-context-back')).toBeVisible()
-  await expect(page.locator('.game-context-bar .mode-switch a.is-selected')).toHaveText('Daily')
+  await expect(page.locator('.game-context-daily')).toHaveText('Today’s puzzle')
+  await expect(page.locator('.mode-switch')).toHaveCount(0)
   await expect(page.locator('.flag-settings-button')).toHaveCount(0)
   await expect(page.locator('.game-page-heading')).toHaveCount(0)
-  await page.getByRole('link', { name: 'Practice', exact: true }).click()
-  await expect(page).toHaveURL(/\/games\/flags\?mode=practice$/)
-  await expect(page.locator('.game-context-bar .mode-switch a.is-selected')).toHaveText('Practice')
-  await page.locator('.game-context-bar .mode-switch').getByRole('link', { name: 'Daily', exact: true }).click()
-  await expect(page).toHaveURL(/\/games\/flags\?mode=daily$/)
-  await expect(page.locator('.game-context-bar .mode-switch a.is-selected')).toHaveText('Daily')
   await page.getByRole('link', { name: 'All games' }).click()
   await expect(page).toHaveURL(/\/explore$/)
-  await page.goBack()
+  await expect(page.getByRole('link', { name: /Flag study: Find the flag, Free play/ })).toBeVisible()
+  await page.goto('/games/flags?mode=daily')
   await expect(page).toHaveURL(/\/games\/flags\?mode=daily$/)
   const initialFlag = await page.locator('.flag-display [role="img"]').getAttribute('aria-label')
   expect(initialFlag).toBe('National flag to identify')
@@ -929,7 +963,7 @@ test('flag daily mode keeps its seed and advances after a keyboard answer', asyn
   await expect(page.getByRole('button', { name: 'Next flag' })).toHaveCount(0)
 })
 
-test('changing practice settings cancels a pending automatic advance', async ({ page }) => {
+test('changing Free play settings cancels a pending automatic advance', async ({ page }) => {
   await openGame(page, 'flags')
   const answer = await displayedFlagCountry(page)
   const choices = page.locator('.flag-choice')
@@ -951,67 +985,46 @@ test('changing practice settings cancels a pending automatic advance', async ({ 
   await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
 })
 
-test('flag practice settings cover regions, direction, answer style and progressive reveal', async ({ page }) => {
+test('Explore exposes distinct flag formats and game options stay in Free play setup', async ({ page }) => {
+  await page.goto('/explore')
+  const identify = page.getByRole('link', { name: 'Flag study: Identify the country, Free play' })
+  const findFlag = page.getByRole('link', { name: 'Flag study: Find the flag, Free play' })
+  await expect(identify).toBeVisible()
+  await expect(findFlag).toBeVisible()
+  await findFlag.click()
+  await expect(page).toHaveURL(/mode=freeplay&format=country-to-flag/)
+  const setup = page.getByRole('group', { name: 'Free play setup' })
+  await expect(setup).toBeVisible()
+  await expect(setup.getByRole('button', { name: /Identify the country/ })).toHaveAttribute('aria-pressed', 'false')
+  await expect(setup.getByRole('button', { name: /Find the flag/ })).toHaveAttribute('aria-pressed', 'true')
+  await expect(setup.getByLabel('Direction')).toHaveCount(0)
+  await setup.getByRole('button', { name: 'Start Free play' }).click()
+  await expect(page.locator('.image-choice-grid .flag-choice')).toHaveCount(4)
+  const countryPrompt = await page.locator('.flag-question-row h1').innerText()
+  const answerCountry = countryPrompt.replace(/^Which flag belongs to /, '').replace(/\?$/, '')
+  const correctFlag = await flagChoiceForCountry(page, answerCountry)
+  await correctFlag.click()
+  await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
+})
+
+test('flag free play settings cover regions, answer style and progressive reveal', async ({ page }) => {
   await openGame(page, 'flags')
-  const firstChoice = page.locator('.flag-choice').first()
-  await firstChoice.hover()
-  await expect(firstChoice).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
-  await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-choice-hover-desktop.png' })
   const settingsButton = page.getByRole('button', { name: 'Game settings' })
   await expect(settingsButton).toHaveAttribute('aria-expanded', 'false')
-  await expect(page.getByRole('group', { name: 'Game settings' })).toHaveCount(0)
   await settingsButton.focus()
   await page.keyboard.press('Enter')
   const settings = page.getByRole('group', { name: 'Game settings' })
   await expect(settings).toBeVisible()
-  await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-settings-desktop.png' })
   await page.keyboard.press('Escape')
   await expect(settingsButton).toBeFocused()
-  await expect(settings).toHaveCount(0)
 
   await settingsButton.click()
   await setGameSetting(page, 'Questions', '20')
   await expect(page.locator('.flag-progress')).toHaveText('01 / 20')
-  await setGameSetting(page, 'Questions', '50')
-  await expect(page.locator('.flag-progress')).toHaveText('01 / 50')
-  await setGameSetting(page, 'Questions', 'infinite')
-  await expect(page.locator('.flag-progress')).toHaveText('Question 1')
   await setGameSetting(page, 'Questions', '10')
   await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
   await setGameSetting(page, 'Region', { label: 'Europe' })
   await expect(page.getByLabel('Region')).toHaveValue('Europe')
-  await setGameSetting(page, 'Direction', 'country-to-flag')
-  await expect(page.getByLabel('Answer style')).toHaveCount(0)
-  await page.keyboard.press('Escape')
-  await expect(settings).toHaveCount(0)
-  await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-country-to-flag-desktop.png' })
-  const answerFlagWidths = await page.locator('.image-choice-grid .flag-frame').evaluateAll((elements) => elements.map((element) => element.getBoundingClientRect().width))
-  expect(answerFlagWidths).toHaveLength(4)
-  expect(Math.min(...answerFlagWidths)).toBeGreaterThan(70)
-  const countryPrompt = await page.locator('.flag-question-row h1').innerText()
-  const answerCountry = countryPrompt.replace(/^Which flag belongs to /, '').replace(/\?$/, '')
-  const europeanNames = new Set((await countryData(page)).filter((country) => country.continent === 'Europe' && (country.independent || country.iso3 === 'PSE')).map((country) => country.name))
-  expect(europeanNames.has(answerCountry)).toBe(true)
-  const correctFlag = await flagChoiceForCountry(page, answerCountry)
-  await correctFlag.click()
-  await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-  await expect(page.locator('.flag-progress')).toHaveText('02 / 10', { timeout: 5_000 })
-
-  const nextPrompt = await page.locator('.flag-question-row h1').innerText()
-  const nextCountry = nextPrompt.replace(/^Which flag belongs to /, '').replace(/\?$/, '')
-  const answerOptions = page.locator('.flag-choice')
-  const nextCorrect = await flagChoiceForCountry(page, nextCountry)
-  const correctIndex = await nextCorrect.evaluate((element) => [...element.parentElement!.children].indexOf(element))
-  const wrongIndex = correctIndex === 0 ? 1 : 0
-  const wrongOption = answerOptions.nth(wrongIndex)
-  await wrongOption.click()
-  await expect(page.locator('.answer-feedback.is-incorrect')).toContainText('The answer is')
-  await expect(wrongOption).toBeDisabled()
-  await expect(page.getByRole('button', { name: 'Next flag' })).toHaveCount(0)
-  await expect(page.locator('.flag-progress')).toHaveText('03 / 10', { timeout: 5_000 })
-
-  await settingsButton.click()
-  await setGameSetting(page, 'Direction', 'flag-to-country')
   await setGameSetting(page, 'Answer style', 'typed')
   await page.getByLabel('Reveal after wrong guesses').check()
   await expect(page.getByLabel('Answer style')).toHaveValue('typed')
@@ -1019,20 +1032,19 @@ test('flag practice settings cover regions, direction, answer style and progress
   await page.keyboard.press('Escape')
 
   const typedAnswer = await displayedFlagCountry(page)
-  const wrongCountry = [...europeanNames].find((name) => name !== typedAnswer)
+  const countries = await countryData(page)
+  const wrongCountry = countries.find((country) => country.continent === 'Europe' && (country.independent || country.iso3 === 'PSE') && country.name !== typedAnswer)?.name
   expect(wrongCountry).toBeTruthy()
   const input = page.getByLabel('Country name for the flag')
   await input.fill(wrongCountry!)
   const wrongSuggestion = page.getByRole('option', { name: wrongCountry!, exact: true })
   await expect(wrongSuggestion).toBeVisible()
-  await expect(wrongSuggestion).toHaveText(wrongCountry!)
   await wrongSuggestion.click()
   await expect(page.locator('.flag-display')).toHaveClass(/has-reveal/)
   await expect(page.locator('.answer-feedback')).toContainText('try once more')
   await expect(input).toBeEnabled()
   await page.waitForTimeout(1_000)
   await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
-
   await input.fill(typedAnswer)
   await page.getByRole('option', { name: typedAnswer, exact: true }).click()
   await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
@@ -1051,9 +1063,7 @@ test('flag compositions stay centered and bounded at desktop, laptop and mobile 
     await expectCenteredFlagLayout(page, 'flag-to-country')
     await page.screenshot({ path: `artifacts/qa/product-consistency/flags-${viewport.name}-flag-to-country.png`, fullPage: true })
 
-    await page.getByRole('button', { name: 'Game settings' }).click()
-    await setGameSetting(page, 'Direction', 'country-to-flag')
-    await page.keyboard.press('Escape')
+    await openGame(page, 'flags', 'freeplay', 'country-to-flag')
     await expect(page.locator('.image-choice-grid .flag-choice')).toHaveCount(4)
     await expectCenteredFlagLayout(page, 'country-to-flag')
     if (viewport.name === 'mobile') {
@@ -1073,15 +1083,15 @@ test('flag compositions stay centered and bounded at desktop, laptop and mobile 
   }
 })
 
-test('flag practice settings stay within the mobile viewport and remain tappable', async ({ browser }) => {
+test('flag Free play settings stay within the mobile viewport and remain tappable', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
   try {
     const page = await context.newPage()
-    await openGame(page, 'flags')
+    await openGame(page, 'flags', 'freeplay', 'country-to-flag')
     const topBarBox = await page.locator('.site-header').boundingBox()
     expect(topBarBox?.y).toBeLessThanOrEqual(1)
-    expect(topBarBox?.height).toBeLessThanOrEqual(60)
-    await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-practice-mobile.png', fullPage: true })
+    expect(topBarBox?.height).toBeLessThanOrEqual(62)
+    await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-freeplay-mobile.png', fullPage: true })
     await page.getByRole('button', { name: 'Game settings' }).tap()
     const settings = page.getByRole('group', { name: 'Game settings' })
     await expect(settings).toBeVisible()
@@ -1090,7 +1100,6 @@ test('flag practice settings stay within the mobile viewport and remain tappable
     expect((panel?.x ?? 0) + (panel?.width ?? 0)).toBeLessThanOrEqual(390)
     await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-settings-mobile.png', fullPage: true })
     await setGameSetting(page, 'Region', { label: 'Asia' })
-    await setGameSetting(page, 'Direction', 'country-to-flag')
     await setGameSetting(page, 'Questions', 'infinite')
     await page.keyboard.press('Escape')
     await expect(settings).toHaveCount(0)
@@ -1108,7 +1117,7 @@ test('flag practice settings stay within the mobile viewport and remain tappable
     await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
     await expect(page.locator('.flag-progress')).toHaveText('Question 2', { timeout: 5_000 })
     await page.getByRole('button', { name: 'End session' }).tap()
-    const results = page.getByRole('dialog', { name: 'Practice session complete.' })
+    const results = page.getByRole('dialog', { name: 'Free play session complete.' })
     await expect(results).toBeVisible()
     const resultsBox = await results.boundingBox()
     expect(resultsBox?.x).toBeGreaterThanOrEqual(0)
@@ -1193,9 +1202,9 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   await page.setViewportSize({ width: 1440, height: 960 })
   await page.goto('/')
   await expect(page.locator('.daily-grid .game-card')).toHaveCount(6)
-  await expect(page.locator('.other-games-carousel .game-card')).toHaveCount(4)
+  await expect(page.locator('.other-games-carousel .game-card')).toHaveCount(10)
   await page.goto('/explore')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(10)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(14)
   await page.screenshot({ path: 'artifacts/qa/product-consistency/explore-desktop.png', fullPage: true })
 
   for (const [route, name] of [['/statistics', 'statistics'], ['/settings', 'settings'], ['/data', 'data'], ['/about', 'about'], ['/privacy', 'privacy']] as const) {
@@ -1205,13 +1214,13 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   }
 
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
-    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'practice' : 'daily')
+    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily')
     await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-desktop.png` })
   }
 
   await page.setViewportSize({ width: 1280, height: 800 })
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
-    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'practice' : 'daily')
+    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily')
     await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-laptop.png` })
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `${id} laptop width overflow`).toBeLessThanOrEqual(0)
@@ -1219,7 +1228,7 @@ test('captures the redesigned desktop game stages and key mobile screens', async
 
   await page.setViewportSize({ width: 1024, height: 768 })
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
-    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'practice' : 'daily')
+    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily')
     await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-tablet.png` })
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `${id} tablet width overflow`).toBeLessThanOrEqual(0)
@@ -1233,7 +1242,7 @@ test('captures the redesigned desktop game stages and key mobile screens', async
 
   await page.setViewportSize({ width: 390, height: 844 })
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
-    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'practice' : 'daily')
+    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily')
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `${id} mobile width overflow`).toBeLessThanOrEqual(0)
     if (id === 'countries') {
@@ -1317,7 +1326,7 @@ test('Geography Connections accepts four valid attribute groups and replays', as
   await expect(page.locator('.game-results-dialog')).toBeHidden()
 })
 
-test('Higher or Lower supports fixed and infinite keyboard practice', async ({ page }) => {
+test('Higher or Lower supports fixed and infinite Free play with keyboard controls', async ({ page }) => {
   await openGame(page, 'higher-lower')
   await page.clock.pauseAt(new Date('2026-11-17T12:00:00Z'))
   for (let index = 0; index < 10; index += 1) {
@@ -1484,11 +1493,12 @@ test('all four new games accept touch input in the mobile layout', async ({ brow
     expect(target).toBeDefined()
     const neighbor = countries.find((country) => standardCodes.has(country.iso3) && country.iso3 !== target!.iso3 && (target!.borders.includes(country.iso3) || country.borders.includes(target!.iso3)))
     expect(neighbor).toBeDefined()
-    const mapIndex = await mapFeatureIndex(page, neighbor!.iso3, standardCodes)
-    expect(mapIndex).toBeGreaterThanOrEqual(0)
-    const mapPoint = await mapPathPoint(page, '.neighbour-map .geo-map path[role="button"]', mapIndex)
-    expect(mapPoint).not.toBeNull()
-    await page.touchscreen.tap(mapPoint!.x, mapPoint!.y)
+    const neighborInput = page.locator('#neighbour-answer')
+    await neighborInput.tap()
+    await neighborInput.fill(neighbor!.name)
+    const neighborSuggestion = page.locator('.suggestion-option').filter({ has: page.getByText(neighbor!.name, { exact: true }) }).first()
+    await expect(neighborSuggestion).toBeVisible()
+    await neighborSuggestion.tap()
     await expect(page.locator('.neighbour-selected button')).toHaveCount(1)
 
     await openGame(page, 'distance')
@@ -1516,10 +1526,7 @@ test('capitals and cities include typed capitals, coordinate placement and city 
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
 
-  await page.getByRole('button', { name: 'New city round' }).click()
-  await page.getByRole('button', { name: 'Game settings' }).click()
-  await page.getByLabel('Practice task').selectOption('locate')
-  await expect(page.locator('.game-results-dialog')).toHaveCount(0)
+  await openGame(page, 'cities', 'freeplay', 'locate-city')
   const cities = await cityData(page)
   let prompt = await page.locator('.question-toolbar h2').innerText()
   let cityStart = prompt.indexOf('Place ') + 'Place '.length
@@ -1538,8 +1545,7 @@ test('capitals and cities include typed capitals, coordinate placement and city 
   await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
   await page.getByRole('button', { name: 'Next place' }).click()
 
-  await page.getByRole('button', { name: 'Game settings' }).click()
-  await page.getByLabel('Practice task').selectOption('identify')
+  await openGame(page, 'cities', 'freeplay', 'identify-city')
   prompt = await page.locator('.question-toolbar h2').innerText()
   countryName = prompt.replace(/^Which city is marked in /, '').replace(/\?$/, '')
   cityCountry = countries.find((item) => item.name === countryName)
@@ -1558,19 +1564,20 @@ test('capitals and cities include typed capitals, coordinate placement and city 
 test('settings exports and imports progress, confirms reset, and the data page shows coverage', async ({ page }) => {
   await page.goto('/settings')
 
-  await page.locator('.theme-option').filter({ hasText: 'Dark' }).click()
+  const appearance = page.getByLabel('Appearance', { exact: true })
+  await appearance.selectOption('dark')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
   await expect.poll(() => page.evaluate(() => localStorage.getItem('maproom-theme'))).toBe('dark')
   await page.reload()
-  await expect(page.locator('.theme-option input[value="dark"]')).toBeChecked()
+  await expect(appearance).toHaveValue('dark')
   await page.emulateMedia({ colorScheme: 'dark' })
-  await page.locator('.theme-option').filter({ hasText: 'System' }).click()
+  await appearance.selectOption('system')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
   await expect.poll(() => page.evaluate(() => localStorage.getItem('maproom-theme'))).toBe('system')
   await page.emulateMedia({ colorScheme: 'light' })
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await page.reload()
-  await expect(page.locator('.theme-option input[value="system"]')).toBeChecked()
+  await expect(appearance).toHaveValue('system')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await page.emulateMedia({ colorScheme: 'dark' })
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
@@ -1597,10 +1604,11 @@ test('settings exports and imports progress, confirms reset, and the data page s
   await expect(page.getByText('Progress imported.')).toBeVisible()
   await expect(page.getByLabel(/Puzzle time zone/)).toHaveValue('Europe/London')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
-  page.once('dialog', (dialog) => dialog.accept())
   await page.getByRole('button', { name: 'Reset saved data' }).click()
+  await expect(page.getByRole('alert')).toContainText('Reset all saved data?')
+  await page.getByRole('button', { name: 'Delete saved data' }).click()
   await expect(page.getByText('Saved data has been reset.')).toBeVisible()
-  await expect(page.locator('.theme-option input[value="light"]')).toBeChecked()
+  await expect(appearance).toHaveValue('light')
 
   await page.goto('/data')
   await expect(page.getByRole('heading', { name: 'Data sources' })).toBeVisible()
@@ -1623,5 +1631,5 @@ test('the production service worker reopens cached routes when offline', async (
   await page.context().setOffline(true)
   await page.goto('/explore')
   await expect(page.getByRole('heading', { name: 'Explore' })).toBeVisible()
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(10)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(14)
 })

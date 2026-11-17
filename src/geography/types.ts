@@ -95,7 +95,7 @@ export interface CityData {
 }
 
 export type GameId = 'countries' | 'outlines' | 'routes' | 'flags' | 'grid' | 'cities' | 'connections' | 'higher-lower' | 'neighbours' | 'distance'
-export type GameMode = 'daily' | 'practice'
+export type GameMode = 'daily' | 'freeplay'
 
 export interface GameResult {
   id: string
@@ -129,6 +129,7 @@ export interface GameSessionSnapshot {
 export interface UserSettings {
   timeZone: string
   mapLabels: boolean
+  catalogue: 'standard' | 'extended'
   theme: 'light' | 'dark' | 'system'
   sound: boolean
   hasSeenInstallHelp: boolean

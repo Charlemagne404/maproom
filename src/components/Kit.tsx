@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Check, Heart } from 'lucide-react'
 import type { GameId } from '../geography/types'
-import type { GameInfo } from '../games/catalog'
+import type { GameFormat, GameInfo } from '../games/catalog'
 import { GameArtwork } from './GameArtwork'
 
 export function PageHeading({ eyebrow, title, description, aside }: {
@@ -24,7 +24,7 @@ export function PageHeading({ eyebrow, title, description, aside }: {
 
 export function GameCard({ game, mode, favorite, completed, onFavorite, compact = false }: {
   game: GameInfo
-  mode: 'daily' | 'practice'
+  mode: 'daily' | 'freeplay'
   favorite: boolean
   completed?: boolean
   onFavorite?: (id: GameId) => void
@@ -40,10 +40,36 @@ export function GameCard({ game, mode, favorite, completed, onFavorite, compact 
           </button>
         )}
       </div>
-      <Link className="game-card-link" to={`${game.path}?mode=${mode}`} aria-label={`${game.title}, ${mode === 'daily' ? completed ? 'review today’s puzzle' : 'daily puzzle' : 'practice'}`}>
+      <Link className="game-card-link" to={`${game.path}?mode=${mode}`} aria-label={`${game.title}, ${mode === 'daily' ? completed ? 'review today’s puzzle' : 'daily puzzle' : 'Free play setup'}`}>
         <div className="game-card-art" aria-hidden="true"><GameArtwork gameId={game.id} /></div>
         <div className="game-card-copy">
           <h2>{game.title}</h2>
+        </div>
+        <span className="game-card-action" aria-hidden="true"><ArrowUpRight size={17} /></span>
+      </Link>
+    </article>
+  )
+}
+
+export function GameFormatCard({ game, format, favorite, onFavorite }: {
+  game: GameInfo
+  format: GameFormat
+  favorite: boolean
+  onFavorite?: (id: GameId) => void
+}) {
+  return (
+    <article className={`game-card game-card-${game.id} game-format-card`}>
+      <div className="game-card-topline">
+        <span className="game-format-category">{game.shortTitle}</span>
+        {onFavorite && <button type="button" className={`favorite-button${favorite ? ' is-favorite' : ''}`} aria-label={`${favorite ? 'Remove' : 'Add'} ${game.title} ${favorite ? 'from' : 'to'} favorites`} aria-pressed={favorite} onClick={() => onFavorite(game.id)}>
+          <Heart size={17} fill={favorite ? 'currentColor' : 'none'} aria-hidden="true" />
+        </button>}
+      </div>
+      <Link className="game-card-link" to={`${game.path}?mode=freeplay&format=${encodeURIComponent(format.id)}`} aria-label={`${game.title}: ${format.title}, Free play`}>
+        <div className="game-card-art" aria-hidden="true"><GameArtwork gameId={game.id} /></div>
+        <div className="game-card-copy">
+          <h2>{format.title}</h2>
+          <p>{format.description}</p>
         </div>
         <span className="game-card-action" aria-hidden="true"><ArrowUpRight size={17} /></span>
       </Link>

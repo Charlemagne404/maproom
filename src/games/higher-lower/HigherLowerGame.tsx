@@ -7,15 +7,17 @@ import type { Country, GameMode, GeographyData } from '../../geography/types'
 import { hashSeed } from '../../puzzles/engine'
 import { formatCountryMeasure, makeHigherLowerQuestions, type ComparisonDifficulty, type CountryMeasure, type HigherLowerQuestion } from '../../puzzles/higherLower'
 import { useGameSession } from '../session'
-import { eligibleCountries, type GeographyEligibility } from '../../geography/eligibility'
+import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
+import { useAppData } from '../../app/useAppData'
 
 type CountOption = '10' | '20' | '50' | 'infinite'
 
 export function HigherLowerGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
+  const { state } = useAppData()
   const dailyMeasure: CountryMeasure = (['population', 'area', 'density'] as const)[hashSeed(seed) % 3] ?? 'population'
   const [measure, setMeasure] = useState<CountryMeasure>(mode === 'daily' ? dailyMeasure : 'population')
   const [difficulty, setDifficulty] = useState<ComparisonDifficulty>('standard')
-  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const [eligibility, setEligibility] = useState<GeographyEligibility>(initialGeographyEligibility(mode, state.settings.catalogue))
   const [scope, setScope] = useState('World')
   const [count, setCount] = useState<CountOption>('10')
   const [timed, setTimed] = useState(false)
@@ -59,7 +61,7 @@ function HigherLowerRound({ countries, mode, date, seed, measure, difficulty, sc
   const [feedback, setFeedback] = useState('')
   const [seconds, setSeconds] = useState(60)
   const [finished, setFinished] = useState(false)
-  const infinite = mode === 'practice' && count === 'infinite'
+  const infinite = mode === 'freeplay' && count === 'infinite'
   const question = deck[index]
   const { save, saveError } = useGameSession('higher-lower', mode, date, seed)
   const metricLabel = measure === 'population' ? 'population' : measure === 'area' ? 'land area' : 'population density'
@@ -131,8 +133,8 @@ function HigherLowerRound({ countries, mode, date, seed, measure, difficulty, sc
     return () => window.clearTimeout(timer)
   }, [choice, finished, nextQuestion])
 
-  if (!question) return <div className="game-body"><InlineNotice title="No comparisons are available" tone="warning"><span>This measure does not have enough reliable values in the selected scope.</span>{mode === 'practice' && <div className="empty-game-actions"><button className="button button-outline" type="button" onClick={() => { onScope('World'); onMeasure('population'); onDifficulty('standard') }}>Use standard world comparisons</button></div>}</InlineNotice></div>
-  const setting = mode === 'practice' && !finished ? <GameSettingsMenu><div className="practice-config">
+  if (!question) return <div className="game-body"><InlineNotice title="No comparisons are available" tone="warning"><span>This measure does not have enough reliable values in the selected scope.</span>{mode === 'freeplay' && <div className="empty-game-actions"><button className="button button-outline" type="button" onClick={() => { onScope('World'); onMeasure('population'); onDifficulty('standard') }}>Use standard world comparisons</button></div>}</InlineNotice></div>
+  const setting = mode === 'freeplay' && !finished ? <GameSettingsMenu><div className="practice-config">
     <label><span>Compare</span><select value={measure} onChange={(event) => onMeasure(event.target.value as CountryMeasure)}><option value="population">Population</option><option value="area">Land area</option><option value="density">Population density</option></select></label>
     <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
     <label><span>Scope</span><select value={scope} onChange={(event) => onScope(event.target.value)}><option>World</option>{scopes.map((item) => <option key={item}>{item}</option>)}</select></label>
@@ -150,7 +152,7 @@ function HigherLowerRound({ countries, mode, date, seed, measure, difficulty, sc
       <div className="higher-lower-versus"><ArrowDownUp size={21} /><span>VS</span></div>
       <CountryChoice country={question.right} side="right" value={question.rightValue} measure={measure} showValue={showValues} selected={choice === 'right'} correct={question.answer === 'right'} disabled={Boolean(choice) || finished} onChoose={answer} />
     </div>
-    <GameResultsDialog complete={finished} gameId="higher-lower" mode={mode} score={score} correct={correct} total={resolved} title={timed && seconds === 0 ? 'Time is up.' : 'Comparison round complete.'} message={`Best streak: ${bestStreak}. Values use the 2023 country data.`} saveError={saveError} onReplay={mode === 'practice' ? onReplay : undefined} replayLabel="Compare more countries" />
+    <GameResultsDialog complete={finished} gameId="higher-lower" mode={mode} score={score} correct={correct} total={resolved} title={timed && seconds === 0 ? 'Time is up.' : 'Comparison round complete.'} message={`Best streak: ${bestStreak}. Values use the 2023 country data.`} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Compare more countries" />
   </div>
 }
 

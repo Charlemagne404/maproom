@@ -78,7 +78,7 @@ describe('local progress storage', () => {
     expect(state.sessions).toEqual([session])
 
     const backup = await exportProgress()
-    expect(JSON.parse(backup)).toMatchObject({ format: 'maproom-progress', version: 2, sessions: [session] })
+    expect(JSON.parse(backup)).toMatchObject({ format: 'maproom-progress', version: 3, sessions: [session] })
     await expect(importProgress('{')).rejects.toThrow('valid JSON')
     await expect(importProgress(JSON.stringify({ format: 'maproom-progress', version: 1, settings: {}, favorites: ['bogus'], history: [] })))
       .rejects.toThrow('valid Maproom progress export')
@@ -125,5 +125,31 @@ describe('local progress storage', () => {
     expect(state.favorites).toEqual([])
     expect(state.history).toEqual([])
     expect(state.sessions).toEqual([])
+
+    const oldFreeplayResult = { ...result('legacy-freeplay'), id: 'legacy-freeplay', mode: 'practice' }
+    const oldFreeplaySession = { ...session, id: 'flags:legacy-freeplay', mode: 'practice' }
+    await importProgress(JSON.stringify({
+      format: 'maproom-progress', version: 2, settings: defaultSettings(), favorites: [],
+      history: [oldFreeplayResult], sessions: [oldFreeplaySession],
+    }))
+    state = await loadAppData()
+    expect(state.history[0]).toMatchObject({ id: 'legacy-freeplay', mode: 'freeplay' })
+    expect(state.sessions[0]).toMatchObject({ id: 'flags:legacy-freeplay', mode: 'freeplay' })
+    const migratedExport = JSON.parse(await exportProgress()) as { version: number; history: GameResult[]; sessions: GameSessionSnapshot[] }
+    expect(migratedExport.version).toBe(3)
+    expect(migratedExport.history[0]?.mode).toBe('freeplay')
+    expect(migratedExport.sessions[0]?.mode).toBe('freeplay')
+
+    const freeplaySession: GameSessionSnapshot = {
+      ...session, id: 'flags:freeplay-session', mode: 'freeplay', puzzleId: 'flags:practice:freeplay-seed',
+      seed: 'freeplay-seed', date: '2026-11-17',
+    }
+    await saveGameSession(freeplaySession)
+    expect((await loadAppData()).sessions).toContainEqual(freeplaySession)
+    await saveGameResult({ ...result('freeplay-result'), id: 'freeplay-result', gameId: 'flags', mode: 'freeplay', puzzleId: freeplaySession.puzzleId, date: freeplaySession.date })
+    state = await loadAppData()
+    expect(state.history.find((item) => item.id === 'freeplay-result')?.mode).toBe('freeplay')
+    expect(state.sessions.find((item) => item.id === freeplaySession.id)).toBeUndefined()
+    await resetProgress()
   })
 })

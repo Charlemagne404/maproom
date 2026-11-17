@@ -3,8 +3,9 @@ import { dateInTimeZone, GAME_IDS } from '../puzzles/engine'
 
 export interface GameSummary {
   gameId: GameId
-  played: number
   completed: number
+  dailyCompleted: number
+  freeplayCompleted: number
   correct: number
   total: number
   accuracy: number
@@ -13,23 +14,28 @@ export interface GameSummary {
 }
 
 export interface StatisticsSummary {
-  totalPlayed: number
   totalCompleted: number
+  totalPoints: number
   accuracy: number
-  averageScore: number
   bestScore: number
-  bestDailyStreak: number
-  currentDailyStreak: number
+  longestStreak: number
+  currentStreak: number
+  dailyCompleted: number
+  freeplayCompleted: number
+  activeDays: number
+  activity: Map<string, number>
   byGame: GameSummary[]
-  trend: Array<{ date: string; score: number | null }>
+  trend: Array<{ date: string; accuracy: number | null; completed: number }>
 }
 
-export function calculateStatistics(history: GameResult[], timeZone = 'Europe/Stockholm', now = new Date()): StatisticsSummary {
+export function calculateStatistics(history: GameResult[], timeZone = 'Europe/Stockholm', now?: Date | string): StatisticsSummary {
   const completed = history.filter((result) => result.completed)
   const totalCorrect = completed.reduce((sum, result) => sum + result.correct, 0)
   const totalQuestions = completed.reduce((sum, result) => sum + result.total, 0)
-  const dailyDates = [...new Set(completed.filter((result) => result.mode === 'daily').map((result) => result.date))].sort().reverse()
-  const today = dateInTimeZone(now, timeZone)
+  const activity = countCompletedByDay(completed, timeZone)
+  const today = typeof now === 'string' ? now : dateInTimeZone(now ?? new Date(), timeZone)
+  const streaks = calculateStreaks([...activity.keys()], today)
+  const activityWindow = summarizeActivityWindow(activity, today)
   const byGame = GAME_IDS.map((gameId) => {
     const results = completed.filter((result) => result.gameId === gameId)
     const correct = results.reduce((sum, result) => sum + result.correct, 0)
@@ -37,83 +43,107 @@ export function calculateStatistics(history: GameResult[], timeZone = 'Europe/St
     const score = results.reduce((sum, result) => sum + result.score, 0)
     return {
       gameId,
-      played: history.filter((result) => result.gameId === gameId).length,
       completed: results.length,
+      dailyCompleted: results.filter((result) => result.mode === 'daily').length,
+      freeplayCompleted: results.filter((result) => result.mode === 'freeplay').length,
       correct,
       total,
-      accuracy: total ? correct / total : 0,
+      accuracy: total > 0 ? correct / total : 0,
       bestScore: Math.max(0, ...results.map((result) => result.score)),
       averageScore: results.length ? score / results.length : 0,
     }
-  })
+  }).filter((game) => game.completed > 0)
+
   return {
-    totalPlayed: history.length,
     totalCompleted: completed.length,
-    accuracy: totalQuestions ? totalCorrect / totalQuestions : 0,
-    averageScore: completed.length ? completed.reduce((sum, result) => sum + result.score, 0) / completed.length : 0,
+    totalPoints: completed.reduce((sum, result) => sum + result.score, 0),
+    accuracy: totalQuestions > 0 ? totalCorrect / totalQuestions : 0,
     bestScore: Math.max(0, ...completed.map((result) => result.score)),
-    bestDailyStreak: longestConsecutive(dailyDates),
-    currentDailyStreak: currentConsecutive(dailyDates, today),
+    longestStreak: streaks.longest,
+    currentStreak: streaks.current,
+    dailyCompleted: completed.filter((result) => result.mode === 'daily').length,
+    freeplayCompleted: completed.filter((result) => result.mode === 'freeplay').length,
+    activeDays: activityWindow.activeDays,
+    activity,
     byGame,
-    trend: buildTrend(completed, now, timeZone),
+    trend: buildTrend(completed, today, timeZone),
   }
 }
 
-function longestConsecutive(dates: string[]): number {
-  const dateSet = new Set(dates)
-  let best = 0
-  for (const date of dateSet) {
-    if (dateSet.has(previousDate(date))) continue
+export function countCompletedByDay(history: GameResult[], timeZone: string): Map<string, number> {
+  const activity = new Map<string, number>()
+  for (const result of history) {
+    if (!result.completed) continue
+    const timestamp = Date.parse(result.completedAt)
+    const day = Number.isFinite(timestamp) ? dateInTimeZone(new Date(timestamp), timeZone) : result.date
+    activity.set(day, (activity.get(day) ?? 0) + 1)
+  }
+  return activity
+}
+
+export function calculateStreaks(activeDates: string[], today: string): { current: number; longest: number } {
+  const dates = new Set(activeDates)
+  let longest = 0
+  for (const date of dates) {
+    if (dates.has(shiftDate(date, -1))) continue
     let length = 1
-    let cursor = nextDate(date)
-    while (dateSet.has(cursor)) {
+    let cursor = shiftDate(date, 1)
+    while (dates.has(cursor)) {
       length += 1
-      cursor = nextDate(cursor)
+      cursor = shiftDate(cursor, 1)
     }
-    best = Math.max(best, length)
+    longest = Math.max(longest, length)
   }
-  return best
+
+  let cursor = dates.has(today) ? today : shiftDate(today, -1)
+  let current = 0
+  while (dates.has(cursor)) {
+    current += 1
+    cursor = shiftDate(cursor, -1)
+  }
+  return { current, longest }
 }
 
-function currentConsecutive(dates: string[], today: string): number {
-  const set = new Set(dates)
-  let cursor = set.has(today) ? today : previousDate(today)
-  if (!set.has(cursor)) return 0
-  let length = 0
-  while (set.has(cursor)) {
-    length += 1
-    cursor = previousDate(cursor)
-  }
-  return length
-}
-
-function buildTrend(history: GameResult[], now: Date, timeZone: string): StatisticsSummary['trend'] {
-  const today = dateInTimeZone(now, timeZone)
-  const groups = new Map<string, number[]>()
-  for (const result of history.filter((item) => item.mode === 'daily')) {
-    const scores = groups.get(result.date) ?? []
-    scores.push(result.score)
-    groups.set(result.date, scores)
+function buildTrend(history: GameResult[], today: string, timeZone: string): StatisticsSummary['trend'] {
+  const groups = countCompletedByDay(history, timeZone)
+  const questions = new Map<string, { correct: number; total: number }>()
+  for (const result of history) {
+    const timestamp = Date.parse(result.completedAt)
+    const day = Number.isFinite(timestamp) ? dateInTimeZone(new Date(timestamp), timeZone) : result.date
+    const group = questions.get(day) ?? { correct: 0, total: 0 }
+    group.correct += result.correct
+    group.total += result.total
+    questions.set(day, group)
   }
   const trend: StatisticsSummary['trend'] = []
   for (let offset = 13; offset >= 0; offset -= 1) {
     const date = shiftDate(today, -offset)
-    const scores = groups.get(date)
-    trend.push({ date, score: scores?.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null })
+    const group = questions.get(date)
+    trend.push({
+      date,
+      accuracy: group && group.total > 0 ? group.correct / group.total : null,
+      completed: groups.get(date) ?? 0,
+    })
   }
   return trend
 }
 
-function shiftDate(date: string, amount: number): string {
+export function shiftDate(date: string, amount: number): string {
   const value = new Date(`${date}T12:00:00Z`)
   value.setUTCDate(value.getUTCDate() + amount)
   return value.toISOString().slice(0, 10)
 }
 
-function previousDate(date: string): string {
-  return shiftDate(date, -1)
-}
-
-function nextDate(date: string): string {
-  return shiftDate(date, 1)
+export function summarizeActivityWindow(activity: Map<string, number>, today: string): { start: string; activeDays: number; completed: number } {
+  const rollingStart = shiftDate(today, -363)
+  const rollingWeekday = new Date(`${rollingStart}T12:00:00Z`).getUTCDay()
+  const start = shiftDate(rollingStart, -rollingWeekday)
+  let activeDays = 0
+  let completed = 0
+  for (const [date, count] of activity) {
+    if (date < start || date > today) continue
+    if (count > 0) activeDays += 1
+    completed += count
+  }
+  return { start, activeDays, completed }
 }

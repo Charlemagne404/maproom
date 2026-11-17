@@ -40,7 +40,7 @@ function AboutPage() {
       <article className="prose">
         <p className="lead">Maproom gathers maps, names, flags, routes and daily puzzles into one small atlas. It is made for a few curious minutes at a time.</p>
         <h2>Play, then look closer</h2>
-        <p>Each game starts with one clear question. You can find a country on a map, recognise an outline, trace a land route, learn a flag, fill a geography grid or place a city. Practice stays open when the daily set is done.</p>
+        <p>Each game starts with one clear question. You can find a country on a map, recognise an outline, trace a land route, learn a flag, fill a geography grid or place a city. Free play stays open when the daily set is done.</p>
         <h2>Maps with provenance</h2>
         <p>Country boundaries and geographic facts come from open datasets. Administrative boundaries and city names include source-specific coverage and license notes. Open <a href="/data">Data sources</a> to see the files used by the current build.</p>
         <h2>Small by design</h2>

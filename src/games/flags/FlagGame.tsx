@@ -4,23 +4,25 @@ import { AutocompleteInput, type Suggestion } from '../../components/Autocomplet
 import { InlineNotice } from '../../components/Kit'
 import { GameResultsDialog } from '../../components/GameResults'
 import { GameSettingsMenu } from '../../components/GameControls'
+import { useFreePlayFormat } from '../../components/FreePlaySetupContext'
 import type { Country, GeographyData, GameMode } from '../../geography/types'
 import { seededShuffle } from '../../puzzles/engine'
 import { useAppData } from '../../app/useAppData'
 import { missedCountryCodes } from '../../statistics/mistakes'
 import { useGameSession } from '../session'
 import { adaptiveFlagQuestionSequence, flagAnswerChoices, flagCountryPool, type PracticeQuestionCount } from './questionPool'
-import type { GeographyEligibility } from '../../geography/eligibility'
+import { initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
 
 type Direction = 'flag-to-country' | 'country-to-flag'
 type AnswerStyle = 'choices' | 'typed'
 
 export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const { state } = useAppData()
+  const selectedFormat = useFreePlayFormat()
   const [round, setRound] = useState(0)
-  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const [eligibility, setEligibility] = useState<GeographyEligibility>(initialGeographyEligibility(mode, state.settings.catalogue))
   const [continent, setContinent] = useState('All regions')
-  const [direction, setDirection] = useState<Direction>('flag-to-country')
+  const direction: Direction = mode === 'daily' || selectedFormat !== 'country-to-flag' ? 'flag-to-country' : 'country-to-flag'
   const [answerStyle, setAnswerStyle] = useState<AnswerStyle>('choices')
   const [questionCount, setQuestionCount] = useState<PracticeQuestionCount>('10')
   const [progressive, setProgressive] = useState(false)
@@ -39,10 +41,9 @@ export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode
     setRound((value) => value + 1)
   }
 
-  const settingsControl = mode === 'practice' ? <GameSettingsMenu open={settingsOpen} onOpenChange={setSettingsOpen}><div className="practice-config flag-settings-config">
+  const settingsControl = mode === 'freeplay' ? <GameSettingsMenu open={settingsOpen} onOpenChange={setSettingsOpen}><div className="practice-config flag-settings-config">
     <label><span>Country pool</span><select value={eligibility} onChange={(event) => setEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
     <label><span>Region</span><select value={continent} onChange={(event) => setContinent(event.target.value)}>{scopeOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
-    <label><span>Direction</span><select value={direction} onChange={(event) => setDirection(event.target.value as Direction)}><option value="flag-to-country">Flag → country</option><option value="country-to-flag">Country → flag</option></select></label>
     {direction === 'flag-to-country' && <label><span>Answer style</span><select value={answerStyle} onChange={(event) => setAnswerStyle(event.target.value as AnswerStyle)}><option value="choices">Multiple choice</option><option value="typed">Type a name</option></select></label>}
     <label><span>Questions</span><select value={questionCount} onChange={(event) => setQuestionCount(event.target.value as PracticeQuestionCount)}><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="infinite">Infinite</option></select></label>
     <label className="flag-reveal-setting"><input type="checkbox" checked={progressive} onChange={(event) => setProgressive(event.target.checked)} /><span>Reveal after wrong guesses</span></label>
@@ -115,11 +116,11 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, eligibility, 
     })
   }, [dailyQuestions, pool, dailySeed, progress, data.countries])
   const [practiceQuestions, setPracticeQuestions] = useState<Country[]>(() => {
-    if (mode !== 'practice') return []
+    if (mode !== 'freeplay') return []
     return adaptiveFlagQuestionSequence(pool, reviewMissed ? missedCodes : [], questionCount === 'infinite' ? 40 : Number(questionCount))
   })
   const questions = mode === 'daily' ? dailyQuestions : practiceQuestions
-  const infinitePractice = mode === 'practice' && questionCount === 'infinite'
+  const infinitePractice = mode === 'freeplay' && questionCount === 'infinite'
   const [index, setIndex] = useState(() => readNumber('index', 0))
   const [questionNumber, setQuestionNumber] = useState(() => readNumber('questionNumber', 1))
   const [locked, setLocked] = useState(() => readBoolean('locked', false))
@@ -184,7 +185,7 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, eligibility, 
     if (completionStarted.current) return
     completionStarted.current = true
     setFinished(true)
-    const detail = { continent, direction, answerStyle, progressive, missedCountries: missedQuestions, ...(mode === 'practice' ? { questionCount, reviewMissed } : {}) }
+    const detail = { continent, direction, answerStyle, progressive, missedCountries: missedQuestions, ...(mode === 'freeplay' ? { questionCount, reviewMissed } : {}) }
     void save(score, correct, total, detail)
   }
 
@@ -233,7 +234,7 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, eligibility, 
   function attempt(code: string) {
     if (locked || finished || !question) return
     if (!pool.some((country) => country.iso3 === code)) {
-      setMessage('Choose a country from this practice set.')
+      setMessage('Choose a country from this flag set.')
       return
     }
     setAnswer(code)
@@ -259,12 +260,12 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, eligibility, 
     setMessage(`The answer is ${question.name}.`)
   }
 
-  if (pool.length < choiceCount) return <InlineNotice title="This practice set is too small" tone="warning">Choose a broader region to play a four-choice flag round.</InlineNotice>
+  if (pool.length < choiceCount) return <InlineNotice title="This flag set is too small" tone="warning">Choose a broader region to play a four-choice flag round.</InlineNotice>
   if (!question) return <InlineNotice title="No flags in this set" tone="warning">Choose a different region and try again.</InlineNotice>
 
   const prompt = direction === 'flag-to-country' ? 'Which country does this flag belong to?' : `Which flag belongs to ${question.name}?`
   const questionLabel = infinitePractice ? `Question ${questionNumber}` : `${String(index + 1).padStart(2, '0')} / ${String(questions.length).padStart(2, '0')}`
-  const resultsTitle = mode === 'daily' ? 'Daily flags complete.' : infinitePractice ? 'Practice session complete.' : 'Practice round complete.'
+  const resultsTitle = mode === 'daily' ? 'Daily flags complete.' : infinitePractice ? 'Free play session complete.' : 'Free play round complete.'
 
   return (
     <>
@@ -302,7 +303,7 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, eligibility, 
           <span>{message}</span>
         </div>}
       </section>
-      <GameResultsDialog complete={finished} gameId="flags" mode={mode} score={score} correct={correct} total={infinitePractice ? resolvedCount : questions.length} title={resultsTitle} message="A good eye for the flag." saveError={saveError} onReplay={mode === 'practice' ? onPlayAgain : undefined} />
+      <GameResultsDialog complete={finished} gameId="flags" mode={mode} score={score} correct={correct} total={infinitePractice ? resolvedCount : questions.length} title={resultsTitle} message="A good eye for the flag." saveError={saveError} onReplay={mode === 'freeplay' ? onPlayAgain : undefined} />
     </>
   )
 }

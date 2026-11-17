@@ -8,7 +8,8 @@ import type { GameId, GameMode } from '../geography/types'
 import { loadGeography } from '../geography/data'
 import { dailyPuzzleId, dailyPuzzleSeed } from '../puzzles/engine'
 import { usePuzzleDate } from '../hooks/usePuzzleDate'
-import { getGame, isDailyGame } from '../games/catalog'
+import { formatsForGame, getGame, isDailyGame } from '../games/catalog'
+import { FreePlaySetupContext } from '../components/FreePlaySetupContext'
 
 const CountryIdentificationGame = lazy(() => import('../games/country-map/CountryIdentificationGame').then((module) => ({ default: module.CountryIdentificationGame })))
 const OutlineGame = lazy(() => import('../games/outlines/OutlineGame').then((module) => ({ default: module.OutlineGame })))
@@ -40,14 +41,22 @@ export function GamePage() {
   const { gameId: rawGameId } = useParams()
   const game = getGame(rawGameId)
   const location = useLocation()
-  const [params] = useSearchParams()
-  const mode: GameMode = params.get('mode') === 'daily' ? 'daily' : 'practice'
+  const [params, setParams] = useSearchParams()
+  const mode: GameMode = params.get('mode') === 'daily' ? 'daily' : 'freeplay'
   const { state, ready, deleteSession } = useAppData()
   const date = usePuzzleDate(state.settings.timeZone)
   const [data, setData] = useState<Awaited<ReturnType<typeof loadGeography>> | null>(null)
   const [error, setError] = useState('')
   const [startedRouteKey, setStartedRouteKey] = useState('')
   const routeKey = `${game?.id ?? rawGameId}:${mode}:${date ?? ''}:${location.key}`
+  const formats = game ? formatsForGame(game.id) : []
+  const requestedFormat = params.get('format')
+  const format = mode === 'daily'
+    ? formats[0]?.id ?? null
+    : formats.some((item) => item.id === requestedFormat) ? requestedFormat : formats[0]?.id ?? null
+  const [startedLaunchKey, setStartedLaunchKey] = useState('')
+  const launchKey = `${game?.id ?? rawGameId}:${date ?? ''}:${location.key}:${format ?? ''}`
+  const setup = mode === 'freeplay' && startedLaunchKey !== launchKey
 
   useEffect(() => {
     let active = true
@@ -91,7 +100,7 @@ export function GamePage() {
   }, [state.sessions, deleteSession, date, game, mode])
 
   if (!game) return <div className="page"><InlineNotice title="Game not found">Choose a game from the <Link to="/explore">library</Link>.</InlineNotice></div>
-  if (mode === 'daily' && !isDailyGame(game.id)) return <Navigate to={`${game.path}?mode=practice`} replace />
+  if (mode === 'daily' && !isDailyGame(game.id)) return <Navigate to={`${game.path}?mode=freeplay`} replace />
   if (!date) return <div className="page game-page"><LoadingState label="Setting this puzzle’s date…" /></div>
   if (error) return <div className="page game-page"><InlineNotice title="The atlas could not open" tone="warning">{error}</InlineNotice></div>
   if (!data || !ready) return <div className="page game-page"><LoadingState label="Setting up the map…" /></div>
@@ -102,12 +111,25 @@ export function GamePage() {
   const showCompleted = mode === 'daily' && Boolean(existing) && startedRouteKey !== routeKey
 
   return (
-    <div className={`page game-page game-page-${game.id}`}>
+    <div className={`page game-page game-page-${game.id}${setup ? ' is-setup' : ''}`}>
       <h1 className="visually-hidden">{game.title}</h1>
       <GameContextToolbar game={game} mode={mode} />
       {showCompleted && existing
         ? <CompletedPuzzle gameTitle={game.title} result={existing} />
-        : <GameExperience key={`${game.id}:${mode}:${date}`} gameId={game.id} mode={mode} date={date} data={data} />}
+        : <FreePlaySetupContext.Provider value={{
+          setup,
+          format,
+          formats,
+          onFormatChange: (nextFormat) => {
+            const next = new URLSearchParams(params)
+            next.set('mode', 'freeplay')
+            next.set('format', nextFormat)
+            setParams(next, { replace: true })
+          },
+          onStart: () => setStartedLaunchKey(launchKey),
+        }}>
+          <GameExperience key={`${game.id}:${mode}:${date}:${format ?? ''}`} gameId={game.id} mode={mode} date={date} data={data} />
+        </FreePlaySetupContext.Provider>}
     </div>
   )
 }
@@ -117,10 +139,7 @@ function GameContextToolbar({ game, mode }: { game: NonNullable<ReturnType<typeo
     <div className="game-context-bar">
       <Link className="game-context-back" to="/explore"><ArrowLeft size={15} aria-hidden="true" /><span>All games</span></Link>
       <span className="game-context-title">{game.title}</span>
-      <nav className="mode-switch" aria-label={`${game.title} mode`}>
-        {isDailyGame(game.id) && <Link to={`${game.path}?mode=daily`} className={mode === 'daily' ? 'is-selected' : ''} aria-current={mode === 'daily' ? 'page' : undefined}>Daily</Link>}
-        <Link to={`${game.path}?mode=practice`} className={mode === 'practice' ? 'is-selected' : ''} aria-current={mode === 'practice' ? 'page' : undefined}>Practice</Link>
-      </nav>
+      {mode === 'daily' && <span className="game-context-daily">Today’s puzzle</span>}
     </div>
   )
 }
@@ -136,7 +155,7 @@ function GameExperience({ gameId, mode, date, data }: {
     && session.mode === mode
     && session.date === date
     && session.version === 1
-    && (mode === 'practice' || session.puzzleId === dailyPuzzleId(gameId, date)))
+    && (mode === 'freeplay' || session.puzzleId === dailyPuzzleId(gameId, date)))
   const [seed] = useState(() => mode === 'daily'
     ? saved?.seed ?? dailyPuzzleSeed(gameId, date)
     : saved?.seed ?? `${gameId}:practice:${crypto.randomUUID?.() ?? Math.random()}`)

@@ -8,13 +8,15 @@ import { InlineNotice } from '../../components/Kit'
 import type { GameMode, GeographyData } from '../../geography/types'
 import { makeNeighbourQuestions, scoreNeighbourAnswer, type NeighbourDifficulty } from '../../puzzles/neighbours'
 import { useGameSession } from '../session'
-import { eligibleCountries, eligibleFeatures, type GeographyEligibility } from '../../geography/eligibility'
+import { eligibleCountries, eligibleFeatures, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
 import { normalizeAnswer } from '../../puzzles/engine'
+import { useAppData } from '../../app/useAppData'
 
 type CountOption = '5' | '10' | '20' | 'infinite'
 
 export function NeighbourGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
-  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const { state } = useAppData()
+  const [eligibility, setEligibility] = useState<GeographyEligibility>(initialGeographyEligibility(mode, state.settings.catalogue))
   const countries = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
   const scopes = useMemo(() => [...new Set(countries.map((country) => country.continent).filter((value): value is string => Boolean(value)))].sort(), [countries])
   const [scope, setScope] = useState('World')
@@ -60,7 +62,7 @@ function NeighbourRound({ data, countries, eligibility, mode, date, seed, scope,
   const [finished, setFinished] = useState(false)
   const question = deck[index]
   const { save, saveError } = useGameSession('neighbours', mode, date, seed)
-  const infinite = mode === 'practice' && count === 'infinite'
+  const infinite = mode === 'freeplay' && count === 'infinite'
   const suggestions: Suggestion[] = useMemo(() => countries
     .map((country) => ({ value: country.iso3, label: country.name, detail: country.continent ?? undefined, aliases: country.aliases })), [countries])
 
@@ -81,7 +83,7 @@ function NeighbourRound({ data, countries, eligibility, mode, date, seed, scope,
     return () => window.clearTimeout(timer)
   }, [seconds, timed, finished, finishRound])
 
-  if (!question) return <div className="game-body"><InlineNotice title="No border challenges fit those settings" tone="warning"><span>Choose a wider region or switch to all border counts. The map only uses recorded land-border neighbors.</span>{mode === 'practice' && <div className="empty-game-actions"><button className="button button-outline" type="button" onClick={() => { onScope('World'); onDifficulty('all') }}>Use all recorded borders</button></div>}</InlineNotice></div>
+  if (!question) return <div className="game-body"><InlineNotice title="No border challenges fit those settings" tone="warning"><span>Choose a wider region or switch to all border counts. The map only uses recorded land-border neighbors.</span>{mode === 'freeplay' && <div className="empty-game-actions"><button className="button button-outline" type="button" onClick={() => { onScope('World'); onDifficulty('all') }}>Use all recorded borders</button></div>}</InlineNotice></div>
 
   function toggle(code: string) {
     if (locked || finished) return
@@ -147,7 +149,7 @@ function NeighbourRound({ data, countries, eligibility, mode, date, seed, scope,
     setMessage('Select every country that shares a land border with the target.')
   }
 
-  const settings = mode === 'practice' && !finished ? <GameSettingsMenu><div className="practice-config">
+  const settings = mode === 'freeplay' && !finished ? <GameSettingsMenu><div className="practice-config">
     <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
     <label><span>Target region</span><select value={scope} onChange={(event) => onScope(event.target.value)}><option>World</option>{scopes.map((item) => <option key={item}>{item}</option>)}</select></label>
     <label><span>Border count</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as NeighbourDifficulty)}><option value="all">All countries</option><option value="dense">Five or more neighbors</option></select></label>
@@ -170,6 +172,6 @@ function NeighbourRound({ data, countries, eligibility, mode, date, seed, scope,
     {selected.length > 0 && !locked && <div className="neighbour-selected" aria-label="Selected neighbors">{selected.map((code) => <button type="button" key={code} aria-label={`Remove ${data.countriesByCode.get(code)?.name ?? code}`} onClick={() => { setSelected((current) => current.filter((item) => item !== code)); setMessage('Check your full set when you are ready; incorrect selections reduce the score.') }}>{data.countriesByCode.get(code)?.name} ×</button>)}</div>}
     <div className={`answer-feedback${locked && roundExact ? ' is-correct' : locked ? ' is-incorrect' : ''}`} role="status"><span className="feedback-icon">{locked ? <Check size={17} /> : <Lightbulb size={16} />}</span><span>{message}{locked && <small className="neighbour-reveal-list">Answer: {neighbourNames.join(', ')}.</small>}</span>{locked && !finished && <button className="button button-dark" type="button" onClick={nextQuestion}>{index === deck.length - 1 && !infinite ? 'See result' : 'Next country'}</button>}</div>
     <p className="map-source-note"><CircleHelp size={14} /> Border answers follow reciprocal country-catalog land neighbors; maritime boundaries and disputed claims are not included.</p>
-    <GameResultsDialog complete={finished} gameId="neighbours" mode={mode} score={score} correct={correct} total={resolved} title={timed && seconds === 0 ? 'Time is up.' : 'Border round complete.'} message={`${correct} perfect rounds across ${resolved} countries.`} saveError={saveError} onReplay={mode === 'practice' ? onReplay : undefined} replayLabel="Find more neighbours" />
+    <GameResultsDialog complete={finished} gameId="neighbours" mode={mode} score={score} correct={correct} total={resolved} title={timed && seconds === 0 ? 'Time is up.' : 'Border round complete.'} message={`${correct} perfect rounds across ${resolved} countries.`} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Find more neighbours" />
   </div>
 }

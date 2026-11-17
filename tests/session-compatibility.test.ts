@@ -23,8 +23,8 @@ describe('daily session compatibility', () => {
 
   it('rejects unsupported save versions and leaves practice seeds scoped by session lookup', () => {
     expect(isCompatibleGameSession({ ...snapshot, version: 2 }, 'daily', snapshot.puzzleId)).toBe(false)
-    const practice = { ...snapshot, mode: 'practice' as const, puzzleId: 'flags:practice:round-1' }
-    expect(isCompatibleGameSession(practice, 'practice', 'flags:practice:round-1')).toBe(true)
-    expect(isCompatibleGameSession(practice, 'practice', 'flags:practice:round-2')).toBe(false)
+    const freeplay = { ...snapshot, mode: 'freeplay' as const, puzzleId: 'flags:practice:round-1' }
+    expect(isCompatibleGameSession(freeplay, 'freeplay', 'flags:practice:round-1')).toBe(true)
+    expect(isCompatibleGameSession(freeplay, 'freeplay', 'flags:practice:round-2')).toBe(false)
   })
 })

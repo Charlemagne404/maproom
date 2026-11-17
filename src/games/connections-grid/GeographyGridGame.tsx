@@ -8,11 +8,11 @@ import type { GeographyData, GameMode, Country } from '../../geography/types'
 import { gridAnswerScore, gridCandidates, seededShuffle, validGridPresets, type GridPreset } from '../../puzzles/engine'
 import { useGameSession } from '../session'
 import { useAppData } from '../../app/useAppData'
-import { eligibleCountries, type GeographyEligibility } from '../../geography/eligibility'
+import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
 
 export function GeographyGridGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const { state } = useAppData()
-  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const [eligibility, setEligibility] = useState<GeographyEligibility>(initialGeographyEligibility(mode, state.settings.catalogue))
   const eligible = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
   const presets = useMemo(() => validGridPresets(eligible), [eligible])
   const daily = seededShuffle(presets, `${seed}:preset`)[0]
@@ -111,7 +111,7 @@ function GridRound({ countries, mode, date, seed, preset, presets, eligibility, 
       <div className="question-toolbar">
         <div><span className="eyebrow">{mode === 'daily' ? 'Today’s 3 × 3' : 'A fresh set of crossings'}</span><h2>{preset.title}</h2><p>Find one country for every row-and-column crossing.</p></div>
         <div className="question-toolbar-tools">
-          {mode === 'practice' && <GameSettingsMenu><div className="practice-config">
+          {mode === 'freeplay' && <GameSettingsMenu><div className="practice-config">
             <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
             <label><span>Grid set</span><select value={preset.id} onChange={(event) => onPreset(event.target.value)}>{presets.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
           <span className="practice-config-note">Each distinct board has nine valid, unique answers. Replay cycles to a fresh set.</span>
@@ -158,7 +158,7 @@ function GridRound({ countries, mode, date, seed, preset, presets, eligibility, 
         </div>
       })()}
       <div className="grid-scoring-note"><CircleHelp size={15} /><span>Rarer, valid intersections score more; no popularity estimates are used. Current points: <strong>{score.toLocaleString()}</strong></span></div>
-      <GameResultsDialog complete={finished} gameId="grid" mode={mode} score={score} correct={filled} total={9} title="Every crossing has a place." message="All nine squares filled with distinct countries." saveError={saveError} onReplay={mode === 'practice' ? onReplay : undefined} />
+      <GameResultsDialog complete={finished} gameId="grid" mode={mode} score={score} correct={filled} total={9} title="Every crossing has a place." message="All nine squares filled with distinct countries." saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} />
     </div>
   )
 }

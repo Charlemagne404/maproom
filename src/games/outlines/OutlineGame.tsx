@@ -10,7 +10,8 @@ import type { Coordinates, Country, GeoFeature, GeographyData, GameMode, RegionC
 import { loadRegions } from '../../geography/data'
 import { directionFromTo, greatCircleKm, hashSeed, normalizeAnswer, seededShuffle } from '../../puzzles/engine'
 import { useGameSession } from '../session'
-import { eligibleCountries, type GeographyEligibility } from '../../geography/eligibility'
+import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
+import { useAppData } from '../../app/useAppData'
 
 type Difficulty = 'easy' | 'standard' | 'expert'
 type OutlinePlace = { code: string; name: string; aliases: string[]; coordinates: Coordinates | null; feature?: GeoFeature }
@@ -23,7 +24,8 @@ type OutlineQuestion = {
 }
 
 export function OutlineGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
-  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const { state } = useAppData()
+  const [eligibility, setEligibility] = useState<GeographyEligibility>(initialGeographyEligibility(mode, state.settings.catalogue))
   const [scope, setScope] = useState('World')
   const [regionCountry, setRegionCountry] = useState('USA')
   const [difficulty, setDifficulty] = useState<Difficulty>('standard')
@@ -207,7 +209,7 @@ function OutlineRound({ data, question, mode, date, session, onNext, scope, cont
   return (
     <div className="game-body outline-game-body">
       <div className="outline-prompt"><div><span className="eyebrow">{guessLimit} guesses · {question.type === 'subdivision' ? question.parentCountry?.name : question.scopeLabel}</span><h2>{question.type === 'subdivision' ? 'Which subdivision is this?' : 'Which country is this?'}</h2><p>Look at the borders, not the fill. The silhouette is drawn from the bundled boundary data.</p></div><div className="outline-prompt-tools">
-        {mode === 'practice' && <GameSettingsMenu><div className="practice-config"><label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label><label><span>Practice scope</span><select value={scope} onChange={(event) => onScopeChange(event.target.value)}><option value="World">World</option>{continents.map((item) => <option key={item}>{item}</option>)}<option value="Subdivisions">First-level subdivisions</option></select></label>{scope === 'Subdivisions' && <label><span>Country</span><select value={regionCountry} onChange={(event) => onRegionCountryChange(event.target.value)}>{countriesWithRegions.map((country) => <option key={country.iso3} value={country.iso3}>{country.name} · {country.regionCount}</option>)}</select></label>}<label><span>Difficulty</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as Difficulty)}><option value="easy">Easy · 8 guesses</option><option value="standard">Standard · 6 guesses</option><option value="expert">Expert · 4 guesses</option></select></label><label className="flag-reveal-setting"><input type="checkbox" checked={rotated} onChange={(event) => onRotated(event.target.checked)} /><span>Rotate silhouettes</span></label><span className="practice-config-note">Wrong guesses give distance and bearing; later hints narrow by region or position.</span></div></GameSettingsMenu>}
+        {mode === 'freeplay' && <GameSettingsMenu><div className="practice-config"><label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label><label><span>Free play scope</span><select value={scope} onChange={(event) => onScopeChange(event.target.value)}><option value="World">World</option>{continents.map((item) => <option key={item}>{item}</option>)}<option value="Subdivisions">First-level subdivisions</option></select></label>{scope === 'Subdivisions' && <label><span>Country</span><select value={regionCountry} onChange={(event) => onRegionCountryChange(event.target.value)}>{countriesWithRegions.map((country) => <option key={country.iso3} value={country.iso3}>{country.name} · {country.regionCount}</option>)}</select></label>}<label><span>Difficulty</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as Difficulty)}><option value="easy">Easy · 8 guesses</option><option value="standard">Standard · 6 guesses</option><option value="expert">Expert · 4 guesses</option></select></label><label className="flag-reveal-setting"><input type="checkbox" checked={rotated} onChange={(event) => onRotated(event.target.checked)} /><span>Rotate silhouettes</span></label><span className="practice-config-note">Wrong guesses give distance and bearing; later hints narrow by region or position.</span></div></GameSettingsMenu>}
         <div className="attempt-meter" aria-label={`${attempts.length} of ${guessLimit} guesses used`}>{Array.from({ length: guessLimit }, (_, index) => <span key={index} className={index < attempts.length ? (solved && index === attempts.length - 1 ? 'is-right' : 'is-used') : ''} />)}</div>
       </div></div>
       <div className="outline-map-stage"><GeoMap features={answerFeatures} rotationDegrees={rotationDegrees} hideFeatureNames showHoverLabels={false} ariaLabel={`${rotated ? 'Rotated ' : ''}unlabelled ${question.type === 'subdivision' ? 'first-level subdivision' : 'country'} silhouette`} /></div>
@@ -226,7 +228,7 @@ function OutlineRound({ data, question, mode, date, session, onNext, scope, cont
       {attempts.length > 0 && !finished && <div className="guess-list" aria-label="Previous guesses">{attempts.map((code) => <span key={code}>{question.places.find((place) => place.code === code)?.name ?? code}</span>)}</div>}
       {mode === 'daily' && <p className="map-source-note">Daily country silhouette · {date}</p>}
       {question.type === 'subdivision' && question.parentCountry?.regionSource && <p className="map-source-note">Subdivision data: {question.parentCountry.regionSource.source} · {question.parentCountry.regionSource.license}</p>}
-      <GameResultsDialog complete={finished} gameId="outlines" mode={mode} score={score} correct={solved ? 1 : 0} total={1} title={solved ? `${question.type === 'subdivision' ? 'Subdivision' : 'Outline'} solved.` : `The answer was ${question.target.name}.`} message={`${attempts.length} of ${guessLimit} guesses used.`} saveError={saveError} onReplay={mode === 'practice' ? onNext : undefined} replayLabel={question.type === 'subdivision' ? 'Next subdivision' : 'Next outline'} />
+      <GameResultsDialog complete={finished} gameId="outlines" mode={mode} score={score} correct={solved ? 1 : 0} total={1} title={solved ? `${question.type === 'subdivision' ? 'Subdivision' : 'Outline'} solved.` : `The answer was ${question.target.name}.`} message={`${attempts.length} of ${guessLimit} guesses used.`} saveError={saveError} onReplay={mode === 'freeplay' ? onNext : undefined} replayLabel={question.type === 'subdivision' ? 'Next subdivision' : 'Next outline'} />
     </div>
   )
 }

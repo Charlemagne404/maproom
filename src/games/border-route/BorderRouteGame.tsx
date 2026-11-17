@@ -8,11 +8,13 @@ import { GameResultsDialog } from '../../components/GameResults'
 import type { GeographyData, GameMode } from '../../geography/types'
 import { buildAdjacency, generateRoutePuzzle, resolveCountryAnswer, shortestPath, validateRouteStep, type RouteDifficulty } from '../../puzzles/engine'
 import { useGameSession } from '../session'
-import { eligibleCountries, eligibleFeatures, isStandardCountry, type GeographyEligibility } from '../../geography/eligibility'
+import { eligibleCountries, eligibleFeatures, initialGeographyEligibility, isStandardCountry, type GeographyEligibility } from '../../geography/eligibility'
+import { useAppData } from '../../app/useAppData'
 
 export function BorderRouteGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
+  const { state } = useAppData()
   const [round, setRound] = useState(0)
-  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const [eligibility, setEligibility] = useState<GeographyEligibility>(initialGeographyEligibility(mode, state.settings.catalogue))
   const [scope, setScope] = useState('World')
   const [difficulty, setDifficulty] = useState<RouteDifficulty>('standard')
   const countries = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
@@ -34,9 +36,9 @@ function RouteRound({ data, countries, mode, date, seed, scope, scopes, difficul
       ? data.countries.filter((country) => savedCodes.includes(country.iso3) && country.hasGeometry)
       : countries
   }, [progress, mode, data.countries, countries])
-  const graphCountries = useMemo(() => mode === 'practice' && scope !== 'World' ? routeCountries.filter((country) => country.continent === scope) : routeCountries, [routeCountries, mode, scope])
+  const graphCountries = useMemo(() => mode === 'freeplay' && scope !== 'World' ? routeCountries.filter((country) => country.continent === scope) : routeCountries, [routeCountries, mode, scope])
   const adjacency = useMemo(() => buildAdjacency(graphCountries), [graphCountries])
-  const generatedPuzzle = useMemo(() => generateRoutePuzzle(graphCountries, `${seed}:route`, mode === 'practice' ? { continent: scope, difficulty } : undefined), [graphCountries, seed, mode, scope, difficulty])
+  const generatedPuzzle = useMemo(() => generateRoutePuzzle(graphCountries, `${seed}:route`, mode === 'freeplay' ? { continent: scope, difficulty } : undefined), [graphCountries, seed, mode, scope, difficulty])
   const puzzle = useMemo(() => {
     const start = progress?.start
     const end = progress?.end
@@ -115,7 +117,7 @@ function RouteRound({ data, countries, mode, date, seed, scope, scopes, difficul
 
   return (
     <div className="game-body route-game-body">
-      {mode === 'practice' && <div className="question-toolbar route-practice-toolbar"><div><span className="eyebrow">Border route practice</span><h2>Connect the countries by land</h2></div><div className="question-toolbar-tools"><GameSettingsMenu><div className="practice-config">
+      {mode === 'freeplay' && <div className="question-toolbar route-practice-toolbar"><div><span className="eyebrow">Border route</span><h2>Connect the countries by land</h2></div><div className="question-toolbar-tools"><GameSettingsMenu><div className="practice-config">
         <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
         <label><span>Geographic scope</span><select value={scope} onChange={(event) => onScope(event.target.value)}>{scopes.map((item) => <option key={item}>{item}</option>)}</select></label>
         <label><span>Route length</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as RouteDifficulty)}><option value="short">Short · 2–4 borders</option><option value="standard">Standard · 3–6 borders</option><option value="long">Long · 5–8 borders</option></select></label>
@@ -157,7 +159,7 @@ function RouteRound({ data, countries, mode, date, seed, scope, scopes, difficul
           {hintShown && <div className="route-hint" role="status"><Lightbulb size={15} /><span>{hintShown}</span></div>}
         </div>
       </div>
-      <GameResultsDialog complete={finished} gameId="routes" mode={mode} score={finalScore} correct={finished ? 1 : 0} total={1} title={route.length === puzzle.shortest.length ? 'The shortest way through.' : 'A valid route across the map.'} message={routeNames.join(' → ')} saveError={saveError} onReplay={mode === 'practice' ? onReplay : undefined} replayLabel="Build another route" />
+      <GameResultsDialog complete={finished} gameId="routes" mode={mode} score={finalScore} correct={finished ? 1 : 0} total={1} title={route.length === puzzle.shortest.length ? 'The shortest way through.' : 'A valid route across the map.'} message={routeNames.join(' → ')} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Build another route" />
     </div>
   )
 }

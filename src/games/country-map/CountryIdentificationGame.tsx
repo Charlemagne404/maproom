@@ -11,7 +11,7 @@ import { loadRegions } from '../../geography/data'
 import { pickCountries, seededShuffle } from '../../puzzles/engine'
 import { missedCountryCodes } from '../../statistics/mistakes'
 import { useGameSession } from '../session'
-import { eligibleCountries, eligibleFeatures, type GeographyEligibility } from '../../geography/eligibility'
+import { eligibleCountries, eligibleFeatures, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
 
 type Scope = 'world' | 'continent' | 'regions'
 type QuestionCount = '10' | '20' | '50' | 'infinite'
@@ -24,7 +24,7 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
   const restoredNumber = (key: string, fallback: number) => typeof progress?.[key] === 'number' ? progress[key] as number : fallback
   const restoredString = (key: string, fallback: string) => typeof progress?.[key] === 'string' ? progress[key] as string : fallback
   const restoredBoolean = (key: string, fallback: boolean) => typeof progress?.[key] === 'boolean' ? progress[key] as boolean : fallback
-  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const [eligibility, setEligibility] = useState<GeographyEligibility>(initialGeographyEligibility(mode, state.settings.catalogue))
   const [scope, setScope] = useState<Scope>('world')
   const [continent, setContinent] = useState('Europe')
   const [regionCountry, setRegionCountry] = useState('USA')
@@ -49,7 +49,7 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
   const [missedQuestions, setMissedQuestions] = useState<string[]>(() => Array.isArray(progress?.missedQuestions) ? progress.missedQuestions.filter((item): item is string => typeof item === 'string') : [])
   const missedCodes = useMemo(() => missedCountryCodes(state.history, 'countries'), [state.history])
   const { save, saveError, saveProgress, resetSession } = session
-  const infinitePractice = mode === 'practice' && questionCount === 'infinite'
+  const infinitePractice = mode === 'freeplay' && questionCount === 'infinite'
   const questionSeed = mode === 'daily' ? seed : `${seed}:${round}:${deckCycle}:${scope}:${continent}:${regionCountry}:${reviewMissed}`
 
   const eligible = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
@@ -133,7 +133,7 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
   }, [mode, finished, index, selected, answerLocked, feedback, input, correct, score, resolved, seconds, missedQuestions, deckCycle, questions, saveProgress])
 
   useEffect(() => {
-    if (mode !== 'practice' || !timed || finished || questions.length === 0) return
+    if (mode !== 'freeplay' || !timed || finished || questions.length === 0) return
     const timer = window.setTimeout(() => {
       if (seconds <= 1) {
         setSeconds(0)
@@ -148,7 +148,7 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
   if (regionError) return <div className="game-body"><InlineNotice title="Subdivision data unavailable" tone="warning">{regionError}</InlineNotice></div>
   if (questions.length === 0) return <LoadingState label="Choosing a country…" />
   const filteredFeatures = question.feature ? [question.feature] : countryFeatures
-  const showOptions = mode === 'practice'
+  const showOptions = mode === 'freeplay'
 
   function submit(code: string) {
     if (!question || answerLocked) return
@@ -208,7 +208,7 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
         <div className="question-toolbar-tools">
           {showOptions && <GameSettingsMenu><div className="practice-config">
             <label><span>Country pool</span><select value={eligibility} onChange={(event) => { resetRound(); setEligibility(event.target.value as GeographyEligibility) }}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
-            <label><span>Practice scope</span><select value={scope} onChange={(event) => { resetRound(); setScope(event.target.value as Scope) }}><option value="world">Worldwide</option><option value="continent">One continent</option><option value="regions">Subdivisions</option></select></label>
+            <label><span>Scope</span><select value={scope} onChange={(event) => { resetRound(); setScope(event.target.value as Scope) }}><option value="world">Worldwide</option><option value="continent">One continent</option><option value="regions">Subdivisions</option></select></label>
             {scope === 'continent' && <label><span>Continent</span><select value={continent} onChange={(event) => { resetRound(); setContinent(event.target.value) }}>{continents.map((item) => <option key={item}>{item}</option>)}</select></label>}
             <label><span>Questions</span><select value={questionCount} onChange={(event) => { resetRound(); setQuestionCount(event.target.value as QuestionCount) }}><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="infinite">Infinite</option></select></label>
             <label className="flag-reveal-setting"><input type="checkbox" checked={timed} onChange={(event) => { resetRound(); setTimed(event.target.checked) }} /><span>60-second speed round</span></label>
@@ -253,7 +253,7 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
       </div>
       {scope === 'regions' && data.countriesByCode.get(regionCountry)?.regionSource && <p className="map-source-note">Boundary source: {data.countriesByCode.get(regionCountry)?.regionSource?.source} · {data.countriesByCode.get(regionCountry)?.regionSource?.license}</p>}
       {answerLocked && <div className={`answer-feedback${selected === question.code ? ' is-correct' : ' is-incorrect'}`} role="status"><span className="feedback-icon">{selected === question.code ? <Check size={17} /> : <RotateCcw size={16} />}</span><span>{feedback}</span>{!finished && <button className="button button-dark" type="button" onClick={() => void nextQuestion()}>{index === questions.length - 1 ? 'See result' : 'Next place'}</button>}</div>}
-      <GameResultsDialog complete={finished} gameId="countries" mode={mode} score={score} correct={correct} total={infinitePractice ? resolved : questions.length} title={timed && seconds === 0 ? 'Time is up.' : "Round complete."} message="Good work. You’ve covered some ground." saveError={saveError} onReplay={mode === 'practice' ? () => { resetRound(); resetSession(); setRound((value) => value + 1) } : undefined} />
+      <GameResultsDialog complete={finished} gameId="countries" mode={mode} score={score} correct={correct} total={infinitePractice ? resolved : questions.length} title={timed && seconds === 0 ? 'Time is up.' : "Round complete."} message="Good work. You’ve covered some ground." saveError={saveError} onReplay={mode === 'freeplay' ? () => { resetRound(); resetSession(); setRound((value) => value + 1) } : undefined} />
     </div>
   )
 }

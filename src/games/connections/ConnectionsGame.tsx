@@ -4,14 +4,16 @@ import { GameResultsDialog } from '../../components/GameResults'
 import { GameSettingsMenu } from '../../components/GameControls'
 import { InlineNotice } from '../../components/Kit'
 import type { GameMode, GeographyData } from '../../geography/types'
-import { eligibleCountries, type GeographyEligibility } from '../../geography/eligibility'
+import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
 import { generateConnectionsPuzzle, type ConnectionsDifficulty } from '../../puzzles/connections'
 import { useGameSession } from '../session'
+import { useAppData } from '../../app/useAppData'
 
 export function ConnectionsGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
+  const { state } = useAppData()
   const [round, setRound] = useState(0)
   const [difficulty, setDifficulty] = useState<ConnectionsDifficulty>('easy')
-  const [eligibility, setEligibility] = useState<GeographyEligibility>('standard')
+  const [eligibility, setEligibility] = useState<GeographyEligibility>(initialGeographyEligibility(mode, state.settings.catalogue))
   const countries = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
   const puzzle = useMemo(() => {
     try { return { value: generateConnectionsPuzzle(countries, `${seed}:${round}`, difficulty, eligibility), error: '' } }
@@ -72,7 +74,7 @@ function ConnectionsRound({ data, puzzle, mode, date, seed, difficulty, eligibil
     <div className="question-toolbar">
       <div><h2>Find four groups of four</h2><p>Choose four countries with a shared geographic connection.</p></div>
       <div className="question-toolbar-tools">
-        {mode === 'practice' && <GameSettingsMenu><div className="practice-config">
+        {mode === 'freeplay' && <GameSettingsMenu><div className="practice-config">
           <label><span>Difficulty</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as ConnectionsDifficulty)}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></label>
           <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
         </div></GameSettingsMenu>}
@@ -101,6 +103,6 @@ function ConnectionsRound({ data, puzzle, mode, date, seed, difficulty, eligibil
       {!finished && <button className="button button-outline" type="button" disabled={!selected.length} onClick={() => { setSelected([]); setMessage('Selection cleared. Look for another shared connection.') }}><RotateCcw size={15} /> Clear</button>}
     </div>
     {finished && mistakes >= 4 && <div className="connections-review" aria-label="Remaining group answers">{puzzle.groups.filter((group) => !solved.includes(group.id)).map((group) => <p key={group.id}><strong>{group.label}:</strong> {group.countryCodes.map((code) => data.countriesByCode.get(code)?.name).join(', ')}<span>{group.explanation}</span></p>)}</div>}
-    <GameResultsDialog complete={finished} gameId="connections" mode={mode} score={score} correct={solved.length} total={4} title={solved.length === 4 ? 'All the connections found.' : 'The groups are revealed.'} message={`${mistakes} ${mistakes === 1 ? 'mistake' : 'mistakes'} used.`} saveError={saveError} onReplay={mode === 'practice' ? onReplay : undefined} replayLabel="Play another set" />
+    <GameResultsDialog complete={finished} gameId="connections" mode={mode} score={score} correct={solved.length} total={4} title={solved.length === 4 ? 'All the connections found.' : 'The groups are revealed.'} message={`${mistakes} ${mistakes === 1 ? 'mistake' : 'mistakes'} used.`} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Play another set" />
   </div>
 }

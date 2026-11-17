@@ -3,74 +3,102 @@ import { ArrowRight, ChartNoAxesColumnIncreasing } from 'lucide-react'
 import { useAppData } from '../app/useAppData'
 import { PageHeading } from '../components/Kit'
 import { games } from '../games/catalog'
+import { ActivityHeatmap } from '../statistics/ActivityHeatmap'
 import { calculateStatistics } from '../statistics/summary'
+import { usePuzzleDate } from '../hooks/usePuzzleDate'
 
 export function StatisticsPage() {
   const { state } = useAppData()
-  const stats = calculateStatistics(state.history, state.settings.timeZone)
-  const recent = state.history.slice(0, 8)
-  const maxScore = Math.max(1000, ...stats.trend.map((point) => point.score ?? 0))
+  const today = usePuzzleDate(state.settings.timeZone)
+  const stats = calculateStatistics(state.history, state.settings.timeZone, today ?? undefined)
+  const recent = state.history.filter((result) => result.completed).slice(0, 10)
 
   return (
     <div className="page statistics-page">
-      <PageHeading eyebrow="Your atlas, over time" title="Statistics" description="A personal record of the maps you’ve learned and the puzzles you’ve solved." />
-      {stats.totalPlayed === 0 ? (
-        <div className="empty-state stats-empty">
-          <span className="empty-icon"><ChartNoAxesColumnIncreasing size={22} /></span>
-          <h2>Your first result is waiting</h2>
-          <p>Play a daily puzzle or start a practice round. Your results will appear here.</p>
-          <Link className="button button-dark" to="/explore">Find a game <ArrowRight size={15} /></Link>
+      <PageHeading title="Statistics" />
+
+      <section className="stat-overview" aria-label="Overall performance">
+        <Stat label="Current streak" value={`${stats.currentStreak} ${stats.currentStreak === 1 ? 'day' : 'days'}`} />
+        <Stat label="Longest streak" value={`${stats.longestStreak} ${stats.longestStreak === 1 ? 'day' : 'days'}`} />
+        <Stat label="Games completed" value={stats.totalCompleted.toLocaleString()} detail={<span><b>{stats.dailyCompleted}</b> Daily · <b>{stats.freeplayCompleted}</b> Free play</span>} />
+        <Stat label="Overall accuracy" value={stats.totalCompleted ? `${Math.round(stats.accuracy * 100)}%` : '—'} detail={stats.totalCompleted ? 'Across completed questions' : 'No completed games yet'} />
+        <Stat label="Total points" value={stats.totalPoints.toLocaleString()} detail="Across completed games" />
+      </section>
+
+      <section className="stats-panel activity-panel" id="activity" aria-labelledby="activity-title">
+        <div className="stats-panel-heading">
+          <div><span className="eyebrow">Past year</span><h2 id="activity-title">Activity</h2></div>
+          <span className="panel-summary">{stats.activeDays} active {stats.activeDays === 1 ? 'day' : 'days'}</span>
         </div>
-      ) : (
-        <>
-          <section className="stat-overview" aria-label="Overall statistics">
-            <Stat label="Games played" value={stats.totalPlayed.toLocaleString()} detail={`${stats.totalCompleted} completed`} />
-            <Stat label="Accuracy" value={`${Math.round(stats.accuracy * 100)}%`} detail="Across completed questions" />
-            <Stat label="Average score" value={Math.round(stats.averageScore).toLocaleString()} detail="Per completed game" />
-            <Stat label="Best daily streak" value={`${stats.bestDailyStreak} ${stats.bestDailyStreak === 1 ? 'day' : 'days'}`} detail={`Current: ${stats.currentDailyStreak} days`} />
-          </section>
-          <section className="stats-section trend-section">
-            <div className="section-heading"><div><span className="eyebrow">Daily results</span><h2>Two weeks at a glance</h2></div><span className="muted-note">Average daily score</span></div>
-            <div className="trend-chart" role="img" aria-label="Average score over the last fourteen days">
-              {stats.trend.map((point) => {
-                const height = point.score === null ? 2 : Math.max(4, point.score / maxScore * 100)
-                return <div key={point.date} className="trend-column" title={`${point.date}: ${point.score === null ? 'no result' : Math.round(point.score)}`}><span className={point.score === null ? 'trend-bar is-empty' : 'trend-bar'} style={{ height: `${height}%` }} /><span className="trend-date">{point.date.slice(8)}</span></div>
-              })}
-            </div>
-          </section>
-          <section className="stats-section">
-            <div className="section-heading"><div><span className="eyebrow">By game</span><h2>Where you’ve been</h2></div></div>
-            <div className="game-stat-list">
-              {stats.byGame.map((summary) => {
-                const game = games.find((item) => item.id === summary.gameId)!
-                return <Link key={summary.gameId} to={`${game.path}?mode=practice`} className="game-stat-row">
-                  <span className="game-stat-name">{game.title}</span>
-                  <span>{summary.completed} {summary.completed === 1 ? 'game' : 'games'}</span>
-                  <span>{summary.total ? `${Math.round(summary.accuracy * 100)}% accuracy` : '—'}</span>
-                  <span>{summary.completed ? `Best ${summary.bestScore.toLocaleString()}` : '—'}</span>
-                  <ArrowRight size={15} aria-hidden="true" />
-                </Link>
-              })}
-            </div>
-          </section>
-          <section className="stats-section">
-            <div className="section-heading"><div><span className="eyebrow">Recent history</span><h2>Last played</h2></div><span className="muted-note">Best score: {stats.bestScore.toLocaleString()}</span></div>
-            <div className="history-list">
-              {recent.map((result) => {
-                const game = games.find((item) => item.id === result.gameId)
-                return <div className="history-row" key={result.id}>
-                  <div><strong>{game?.title ?? result.gameId}</strong><span>{result.mode === 'daily' ? 'Daily' : 'Practice'} · {new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeZone: state.settings.timeZone }).format(new Date(result.completedAt))}</span></div>
-                  <div className="history-result"><strong>{result.score.toLocaleString()}</strong><span>{result.correct} / {result.total} correct</span></div>
-                </div>
-              })}
-            </div>
-          </section>
-        </>
-      )}
+        {today && <ActivityHeatmap activity={stats.activity} today={today} />}
+      </section>
+
+      <div className="statistics-lower-grid">
+        <section className="stats-panel performance-panel" aria-labelledby="performance-title">
+          <div className="stats-panel-heading">
+            <div><span className="eyebrow">Recent results</span><h2 id="performance-title">Accuracy</h2></div>
+            <span className="panel-summary">Last 14 days</span>
+          </div>
+          <div className="trend-chart" role="img" aria-label="Completed game accuracy over the last fourteen days">
+            {stats.trend.map((point) => {
+              const percent = point.accuracy === null ? 0 : Math.round(point.accuracy * 100)
+              const height = point.accuracy === null ? 2 : Math.max(3, percent)
+              return <div key={point.date} className="trend-column" title={`${point.date}: ${point.accuracy === null ? 'no completed games' : `${percent}% accuracy, ${point.completed} ${point.completed === 1 ? 'game' : 'games'}`}`}>
+                <span className={point.accuracy === null ? 'trend-bar is-empty' : 'trend-bar'} style={{ height: `${height}%` }} />
+                <span className="trend-date">{point.date.slice(8)}</span>
+              </div>
+            })}
+          </div>
+          <div className="chart-axis-labels"><span>0%</span><span>100%</span></div>
+        </section>
+
+        <section className="stats-panel game-performance-panel" aria-labelledby="game-performance-title">
+          <div className="stats-panel-heading">
+            <div><span className="eyebrow">By game</span><h2 id="game-performance-title">Performance</h2></div>
+            <Link className="quiet-link" to="/explore">Explore <ArrowRight size={14} aria-hidden="true" /></Link>
+          </div>
+          {stats.byGame.length ? <div className="game-stat-list">
+            {stats.byGame.map((summary) => {
+              const game = games.find((item) => item.id === summary.gameId)!
+              return <Link key={summary.gameId} to={`${game.path}?mode=freeplay`} className="game-stat-row">
+                <span className="game-stat-name">{game.shortTitle}</span>
+                <span className="game-stat-mode"><small>Daily</small><strong>{summary.dailyCompleted}</strong></span>
+                <span className="game-stat-mode"><small>Free play</small><strong>{summary.freeplayCompleted}</strong></span>
+                <span className="game-stat-accuracy"><small>Accuracy</small><strong>{summary.total ? `${Math.round(summary.accuracy * 100)}%` : '—'}</strong></span>
+                <span className="game-stat-best"><small>Best</small><strong>{summary.bestScore.toLocaleString()}</strong></span>
+              </Link>
+            })}
+          </div> : <p className="stats-empty-note">Completed games will appear here.</p>}
+        </section>
+      </div>
+
+      <section className="stats-panel history-panel" aria-labelledby="history-title">
+        <div className="stats-panel-heading">
+          <div><span className="eyebrow">Your latest completions</span><h2 id="history-title">Recent games</h2></div>
+          <span className="panel-summary">{stats.totalCompleted.toLocaleString()} total</span>
+        </div>
+        {recent.length ? <div className="history-list">
+          {recent.map((result) => {
+            const game = games.find((item) => item.id === result.gameId)
+            const accuracy = result.total > 0 ? Math.round(result.correct / result.total * 100) : null
+            const completedAt = new Date(result.completedAt)
+            const date = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric', timeZone: state.settings.timeZone }).format(completedAt)
+            return <article className="history-row" key={result.id}>
+              <div className="history-game"><strong>{game?.title ?? result.gameId}</strong><span>{result.mode === 'daily' ? 'Daily' : 'Free play'} · {date}</span></div>
+              <div className="history-metric"><small>Score</small><strong>{result.score.toLocaleString()}</strong></div>
+              <div className="history-metric history-result"><small>Accuracy</small><strong>{accuracy === null ? '—' : `${accuracy}%`}</strong><span>{result.correct} / {result.total} correct</span></div>
+            </article>
+          })}
+        </div> : <div className="stats-empty-note stats-empty-inline">
+          <span className="empty-icon"><ChartNoAxesColumnIncreasing size={20} aria-hidden="true" /></span>
+          <span>Complete a Daily puzzle or start a Free play round to see your history.</span>
+          <Link to="/explore">Find a game <ArrowRight size={14} aria-hidden="true" /></Link>
+        </div>}
+      </section>
     </div>
   )
 }
 
-function Stat({ label, value, detail }: { label: string; value: string; detail: string }) {
-  return <div className="stat-cell"><span>{label}</span><strong>{value}</strong><small>{detail}</small></div>
+function Stat({ label, value, detail }: { label: string; value: string; detail?: React.ReactNode }) {
+  return <div className="stat-cell"><span>{label}</span><strong>{value}</strong>{detail && <small>{detail}</small>}</div>
 }

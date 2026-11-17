@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react'
 import { Search, SlidersHorizontal } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { useAppData } from '../app/useAppData'
-import { GameCard, PageHeading } from '../components/Kit'
-import { categories, games } from '../games/catalog'
+import { GameCard, GameFormatCard, PageHeading } from '../components/Kit'
+import { categories, formatsForGame, games, type GameFormat, type GameInfo } from '../games/catalog'
 
 export function ExplorePage() {
   const { state, toggleFavorite } = useAppData()
@@ -11,20 +11,30 @@ export function ExplorePage() {
   const [query, setQuery] = useState('')
   const category = params.get('category') ?? 'All games'
   const favoritesOnly = params.get('filter') === 'favorites'
-  const recentIds = useMemo(() => [...new Set(state.history.map((item) => item.gameId))], [state.history])
-  const filtered = games.filter((game) => {
+  const recentIds = useMemo(() => [...new Set(state.history.filter((item) => item.completed).map((item) => item.gameId))], [state.history])
+  const experiences = useMemo(() => {
+    const items: Array<{ game: GameInfo; format?: GameFormat; key: string }> = []
+    for (const game of games) {
+      const formats = formatsForGame(game.id)
+      if (formats.length) for (const format of formats) items.push({ game, format, key: `${game.id}:${format.id}` })
+      else items.push({ game, key: game.id })
+    }
+    return items
+  }, [])
+  const filtered = experiences.filter((experience) => {
+    const { game, format } = experience
     const needle = query.trim().toLocaleLowerCase()
-    const matchesSearch = !needle || `${game.title} ${game.shortTitle} ${game.category} ${game.description}`.toLocaleLowerCase().includes(needle)
+    const matchesSearch = !needle || `${game.title} ${game.shortTitle} ${game.category} ${game.description} ${format?.title ?? ''} ${format?.description ?? ''}`.toLocaleLowerCase().includes(needle)
     const matchesCategory = category === 'All games' || game.category === category
     const matchesFavorite = !favoritesOnly || state.favorites.includes(game.id)
     return matchesSearch && matchesCategory && matchesFavorite
   }).sort((a, b) => {
-    const aRecent = recentIds.indexOf(a.id)
-    const bRecent = recentIds.indexOf(b.id)
+    const aRecent = recentIds.indexOf(a.game.id)
+    const bRecent = recentIds.indexOf(b.game.id)
     if (aRecent >= 0 && bRecent >= 0) return aRecent - bRecent
     if (aRecent >= 0) return -1
     if (bRecent >= 0) return 1
-    return games.indexOf(a) - games.indexOf(b)
+    return experiences.indexOf(a) - experiences.indexOf(b)
   })
 
   function selectCategory(value: string) {
@@ -36,7 +46,7 @@ export function ExplorePage() {
 
   return (
     <div className="page explore-page">
-      <PageHeading eyebrow="Find your next puzzle" title="Explore" />
+      <PageHeading eyebrow="Free play" title="Explore" />
       <div className="explore-controls">
         <label className="search-field">
           <Search size={18} aria-hidden="true" />
@@ -57,13 +67,12 @@ export function ExplorePage() {
           setParams(next, { replace: true })
         }}>Favorites {state.favorites.length > 0 && <span>{state.favorites.length}</span>}</button>
       </div>
-      {recentIds.length > 0 && !query && !favoritesOnly && category === 'All games' && (
-        <div className="section-label-row"><span className="eyebrow">Recently played</span></div>
-      )}
       {filtered.length ? (
-        <section className="game-grid explore-grid" aria-label="Available games">
+        <section className="game-grid explore-grid" aria-label="Free play games and formats">
           {filtered.map((game) => (
-            <GameCard key={game.id} game={game} mode="practice" favorite={state.favorites.includes(game.id)} onFavorite={(id) => { void toggleFavorite(id) }} />
+            game.format
+              ? <GameFormatCard key={game.key} game={game.game} format={game.format} favorite={state.favorites.includes(game.game.id)} onFavorite={(id) => { void toggleFavorite(id) }} />
+              : <GameCard key={game.key} game={game.game} mode="freeplay" favorite={state.favorites.includes(game.game.id)} onFavorite={(id) => { void toggleFavorite(id) }} />
           ))}
         </section>
       ) : (
@@ -74,7 +83,7 @@ export function ExplorePage() {
           {(favoritesOnly || query) && <button className="button button-outline" type="button" onClick={() => { setQuery(''); selectCategory('All games'); setParams({}, { replace: true }) }}>Show all games</button>}
         </div>
       )}
-      <div className="explore-count">{filtered.length} {filtered.length === 1 ? 'game' : 'games'} in the library</div>
+      <div className="explore-count">{filtered.length} {filtered.length === 1 ? 'experience' : 'experiences'} available</div>
     </div>
   )
 }

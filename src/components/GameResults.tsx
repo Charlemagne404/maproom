@@ -73,7 +73,7 @@ export function GameResultsDialog({ complete, gameId, mode, score, correct, tota
       {dismissed && <button ref={reopen} className="results-reopen" type="button" onClick={() => setDismissed(false)}>View results</button>}
       <dialog ref={dialog} className="game-results-dialog" aria-labelledby={`results-${gameId}-title`} onCancel={dismiss} onKeyDown={trapFocus}>
         <div className="game-results-topline">
-          <span className="eyebrow">{mode === 'daily' ? 'Daily puzzle' : 'Practice'}</span>
+          <span className="eyebrow">{mode === 'daily' ? 'Daily puzzle' : 'Free play'}</span>
           <button className="game-results-close" type="button" aria-label="Close results" onClick={() => dismiss()}><X size={18} aria-hidden="true" /></button>
         </div>
         <h2 id={`results-${gameId}-title`}>{title}</h2>
@@ -83,7 +83,8 @@ export function GameResultsDialog({ complete, gameId, mode, score, correct, tota
         <div className="game-results-actions">
           {onReplay
             ? <button ref={primaryAction} className="button button-dark" type="button" onClick={onReplay}>{replayLabel}</button>
-            : <Link className="button button-dark" to={`${getGame(gameId)?.path ?? '/explore'}?mode=practice`}>Play practice</Link>}
+            : <Link className="button button-dark" to={`${getGame(gameId)?.path ?? '/explore'}?mode=freeplay`}>{mode === 'daily' ? 'Play in Free play' : 'Play again'}</Link>}
+          {mode === 'daily' && <Link className="button button-outline" to="/">Today’s puzzles</Link>}
           <Link className="button button-outline" to="/statistics">Statistics</Link>
           <Link className="game-results-library" to="/explore">All games</Link>
         </div>
@@ -105,7 +106,7 @@ export function CompletedPuzzle({ gameTitle, result }: { gameTitle: string; resu
       <div className="completed-daily-score"><strong>{result.score.toLocaleString()}</strong><span>points</span></div>
       <p className="completed-daily-summary"><strong>{result.correct} / {result.total}</strong> correct <span aria-hidden="true">·</span> <strong>{accuracy}%</strong> accuracy</p>
       <div className="completed-daily-actions">
-        <Link className="button button-dark" to={`${gamePath}?mode=practice`}>Play practice</Link>
+        <Link className="button button-dark" to={`${gamePath}?mode=freeplay`}>Play in Free play</Link>
         <Link className="button button-outline" to="/">Today’s puzzles</Link>
         <Link className="completed-daily-statistics" to="/statistics">Statistics</Link>
       </div>
