@@ -1557,8 +1557,26 @@ test('capitals and cities include typed capitals, coordinate placement and city 
 
 test('settings exports and imports progress, confirms reset, and the data page shows coverage', async ({ page }) => {
   await page.goto('/settings')
+
+  await page.locator('.theme-option').filter({ hasText: 'Dark' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('maproom-theme'))).toBe('dark')
+  await page.reload()
+  await expect(page.locator('.theme-option input[value="dark"]')).toBeChecked()
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.locator('.theme-option').filter({ hasText: 'System' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('maproom-theme'))).toBe('system')
+  await page.emulateMedia({ colorScheme: 'light' })
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await page.reload()
+  await expect(page.locator('.theme-option input[value="system"]')).toBeChecked()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+
   await page.getByLabel(/Puzzle time zone/).selectOption('UTC')
-  await expect(page.getByText('Current setting: UTC')).toBeVisible()
+  await expect(page.getByLabel(/Puzzle time zone/)).toHaveValue('UTC')
   const downloadPromise = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Export progress' }).click()
   const download = await downloadPromise
@@ -1577,10 +1595,12 @@ test('settings exports and imports progress, confirms reset, and the data page s
     })),
   })
   await expect(page.getByText('Progress imported.')).toBeVisible()
-  await expect(page.getByText('Current setting: Europe/London')).toBeVisible()
+  await expect(page.getByLabel(/Puzzle time zone/)).toHaveValue('Europe/London')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   page.once('dialog', (dialog) => dialog.accept())
-  await page.getByRole('button', { name: 'Reset all progress' }).click()
-  await expect(page.getByText('Your local progress has been cleared.')).toBeVisible()
+  await page.getByRole('button', { name: 'Reset saved data' }).click()
+  await expect(page.getByText('Saved data has been reset.')).toBeVisible()
+  await expect(page.locator('.theme-option input[value="light"]')).toBeChecked()
 
   await page.goto('/data')
   await expect(page.getByRole('heading', { name: 'Data sources' })).toBeVisible()

@@ -1,8 +1,9 @@
 import { useRef, useState, type ChangeEvent } from 'react'
-import { Download, HardDrive, Info, RotateCcw, Upload } from 'lucide-react'
+import { Download, HardDrive, Info, Monitor, Moon, RotateCcw, Sun, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAppData } from '../app/useAppData'
 import { PageHeading } from '../components/Kit'
+import type { UserSettings } from '../geography/types'
 
 const timeZones = [
   ['Europe/Stockholm', 'Stockholm'],
@@ -20,11 +21,26 @@ const timeZones = [
   ['UTC', 'UTC'],
 ]
 
+const themeOptions = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'System', icon: Monitor },
+] as const
+
 export function SettingsPage() {
   const { state, updateSettings, exportData, importData, resetData } = useAppData()
   const fileInput = useRef<HTMLInputElement>(null)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+
+  async function changePreference(patch: Partial<UserSettings>) {
+    try {
+      await updateSettings(patch)
+      setError('')
+    } catch (issue) {
+      setError(issue instanceof Error ? issue.message : 'That preference could not be saved.')
+    }
+  }
 
   async function downloadExport() {
     try {
@@ -34,7 +50,7 @@ export function SettingsPage() {
       link.href = url
       link.download = `maproom-progress-${new Date().toISOString().slice(0, 10)}.json`
       link.click()
-      URL.revokeObjectURL(url)
+      window.setTimeout(() => URL.revokeObjectURL(url), 1_000)
       setNotice('Your progress file is ready.')
       setError('')
     } catch (issue) {
@@ -50,7 +66,7 @@ export function SettingsPage() {
       setError('This file is larger than the 5 MB import limit.')
       return
     }
-    if (!window.confirm('Importing replaces the progress and settings saved in this browser. Continue?')) return
+    if (!window.confirm('Importing replaces saved progress and preferences on this browser. Continue?')) return
     try {
       await importData(await file.text())
       setNotice('Progress imported.')
@@ -61,10 +77,10 @@ export function SettingsPage() {
   }
 
   async function clearProgress() {
-    if (!window.confirm('Clear all saved games, favorites and preferences from this browser? This cannot be undone.')) return
+    if (!window.confirm('Reset all saved games, favorites, and preferences on this browser? This cannot be undone.')) return
     try {
       await resetData()
-      setNotice('Your local progress has been cleared.')
+      setNotice('Saved data has been reset.')
       setError('')
     } catch (issue) {
       setError(issue instanceof Error ? issue.message : 'Saved data could not be cleared.')
@@ -73,39 +89,82 @@ export function SettingsPage() {
 
   return (
     <div className="page settings-page">
-      <PageHeading eyebrow="Your browser, your rules" title="Settings" description="Maproom keeps its small preferences and game history on this device." />
-      <section className="settings-section">
-        <div className="settings-section-heading"><span className="eyebrow">Daily puzzles</span><h2>Choose when tomorrow begins</h2><p>Your daily puzzle changes at midnight in this time zone. Daylight-saving changes are handled automatically.</p></div>
-        <label className="setting-control setting-time-zone"><span><strong>Puzzle time zone</strong><small>Current setting: {state.settings.timeZone}</small></span>
-          <select value={state.settings.timeZone} onChange={(event) => void updateSettings({ timeZone: event.target.value })}>
+      <PageHeading eyebrow="Your browser, your rules" title="Settings" description="A few small choices for a Maproom that feels like yours." />
+
+      <section className="settings-section settings-appearance-section" aria-labelledby="settings-appearance-title">
+        <div className="settings-section-heading">
+          <span className="eyebrow">Appearance</span>
+          <h2 id="settings-appearance-title">Choose your theme</h2>
+          <p>Set the tone for every map and puzzle.</p>
+        </div>
+        <fieldset className="theme-picker">
+          <legend className="sr-only">Color theme</legend>
+          {themeOptions.map(({ value, label, icon: Icon }) => (
+            <label key={value} className={`theme-option${state.settings.theme === value ? ' is-selected' : ''}`}>
+              <input
+                type="radio"
+                name="theme"
+                value={value}
+                checked={state.settings.theme === value}
+                onChange={() => void changePreference({ theme: value })}
+              />
+              <span className="theme-option-card"><Icon size={19} strokeWidth={1.8} aria-hidden="true" /><strong>{label}</strong></span>
+            </label>
+          ))}
+        </fieldset>
+      </section>
+
+      <section className="settings-section" aria-labelledby="settings-daily-title">
+        <div className="settings-section-heading">
+          <span className="eyebrow">Daily play</span>
+          <h2 id="settings-daily-title">Set your puzzle day</h2>
+          <p>Tomorrow begins at midnight in this time zone.</p>
+        </div>
+        <label className="setting-control setting-time-zone">
+          <span><strong>Puzzle time zone</strong></span>
+          <select value={state.settings.timeZone} onChange={(event) => void changePreference({ timeZone: event.target.value })}>
             {timeZones.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
       </section>
-      <section className="settings-section">
-        <div className="settings-section-heading"><span className="eyebrow">Maps</span><h2>Keep the map quiet</h2><p>Map labels appear when you point to a place. Country outlines and keyboard access remain available either way.</p></div>
-        <label className="setting-control"><span><strong>Show map labels</strong><small>Display the name of the country under the pointer.</small></span>
-          <input className="toggle-input" type="checkbox" checked={state.settings.mapLabels} onChange={(event) => void updateSettings({ mapLabels: event.target.checked })} />
+
+      <section className="settings-section" aria-labelledby="settings-map-title">
+        <div className="settings-section-heading">
+          <span className="eyebrow">Maps</span>
+          <h2 id="settings-map-title">Keep labels close</h2>
+          <p>Show the country name beneath your pointer.</p>
+        </div>
+        <label className="setting-control setting-map-labels">
+          <span><strong>Show map labels</strong></span>
+          <input className="toggle-input" type="checkbox" checked={state.settings.mapLabels} onChange={(event) => void changePreference({ mapLabels: event.target.checked })} />
         </label>
       </section>
-      <section className="settings-section">
-        <div className="settings-section-heading"><span className="eyebrow">Motion</span><h2>Use your system preference</h2><p>Maproom respects reduced-motion settings from your operating system and browser.</p></div>
-        <div className="setting-readonly"><Info size={16} /><span>There is no separate motion toggle to override your device setting.</span></div>
-      </section>
-      <section className="settings-section data-settings">
-        <div className="settings-section-heading"><span className="eyebrow">Your data</span><h2>Keep a copy, or start fresh</h2><p>Export a JSON backup before moving browsers or clearing your browser data.</p></div>
-        <div className="setting-actions">
-          <button className="button button-outline" type="button" onClick={() => void downloadExport()}><Download size={16} /> Export progress</button>
-          <button className="button button-outline" type="button" onClick={() => fileInput.current?.click()}><Upload size={16} /> Import backup</button>
-          <input ref={fileInput} type="file" accept="application/json,.json" onChange={(event) => void readImport(event)} hidden />
-          <button className="button button-text-danger" type="button" onClick={() => void clearProgress()}><RotateCcw size={15} /> Reset all progress</button>
+
+      <section className="settings-section data-settings" aria-labelledby="settings-data-title">
+        <div className="settings-section-heading">
+          <span className="eyebrow">Your data</span>
+          <h2 id="settings-data-title">Take it with you</h2>
+          <p>Progress and preferences stay in this browser.</p>
         </div>
-        {(notice || error) && <div className={error ? 'form-message form-message-error' : 'form-message'} role={error ? 'alert' : 'status'}>{error || notice}</div>}
-        <div className="storage-note"><HardDrive size={16} /><span>Progress is stored locally. Clearing site data in your browser may remove it. See the <Link to="/privacy">privacy note</Link>.</span></div>
+        <div className="settings-data-content">
+          <div className="setting-actions">
+            <button className="button button-outline" type="button" onClick={() => void downloadExport()}><Download size={16} /> Export progress</button>
+            <button className="button button-outline" type="button" onClick={() => fileInput.current?.click()}><Upload size={16} /> Import backup</button>
+            <input ref={fileInput} type="file" accept="application/json,.json" onChange={(event) => void readImport(event)} hidden />
+            <button className="button button-text-danger" type="button" onClick={() => void clearProgress()}><RotateCcw size={15} /> Reset saved data</button>
+          </div>
+          {(notice || error) && <div className={error ? 'form-message form-message-error' : 'form-message'} role={error ? 'alert' : 'status'}>{error || notice}</div>}
+          <div className="storage-note"><HardDrive size={16} aria-hidden="true" /><span>Browser data can be cleared in your browser settings. Read the <Link to="/privacy">privacy note</Link>.</span></div>
+        </div>
       </section>
-      <section className="settings-section install-section">
-        <div className="settings-section-heading"><span className="eyebrow">Take it with you</span><h2>Install Maproom</h2><p>On supported browsers, use the install icon in the address bar or your browser menu. Once visited, the game shell and the data you’ve opened can work offline.</p></div>
-        <div className="install-note"><Info size={17} /><span>Regional boundaries and the city gazetteer are cached as you use them, so first-time access needs a connection.</span></div>
+
+      <section className="settings-section install-section" aria-labelledby="settings-offline-title">
+        <div className="settings-section-heading">
+          <span className="eyebrow">Offline play</span>
+          <h2 id="settings-offline-title">Bring Maproom along</h2>
+          <p>Install from your browser menu to keep the game shell close at hand.</p>
+        </div>
+        <div className="install-note"><Info size={17} aria-hidden="true" /><span>Maps and city details cache as you use them. First-time access needs a connection.</span></div>
       </section>
     </div>
   )

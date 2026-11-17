@@ -129,6 +129,7 @@ export interface GameSessionSnapshot {
 export interface UserSettings {
   timeZone: string
   mapLabels: boolean
+  theme: 'light' | 'dark' | 'system'
   sound: boolean
   hasSeenInstallHelp: boolean
 }

@@ -6,9 +6,11 @@ const DB_NAME = 'maproom-progress'
 const DB_VERSION = 2
 const FALLBACK_KEY = 'maproom-progress-v1'
 const SESSION_FALLBACK_KEY = 'maproom-sessions-v1'
+const THEME_KEY = 'maproom-theme'
 const DEFAULT_SETTINGS: UserSettings = {
   timeZone: 'Europe/Stockholm',
   mapLabels: true,
+  theme: 'light',
   sound: false,
   hasSeenInstallHelp: false,
 }
@@ -57,8 +59,10 @@ export async function loadAppData(): Promise<AppState> {
       .map((result) => `${result.gameId}:${result.date}`))
     const savedSessions = mergeSessionSnapshots(sessions, readAllSessionMirrors())
       .filter((session) => session.mode !== 'daily' || !completedDaily.has(`${session.gameId}:${session.date}`))
+    const cleanSettings = sanitizeSettings(settings)
+    mirrorTheme(cleanSettings.theme)
     return {
-      settings: sanitizeSettings(settings),
+      settings: cleanSettings,
       favorites: sanitizeFavorites(favorites),
       history: savedHistory,
       sessions: savedSessions,
@@ -67,6 +71,7 @@ export async function loadAppData(): Promise<AppState> {
   } catch {
     try {
       const saved = readFallback()
+      mirrorTheme(saved.settings.theme)
       return { ...saved, storageAvailable: Boolean(window.localStorage) }
     } catch {
       return { settings: DEFAULT_SETTINGS, favorites: [], history: [], sessions: [], storageAvailable: false }
@@ -76,6 +81,7 @@ export async function loadAppData(): Promise<AppState> {
 
 export async function saveSettings(settings: UserSettings): Promise<void> {
   const clean = sanitizeSettings(settings)
+  mirrorTheme(clean.theme)
   try {
     const db = await openDatabase()
     await db.put('settings', clean, 'settings')
@@ -199,6 +205,7 @@ export async function resetProgress(): Promise<void> {
   try {
     window.localStorage.removeItem(FALLBACK_KEY)
     window.localStorage.removeItem(SESSION_FALLBACK_KEY)
+    window.localStorage.removeItem(THEME_KEY)
   } catch (error) {
     throw new Error('Browser storage could not be cleared. Close private tabs or check available storage.', { cause: error })
   }
@@ -232,6 +239,7 @@ export async function importProgress(input: string): Promise<void> {
     history: parsed.history.filter(isGameResult).slice(0, 2500),
     sessions: Array.isArray(parsed.sessions) ? parsed.sessions.filter(isGameSessionSnapshot).slice(0, 100) : [],
   }
+  mirrorTheme(data.settings.theme)
   try {
     const db = await openDatabase()
     const transaction = db.transaction(['settings', 'history', 'sessions'], 'readwrite')
@@ -320,11 +328,16 @@ function sanitizeSettings(value?: Partial<UserSettings>): UserSettings {
   return {
     timeZone,
     mapLabels: typeof settings.mapLabels === 'boolean' ? settings.mapLabels : DEFAULT_SETTINGS.mapLabels,
+    theme: settings.theme === 'dark' || settings.theme === 'system' ? settings.theme : DEFAULT_SETTINGS.theme,
     sound: typeof settings.sound === 'boolean' ? settings.sound : DEFAULT_SETTINGS.sound,
     hasSeenInstallHelp: typeof settings.hasSeenInstallHelp === 'boolean'
       ? settings.hasSeenInstallHelp
       : DEFAULT_SETTINGS.hasSeenInstallHelp,
   }
+}
+
+function mirrorTheme(theme: UserSettings['theme']): void {
+  try { window.localStorage.setItem(THEME_KEY, theme) } catch { /* IndexedDB remains the source of truth. */ }
 }
 
 function sanitizeFavorites(value?: GameId[]): GameId[] {

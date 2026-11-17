@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type PropsWithChildren } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type PropsWithChildren } from 'react'
 import type { AppState, GameId, GameResult, GameSessionSnapshot, UserSettings } from '../geography/types'
 import { defaultSettings, deleteGameSession, exportProgress, importProgress, loadAppData, resetProgress, saveFavorites, saveGameResult, saveGameSession, saveSettings } from '../persistence/store'
+import { applyThemePreference } from '../theme'
 import { AppDataContext, type AppDataValue } from './AppDataContext'
 
 export function AppDataProvider({ children }: PropsWithChildren) {
@@ -28,6 +29,17 @@ export function AppDataProvider({ children }: PropsWithChildren) {
     })
     return () => { active = false }
   }, [])
+
+  useLayoutEffect(() => {
+    if (!ready) return
+    const preference = state.settings.theme
+    const apply = () => applyThemePreference(preference)
+    apply()
+    if (preference !== 'system') return
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    media.addEventListener('change', apply)
+    return () => media.removeEventListener('change', apply)
+  }, [ready, state.settings.theme])
 
   const updateSettings = useCallback(async (patch: Partial<UserSettings>) => {
     const next = { ...state.settings, ...patch }

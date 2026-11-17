@@ -42,7 +42,7 @@ describe('local progress storage', () => {
   afterAll(() => vi.unstubAllGlobals())
 
   it('stores settings, favorites and results, validates imports, and resets safely', async () => {
-    await saveSettings({ ...defaultSettings(), timeZone: 'Europe/London', mapLabels: false })
+    await saveSettings({ ...defaultSettings(), timeZone: 'Europe/London', mapLabels: false, theme: 'system' })
     await saveFavorites(['flags', 'flags', 'cities', 'connections', 'distance'])
     await saveGameResult(result('daily-result'))
     await saveGameResult(result('daily-result'))
@@ -52,6 +52,8 @@ describe('local progress storage', () => {
     expect(state.storageAvailable).toBe(true)
     expect(state.settings.timeZone).toBe('Europe/London')
     expect(state.settings.mapLabels).toBe(false)
+    expect(state.settings.theme).toBe('system')
+    expect(window.localStorage.getItem('maproom-theme')).toBe('system')
     expect(state.favorites).toEqual(['flags', 'cities', 'connections', 'distance'])
     expect(state.history).toHaveLength(2)
     expect(state.history.find((item) => item.gameId === 'connections')?.score).toBe(700)
@@ -87,6 +89,7 @@ describe('local progress storage', () => {
     await importProgress(backup)
     state = await loadAppData()
     expect(state.settings.timeZone).toBe('Europe/London')
+    expect(state.settings.theme).toBe('system')
     expect(state.favorites).toEqual(['flags', 'cities', 'connections', 'distance'])
     expect(state.history).toHaveLength(2)
     expect(state.sessions).toEqual([session])
@@ -105,6 +108,8 @@ describe('local progress storage', () => {
       favorites: [],
       history: [],
     }))
+    expect((await loadAppData()).settings.theme).toBe('light')
+    expect(window.localStorage.getItem('maproom-theme')).toBe('light')
     expect((await loadAppData()).sessions).toEqual([])
 
     const recovered = { ...session, updatedAt: '2026-11-17T10:02:00.000Z', payload: { questionIndex: 3, score: 250 } }

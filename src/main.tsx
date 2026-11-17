@@ -11,6 +11,7 @@ import '@fontsource/nunito-sans/latin-ext-700.css'
 import 'flag-icons/css/flag-icons.min.css'
 import './index.css'
 import './refinement.css'
+import './theme.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(

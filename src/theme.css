@@ -1,0 +1,328 @@
+/* Shared Maproom palette. Component colors should resolve through these tokens. */
+:root {
+  --paper: #f5eee5;
+  --ink: #292622;
+  --accent: #e57937;
+  --sand: #e5d6c4;
+  --slate: #afa392;
+  --border: #d5c7b7;
+  --muted: #756b61;
+  --water: #292622;
+  --surface: #fffaf3;
+  --surface-soft: #eee1d2;
+  --surface-hover: #e8d9c8;
+  --surface-raised: #fffaf3;
+  --surface-strong: #292622;
+  --surface-strong-text: #f5eee5;
+  --success: #3e7051;
+  --success-soft: #e5efe5;
+  --success-text: #315d42;
+  --error: #a65349;
+  --error-soft: #f2e3df;
+  --error-text: #7e3932;
+  --danger: #9b5034;
+  --danger-soft: #fbefe8;
+  --map-water: #292622;
+  --map-land: #e5d6c4;
+  --map-land-hover: #fff8ee;
+  --map-outline: #756b61;
+  --map-wrong: #a89580;
+  --grid-header: #292622;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #292521;
+  --ink: #f2e7d9;
+  --accent: #f29a62;
+  --sand: #51483f;
+  --slate: #786d61;
+  --border: #514940;
+  --muted: #b8aa99;
+  --water: #211e1b;
+  --surface: #332e29;
+  --surface-soft: #3a342e;
+  --surface-hover: #494138;
+  --surface-raised: #37322d;
+  --surface-strong: #484139;
+  --surface-strong-text: #f2e7d9;
+  --success: #9fc99f;
+  --success-soft: #35483a;
+  --success-text: #d3e8d1;
+  --error: #e6a297;
+  --error-soft: #4a332f;
+  --error-text: #f3d1ca;
+  --danger: #efaa91;
+  --danger-soft: #4a332f;
+  --map-water: #211e1b;
+  --map-land: #63594f;
+  --map-land-hover: #827568;
+  --map-outline: #b5a796;
+  --map-wrong: #aa8669;
+  --grid-header: #443d36;
+}
+
+html[data-theme] body { background: var(--paper); color: var(--ink); }
+html[data-theme] .site-header { background: var(--paper); border-color: var(--border); }
+html[data-theme] .nav-link { color: var(--muted); }
+html[data-theme] .nav-link:hover, html[data-theme] .nav-link.is-current { color: var(--ink); }
+html[data-theme] .site-footer { border-color: var(--border); }
+html[data-theme] .eyebrow { color: var(--muted); }
+html[data-theme] .button-dark { background: var(--ink); color: var(--paper); }
+html[data-theme] .button-dark:hover:not(:disabled) { background: var(--surface-hover); color: var(--ink); }
+html[data-theme] .button-outline { border-color: var(--border); color: var(--ink); }
+html[data-theme] .button-outline:hover:not(:disabled) { border-color: var(--ink); background: var(--surface-hover); }
+html[data-theme] .button-text-danger { color: var(--danger); }
+html[data-theme] .button-text-danger:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
+html[data-theme] .search-field,
+html[data-theme] .autocomplete-field,
+html[data-theme] .suggestion-list,
+html[data-theme] .practice-config select,
+html[data-theme] .setting-control select,
+html[data-theme] .flag-settings-panel select,
+html[data-theme] .coordinate-fields input { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme] .search-field input,
+html[data-theme] .autocomplete-field > input { color: var(--ink); }
+html[data-theme] .search-field input::placeholder,
+html[data-theme] .autocomplete-field > input::placeholder { color: var(--muted); }
+html[data-theme] .suggestion-option { border-bottom-color: var(--border); color: var(--ink); }
+html[data-theme] .suggestion-option:hover,
+html[data-theme] .suggestion-option:focus-visible { background: var(--surface-hover); }
+html[data-theme] .filter-chip:hover,
+html[data-theme] .favorite-shortcut:hover,
+html[data-theme] .data-shortcut:hover,
+html[data-theme] .game-exit:hover,
+html[data-theme] .mobile-menu-toggle:hover { background: var(--surface-hover); color: var(--ink); }
+html[data-theme] .filter-chip.is-selected,
+html[data-theme] .flag-mode-switch a.is-selected,
+html[data-theme] .mode-switch a.is-selected { background: var(--ink); color: var(--paper); }
+html[data-theme] .filter-chip.is-selected:hover { background: var(--surface-strong); color: var(--surface-strong-text); }
+html[data-theme] .text-link:hover { color: var(--accent); }
+html[data-theme] .game-card:hover { border-color: var(--border); }
+html[data-theme] .empty-state,
+html[data-theme] .stat-card,
+html[data-theme] .result-panel,
+html[data-theme] .completed-daily-result { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme] .completed-mark { background: #40513f; color: #c3dfbf; }
+html[data-theme] .continue-strip,
+html[data-theme] .route-hint,
+html[data-theme] .grid-entry-panel,
+html[data-theme] .coordinate-tools { background: var(--surface-soft); color: var(--ink); }
+html[data-theme] .game-card-countries { background: #403a34; color: var(--ink); }
+html[data-theme] .game-card-countries .game-card-copy h2,
+html[data-theme] .game-card-countries .game-card-action { color: var(--ink); }
+html[data-theme] .game-card-outlines { background: #60432f; color: var(--ink); }
+html[data-theme] .game-card-outlines .game-card-action svg { color: var(--accent); }
+html[data-theme] .game-card-routes,
+html[data-theme] .game-card-higher-lower { background: #3b3530; color: var(--ink); }
+html[data-theme] .game-card-flags { background: #37322d; color: var(--ink); }
+html[data-theme] .game-card-grid,
+html[data-theme] .game-card-neighbours { background: #484139; color: var(--ink); }
+html[data-theme] .game-card-grid .game-card-copy h2,
+html[data-theme] .game-card-grid .game-card-action { color: var(--ink); }
+html[data-theme] .game-card-neighbours .game-card-copy h2,
+html[data-theme] .game-card-neighbours .game-card-action { color: var(--ink); }
+html[data-theme] .game-card-cities,
+html[data-theme] .game-card-connections { background: #403a34; color: var(--ink); }
+html[data-theme] .game-card-distance { background: #393a36; color: var(--ink); }
+html[data-theme] .game-card-action { border-color: color-mix(in srgb, var(--ink) 20%, transparent); }
+html[data-theme] .symbol-ground { fill: rgba(179, 154, 128, .2); }
+html[data-theme] .symbol-line { stroke: #a99a87; }
+
+/* Geography stays deliberately illustrated: warm dark water, distinct land and clear borders. */
+html[data-theme] .game-map-stage,
+html[data-theme] .outline-map-stage,
+html[data-theme] .map-shell,
+html[data-theme] .flag-display { border-color: var(--border); background: var(--map-water); }
+html[data-theme] .map-water { fill: var(--map-water); }
+html[data-theme] .map-country { fill: var(--map-land); stroke: var(--map-outline); }
+html[data-theme] .map-country:hover,
+html[data-theme] .map-country.is-hovered { fill: var(--map-land-hover); }
+html[data-theme] .map-country.is-wrong { fill: var(--map-wrong); }
+html[data-theme] .map-country:focus-visible { fill: var(--accent); stroke: var(--ink); }
+html[data-theme] .outline-map-stage .map-country { fill: var(--accent); stroke: var(--map-water); }
+html[data-theme] .map-tool,
+html[data-theme] .map-caption { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme] .map-tool:hover { background: var(--accent); color: #30251d; }
+html[data-theme] .map-marker circle:first-child { stroke: var(--map-water); }
+html[data-theme] .map-marker-guess circle:first-child { fill: var(--error-soft); }
+html[data-theme] .map-marker-core { fill: var(--ink); }
+html[data-theme] .map-answer-dock,
+html[data-theme] .route-game-dock,
+html[data-theme] .route-map-legend { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme] .route-map-legend { color: var(--muted); }
+html[data-theme] .route-pair { background: var(--surface-strong); color: var(--surface-strong-text); }
+html[data-theme] .route-pair strong,
+html[data-theme] .route-distance strong { color: var(--surface-strong-text); }
+html[data-theme] .route-pair .eyebrow,
+html[data-theme] .route-pair-arrow span,
+html[data-theme] .route-distance span { color: var(--muted); }
+html[data-theme] .route-distance { border-color: var(--border); }
+html[data-theme] .route-stops li { background: var(--surface-soft); color: var(--ink); }
+html[data-theme] .route-stops li.is-start { background: var(--surface-strong); color: var(--surface-strong-text); }
+html[data-theme] .route-builder { border-color: var(--border); background: var(--surface-raised); }
+html[data-theme] .country-practice-status,
+html[data-theme] .city-practice-status,
+html[data-theme] .connections-status,
+html[data-theme] .higher-lower-live,
+html[data-theme] .neighbour-live,
+html[data-theme] .distance-live { border-color: var(--border); background: var(--surface-raised); color: var(--muted); }
+
+/* Choices, result feedback and interactive game panels. */
+html[data-theme] .flag-choice,
+html[data-theme] .answer-choice,
+html[data-theme] .connections-tile,
+html[data-theme] .higher-lower-country,
+html[data-theme] .distance-city-choice,
+html[data-theme] .distance-origin,
+html[data-theme] .neighbour-target,
+html[data-theme] .connections-review p { border-color: var(--border); background: var(--surface-raised); color: var(--ink); }
+html[data-theme] .answer-feedback,
+html[data-theme] .inline-notice { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
+html[data-theme] .flag-choice:hover:not(:disabled),
+html[data-theme] .answer-choice:hover:not(:disabled),
+html[data-theme] .connections-tile:not(:disabled):hover,
+html[data-theme] .higher-lower-country:not(:disabled):hover,
+html[data-theme] .distance-city-choice:not(:disabled):hover { border-color: var(--accent); background: var(--surface-hover); }
+html[data-theme] .flag-choice.is-right,
+html[data-theme] .answer-choice.is-right,
+html[data-theme] .higher-lower-country.is-right,
+html[data-theme] .higher-lower-country.is-answer,
+html[data-theme] .distance-city-choice.is-right,
+html[data-theme] .connections-tile.is-solved { border-color: var(--success); background: var(--success-soft); color: var(--success-text); }
+html[data-theme] .flag-choice.is-wrong,
+html[data-theme] .answer-choice.is-wrong,
+html[data-theme] .higher-lower-country.is-wrong,
+html[data-theme] .distance-city-choice.is-wrong { border-color: var(--error); background: var(--error-soft); color: var(--error-text); }
+html[data-theme] .answer-feedback.is-correct,
+html[data-theme] .flag-round .answer-feedback.is-correct { border-color: var(--success); background: var(--success-soft); color: var(--success-text); }
+html[data-theme] .answer-feedback.is-incorrect,
+html[data-theme] .flag-round .answer-feedback.is-incorrect { border-color: var(--error); background: var(--error-soft); color: var(--error-text); }
+html[data-theme] .answer-feedback.is-correct .feedback-icon { color: var(--success); }
+html[data-theme] .answer-feedback.is-incorrect .feedback-icon { color: var(--error); }
+html[data-theme] .map-country.is-correct { fill: var(--success); }
+html[data-theme] .attempt-meter span.is-right { background: var(--success); }
+html[data-theme] .map-country.is-wrong { fill: var(--error); }
+html[data-theme] .grid-corner,
+html[data-theme] .grid-column-label,
+html[data-theme] .grid-row-label { background: var(--grid-header); color: var(--ink); }
+html[data-theme] .geo-grid { background: var(--border); }
+html[data-theme] .grid-cell { border-color: var(--border); background: var(--surface-raised); color: var(--ink); }
+html[data-theme] .grid-cell:has(.grid-cell-trigger:hover) { background: var(--surface-hover); }
+html[data-theme] .grid-cell.is-current { border-color: var(--accent); background: #4b3a2f; }
+html[data-theme] .grid-cell.is-filled { border-color: var(--success); background: var(--success-soft); }
+html[data-theme] .grid-cell-trigger,
+html[data-theme] .grid-cell-trigger[aria-pressed='true'] { color: var(--muted); }
+html[data-theme] .grid-cell-trigger:hover { color: var(--ink); }
+html[data-theme] .flag-display .flag-cover { background: repeating-linear-gradient(135deg, #494138 0 10px, #3c3630 10px 20px); }
+html[data-theme] .flag-frame { background: #fff; }
+html[data-theme] .connections-solved-countries span { border-color: var(--border); background: var(--surface-raised); }
+html[data-theme] .connections-color-0 { background: #4b4033; color: var(--ink); }
+html[data-theme] .connections-color-1 { background: #3d493b; color: var(--ink); }
+html[data-theme] .connections-color-2 { background: #493d46; color: var(--ink); }
+html[data-theme] .connections-color-3 { background: #3d4848; color: var(--ink); }
+html[data-theme] .connections-tile.is-selected { border-color: var(--accent); background: #514034; color: var(--ink); }
+html[data-theme] .connections-tile small,
+html[data-theme] .distance-city-choice .distance-city-result,
+html[data-theme] .distance-origin > code { color: var(--muted); }
+html[data-theme] .higher-lower-value,
+html[data-theme] .higher-lower-country.is-answer .higher-lower-value,
+html[data-theme] .higher-lower-country.is-wrong .higher-lower-value,
+html[data-theme] .higher-lower-response.is-correct,
+html[data-theme] .higher-lower-country.is-answer .higher-lower-outcome,
+html[data-theme] .higher-lower-response.is-incorrect,
+html[data-theme] .higher-lower-country.is-wrong .higher-lower-outcome { color: var(--ink) !important; }
+html[data-theme] .neighbour-selected button { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
+html[data-theme] .question-count { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
+html[data-theme] .mode-switch a.is-selected { background: var(--ink); color: var(--paper); }
+html[data-theme] .game-settings-button:hover,
+html[data-theme] .game-settings-button[aria-expanded='true'] { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
+html[data-theme] .game-settings-panel,
+html[data-theme] .flag-settings-panel,
+html[data-theme] .game-results-dialog,
+html[data-theme] .flag-results-dialog { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme] .game-settings-panel .practice-config label,
+html[data-theme] .flag-settings-panel > label:not(.flag-reveal-setting) { color: var(--muted); }
+html[data-theme] .game-results-dialog::backdrop,
+html[data-theme] .flag-results-dialog::backdrop { background: rgba(14, 12, 10, .72); }
+html[data-theme] .game-results-close:hover,
+html[data-theme] .flag-results-close:hover,
+html[data-theme] .game-results-return:hover { background: var(--surface-hover); color: var(--ink); }
+html[data-theme] .results-reopen { border-color: var(--border); background: var(--surface); color: var(--ink); }
+
+/* Supporting pages, charts and app feedback. */
+html[data-theme] .trend-chart { border-color: var(--border); background: var(--surface-raised); }
+html[data-theme] .trend-bar.is-empty { background: var(--sand); }
+html[data-theme] .game-stat-list,
+html[data-theme] .history-list,
+html[data-theme] .game-stat-row,
+html[data-theme] .history-row { border-color: var(--border); }
+html[data-theme] .game-stat-name,
+html[data-theme] .game-stat-row:hover,
+html[data-theme] .prose p:not(.lead),
+html[data-theme] .prose a { color: var(--ink); }
+html[data-theme] .storage-banner { background: var(--danger-soft); color: var(--danger); }
+html[data-theme] .form-message { color: var(--success-text); }
+html[data-theme] .form-message-error { color: var(--danger); }
+html[data-theme] .notice-warning { border-color: var(--error); background: var(--error-soft); color: var(--error-text); }
+html[data-theme] .notice-success { border-left-color: var(--success); }
+html[data-theme] .flag-round .answer-feedback.is-correct .feedback-icon { color: var(--success); }
+html[data-theme] .flag-live-status strong,
+html[data-theme] .coordinate-fields label { color: var(--ink); }
+
+/* Settings has the same quiet, tactile controls as the game. */
+.settings-page { width: min(900px, 100%); margin-inline: auto; padding-top: 43px; }
+.settings-page > .page-heading { margin-bottom: 29px; }
+.settings-page > .page-heading .page-description { max-width: 470px; }
+.settings-section { grid-template-columns: minmax(210px, .78fr) minmax(0, 1.22fr); gap: clamp(25px, 5vw, 62px); padding: 25px 0; border-color: var(--border); }
+.settings-section-heading .eyebrow { margin-bottom: 7px; }
+.settings-section-heading h2 { margin-bottom: 5px; font-size: 1.22rem; font-weight: 750; letter-spacing: -.025em; }
+.settings-section-heading p { max-width: 330px; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+.theme-picker { min-width: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin: 0; padding: 0; border: 0; }
+.theme-option { position: relative; min-width: 0; cursor: pointer; }
+.theme-option input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+.theme-option-card { min-height: 76px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; padding: 11px 13px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); color: var(--muted); transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease; }
+.theme-option:hover .theme-option-card { transform: translateY(-1px); background: var(--surface-hover); color: var(--ink); }
+.theme-option.is-selected .theme-option-card { border-color: var(--accent); background: var(--surface-soft); color: var(--ink); box-shadow: inset 0 0 0 1px var(--accent); }
+.theme-option input:focus-visible + .theme-option-card { outline: 3px solid var(--accent); outline-offset: 3px; }
+.theme-option-card strong { font-size: .78rem; font-weight: 750; }
+.setting-control { min-height: 60px; gap: 15px; padding: 10px 13px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
+.setting-control > span { color: var(--ink); }
+.setting-control > span strong { font-size: .84rem; font-weight: 700; }
+.setting-control select { min-height: 40px; min-width: 190px; padding: 7px 32px 7px 11px; border-color: var(--border); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: .8rem; }
+.setting-control select:hover { border-color: var(--accent); }
+.setting-control select:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+.toggle-input { width: 46px; height: 26px; border-color: var(--border); border-radius: 99px; background: var(--sand); }
+.toggle-input::before { top: 3px; left: 3px; width: 18px; height: 18px; background: var(--surface); }
+.toggle-input:checked { border-color: var(--accent); background: var(--accent); }
+.toggle-input:checked::before { transform: translateX(20px); background: #30251d; }
+.toggle-input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.settings-data-content { min-width: 0; }
+.setting-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.setting-actions .button { min-height: 43px; justify-content: flex-start; border-radius: 8px; }
+.setting-actions .button-text-danger { grid-column: 1 / -1; min-height: 39px; width: fit-content; margin-top: 3px; padding-inline: 10px; color: var(--danger); }
+.storage-note, .install-note { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; padding: 11px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-soft); color: var(--muted); font-size: .74rem; line-height: 1.5; }
+.storage-note svg, .install-note svg { flex: none; margin-top: 1px; color: var(--accent); }
+.storage-note a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 3px; }
+.install-note { align-self: start; margin-top: 0; background: transparent; }
+.data-settings, .install-section { border-bottom: 1px solid var(--border); }
+
+@media (max-width: 680px) {
+  .primary-nav { position: fixed; inset: 60px 0 auto; width: auto; max-height: calc(100dvh - 60px); overflow-y: auto; grid-column: 1 / -1; justify-self: stretch; justify-content: flex-start; margin: 0; border-bottom-color: var(--border); box-shadow: 0 14px 20px rgba(17, 15, 13, .14); }
+  .primary-nav .nav-link { width: 100%; border-bottom-color: var(--border); }
+  .settings-page { padding-top: 28px; }
+  .settings-page > .page-heading { align-items: flex-start; margin-bottom: 19px; }
+  .settings-page > .page-heading h1 { font-size: 2.5rem; }
+  .settings-section { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 20px 0; }
+  .settings-section-heading h2 { font-size: 1.15rem; }
+  .settings-section-heading p { max-width: 460px; }
+  .theme-picker { gap: 7px; }
+  .theme-option-card { min-height: 69px; align-items: center; gap: 5px; padding: 8px; }
+  .theme-option-card strong { font-size: .73rem; }
+  .setting-control { min-height: 56px; }
+  .setting-control select { min-width: 0; max-width: 60%; }
+  .setting-time-zone { align-items: center; flex-direction: row; }
+  .setting-time-zone select { width: auto; max-width: 62%; }
+  .setting-actions { grid-template-columns: minmax(0, 1fr); }
+  .setting-actions .button-text-danger { grid-column: auto; }
+}
