@@ -1,0 +1,108 @@
+[
+  {
+    "year": 1886,
+    "context": "The opening year of CShapes’ global time series. This snapshot shows the political units and dependencies represented by the dataset at its starting point; it is not a complete inventory of every sovereignty claim.",
+    "contextSources": [{ "title": "CShapes 2.1 data release", "url": "https://icr.ethz.ch/data/cshapes/beta.html" }]
+  },
+  {
+    "year": 1898,
+    "context": "A year-end view around the Spanish–American War and the Treaty of Paris, signed in December. The treaty’s territorial provisions took effect later, so this snapshot captures a transition rather than a settled postwar map.",
+    "contextSources": [{ "title": "U.S. Office of the Historian: The Spanish–American War", "url": "https://history.state.gov/milestones/1866-1898/spanish-american-war" }]
+  },
+  {
+    "year": 1914,
+    "context": "The First World War began in Europe in 1914. At year end, older empires still covered large areas even as conflict was changing the political map.",
+    "contextSources": [{ "title": "Library of Congress: World War I timeline", "url": "https://www.loc.gov/exhibitions/world-war-i-american-experiences/timeline/" }]
+  },
+  {
+    "year": 1918,
+    "context": "The armistice year brought the breakup of Austria-Hungary and the emergence of successor states. CShapes records several of these political changes in its 1918 year-end snapshot.",
+    "contextSources": [{ "title": "U.S. Office of the Historian: Hungary", "url": "https://history.state.gov/countries/hungary/summary/1000" }]
+  },
+  {
+    "year": 1920,
+    "context": "The Treaty of Versailles entered into force on 10 January 1920, formalizing important postwar territorial arrangements. The map is a December snapshot, after that settlement took effect.",
+    "contextSources": [{ "title": "U.S. Government Publishing Office: Treaty of Versailles", "url": "https://www.govinfo.gov/content/pkg/CPRT-94SPRT50127/pdf/CPRT-94SPRT50127.pdf" }]
+  },
+  {
+    "year": 1923,
+    "context": "The Treaty of Lausanne was signed in July 1923 and established the postwar settlement with Turkey. The year-end map reflects the political geography after the treaty.",
+    "contextSources": [{ "title": "Republic of Türkiye Ministry of Foreign Affairs: Treaty of Lausanne", "url": "https://www.mfa.gov.tr/treaty-with-turkey-and-other-instruments-signed-at-lausanne.en.mfa" }]
+  },
+  {
+    "year": 1939,
+    "context": "Germany invaded Poland in September 1939; Soviet forces entered from the east later that month, and the country was partitioned. CShapes represents political units and territorial periods, not the full military front line.",
+    "contextSources": [{ "title": "U.S. Holocaust Memorial Museum: Invasion of Poland, Fall 1939", "url": "https://encyclopedia.ushmm.org/content/en/article/invasion-of-poland-fall-1939" }]
+  },
+  {
+    "year": 1945,
+    "context": "World War II ended in Europe in 1945. Germany was divided into Allied occupation zones; those administrative zones are not all represented as separate boundaries in this dataset.",
+    "contextSources": [{ "title": "U.S. Office of the Historian: Division of Germany, 1949", "url": "https://history.state.gov/countries/german-democratic-republic" }]
+  },
+  {
+    "year": 1949,
+    "context": "The People’s Republic of China was proclaimed on 1 October. In Europe, the Federal Republic and German Democratic Republic were established during the year, after occupation-zone administration.",
+    "contextSources": [
+      { "title": "U.S. Office of the Historian: The Chinese Revolution of 1949", "url": "https://history.state.gov/milestones/1945-1952/chinese-rev" },
+      { "title": "U.S. Office of the Historian: Division of Germany, 1949", "url": "https://history.state.gov/countries/german-democratic-republic" }
+    ]
+  },
+  {
+    "year": 1956,
+    "context": "Morocco and Tunisia became independent in 1956, while Sudan had become independent earlier that year. This snapshot captures several shifts away from colonial rule in North Africa.",
+    "contextSources": [
+      { "title": "U.S. Office of the Historian: Morocco recognized as independent", "url": "https://history.state.gov/historicaldocuments/frus1955-57v18/d34" },
+      { "title": "U.S. Office of the Historian: Morocco and Tunisia", "url": "https://history.state.gov/historicaldocuments/frus1961-63v21/d1" }
+    ]
+  },
+  {
+    "year": 1960,
+    "context": "Seventeen African countries became independent during 1960. The United Nations General Assembly adopted its Declaration on the Granting of Independence to Colonial Countries and Peoples in December.",
+    "contextSources": [{ "title": "United Nations: General Assembly resolution 1514 (XV)", "url": "https://digitallibrary.un.org/record/662085?ln=en" }]
+  },
+  {
+    "year": 1965,
+    "context": "Singapore became an independent republic on 9 August 1965 after separating from Malaysia. The map’s boundaries show state units, not the full political circumstances of the separation.",
+    "contextSources": [{ "title": "Singapore Statutes Online: Republic of Singapore Independence Act 1965", "url": "https://sso.agc.gov.sg/Act/RSIA1965" }]
+  },
+  {
+    "year": 1971,
+    "context": "Bangladesh declared independence in March 1971 and became a new state after the Bangladesh Liberation War. This year-end snapshot includes Bangladesh as a separate political unit.",
+    "contextSources": [{ "title": "Bangladesh Laws: Constitution of the People’s Republic of Bangladesh", "url": "https://bdlaws.minlaw.gov.bd/act-details-367.html" }]
+  },
+  {
+    "year": 1975,
+    "context": "A major year in the end of Portuguese rule in Africa: Angola, Mozambique, Cape Verde, and São Tomé and Príncipe became independent during 1975. The year-end view reflects the resulting political changes.",
+    "contextSources": [{ "title": "United Nations Yearbook 1975", "url": "https://cdn.un.org/unyearbook/yun/pdf/1975/1975_863.pdf" }]
+  },
+  {
+    "year": 1980,
+    "context": "Zimbabwe became independent on 18 April 1980. The change followed the end of white-minority rule in Southern Rhodesia and is visible in this year-end political snapshot.",
+    "contextSources": [{ "title": "United Nations Security Council document S/14064", "url": "https://digitallibrary.un.org/record/15913/files/S_14064-EN.pdf" }]
+  },
+  {
+    "year": 1991,
+    "context": "The Soviet Union dissolved at the end of 1991, with former republics entering the international system as independent states. The dataset records boundaries and status periods, not every recognition dispute.",
+    "contextSources": [{ "title": "United Nations: Russian Federation letter on continued membership", "url": "https://www.un.org/sites/un2.un.org/files/un_member_states_2025.pdf" }]
+  },
+  {
+    "year": 1993,
+    "context": "Eritrea declared independence in 1993, and Czechoslovakia separated into the Czech Republic and Slovakia on 1 January. Both changes appear in the CShapes political-unit record.",
+    "contextSources": [{ "title": "United Nations: UN Observer Mission to Verify the Referendum in Eritrea", "url": "https://dppa.un.org/en/united-nations-observer-mission-to-verify-the-referendum-in-eritrea-unover-1992-1993" }]
+  },
+  {
+    "year": 2002,
+    "context": "Timor-Leste became independent on 20 May 2002 after a United Nations-administered transition. The map shows the resulting separate state boundary.",
+    "contextSources": [{ "title": "United Nations Security Council: Statement on Timor-Leste independence", "url": "https://digitallibrary.un.org/record/465007/files/S_PRST_2002_13-EN.pdf" }]
+  },
+  {
+    "year": 2006,
+    "context": "Montenegro declared independence in June 2006, ending the State Union of Serbia and Montenegro. CShapes includes the resulting state split in its year-end snapshot.",
+    "contextSources": [{ "title": "United Nations: Member States and former Yugoslavia", "url": "https://www.un.org/en/node/123222" }]
+  },
+  {
+    "year": 2011,
+    "context": "South Sudan became independent on 9 July 2011. The year-end map shows it as a separate state from Sudan; its northern border remained contested in some areas.",
+    "contextSources": [{ "title": "United Nations: South Sudan", "url": "https://www.un.org/en/about-us/member-states/south-sudan" }]
+  }
+]
