@@ -1,6 +1,6 @@
 # Maproom game audit
 
-Audit completed 18 November 2026 from all twelve current game implementations, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
+Audit completed 18 November 2026 from the twelve integrated game implementations plus the new Historical Geography feature branch, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
 
 ## Game-by-game review
 
@@ -87,6 +87,13 @@ Audit completed 18 November 2026 from all twelve current game implementations, s
 - **Feedback and replay:** Every round scores against the correct positions, then shows signed coordinates and all five map locations. Free Play replay samples a new seeded city order, and the current order and scope are resumable.
 - **Visual, mobile and accessibility:** Dedicated earlier/later buttons make reordering operable with touch and keyboard without drag. Each control names its city and direction; the ordered list and check result are available as text. The result map supplements the coordinate reveal.
 - **Performance and geographic accuracy:** Loads the 12,405-record major-city subset rather than the full 34,456-place gazetteer. Coverage derives from GeoNames cities500, filtered to the population floor; it is not a complete city register.
+
+### When Was This Map? — Historical Geography
+
+- **Gameplay, rules and balance:** Enter the year shown by a large, unlabeled political map. Easy/Medium/Hard use inclusive tolerances of 100/50/25 years. The accepted interval appears in the result, and a linear distance score gives 1,000 at the exact year and zero at twice the tolerance. A seeded shuffle shows every map once before wrapping; the current pack contains 20 distinct years from 1886 to 2011.
+- **Feedback and replay:** Submission reveals the year, signed distance in years, whether the guess was within range, a short historical note and expandable citations and license terms. The shared results dialog records the score; replay advances to another map and session progress is stored through the existing local session service.
+- **Visual, mobile and accessibility:** The year input is labeled and keyboard-submittable; the map has alternative text, status text, visible focus styles and a responsive entry layout. Reveal and map transitions honor reduced-motion preference. Dark theme changes the surrounding controls and panels; the generated map itself remains a warm paper palette in both themes. No physical-device or formal assistive-technology review has yet been performed.
+- **Performance and geographic accuracy:** The game lazily loads one manifest and only the current local SVG; successful `/data/` requests use the existing service-worker cache for later offline use. CShapes 2.1 gives generalized international boundaries and dependent territories, not subnational geography, every front line or a complete record of contested/de facto borders. Every displayed year is a 31 December snapshot, not an archival publication date. The data and derived maps are CC BY-NC-SA 4.0: noncommercial use only, attribution and ShareAlike required. Automated unit/content checks cover tolerances, deterministic variety, manifest completeness and asset hashes; browser integration awaits the coordinator-owned catalog and Explore wiring.
 
 ## Shared findings and changes from this mission
 

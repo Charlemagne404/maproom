@@ -1,0 +1,763 @@
+{
+  "schemaVersion": 1,
+  "dataset": {
+    "title": "CShapes 2.1",
+    "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+    "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+    "dataSha256": "330588b2e6de8e8ae952fca0b140169fab2c99fcd00955a9fff585bcd2ea4e73",
+    "sourceDataDateRange": "1886–2023",
+    "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+  },
+  "snapshotConvention": "Every asset is a global political-boundary snapshot as of 31 December of its depicted year. It is a Maproom-generated data visualization, not a map published in that year.",
+  "maps": [
+    {
+      "id": "historical-map-01",
+      "depictedYear": 1886,
+      "depictedDate": "1886-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-01.svg",
+      "assetSha256": "9a040d5288cfa8ed73646430f2d0b1fb5a5329dd3cfae450672de74390443445",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "The opening year of CShapes’ global time series. This snapshot shows the political units and dependencies represented by the dataset at its starting point; it is not a complete inventory of every sovereignty claim.",
+      "contextSources": [
+        {
+          "title": "CShapes 2.1 data release",
+          "url": "https://icr.ethz.ch/data/cshapes/beta.html"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 128
+    },
+    {
+      "id": "historical-map-02",
+      "depictedYear": 1898,
+      "depictedDate": "1898-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-02.svg",
+      "assetSha256": "bda242495975327f631d5b66c8d2251e222bca7252d70fce6234e0f494b7dee1",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "A year-end view around the Spanish–American War and the Treaty of Paris, signed in December. The treaty’s territorial provisions took effect later, so this snapshot captures a transition rather than a settled postwar map.",
+      "contextSources": [
+        {
+          "title": "U.S. Office of the Historian: The Spanish–American War",
+          "url": "https://history.state.gov/milestones/1866-1898/spanish-american-war"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 148
+    },
+    {
+      "id": "historical-map-03",
+      "depictedYear": 1914,
+      "depictedDate": "1914-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-03.svg",
+      "assetSha256": "805fd2e51db09fa737f2d1c4bbfd378d349525b60050cd76ae8932c821d26b9f",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "The First World War began in Europe in 1914. At year end, older empires still covered large areas even as conflict was changing the political map.",
+      "contextSources": [
+        {
+          "title": "Library of Congress: World War I timeline",
+          "url": "https://www.loc.gov/exhibitions/world-war-i-american-experiences/timeline/"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 151
+    },
+    {
+      "id": "historical-map-04",
+      "depictedYear": 1918,
+      "depictedDate": "1918-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-04.svg",
+      "assetSha256": "25ac75701b97ac6db8d717cbdda4166da95e41ef5a54d06ab3adf676bc765f4f",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "The armistice year brought the breakup of Austria-Hungary and the emergence of successor states. CShapes records several of these political changes in its 1918 year-end snapshot.",
+      "contextSources": [
+        {
+          "title": "U.S. Office of the Historian: Hungary",
+          "url": "https://history.state.gov/countries/hungary/summary/1000"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 159
+    },
+    {
+      "id": "historical-map-05",
+      "depictedYear": 1920,
+      "depictedDate": "1920-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-05.svg",
+      "assetSha256": "3d1422c033119a3501c3a1790d8265c9fe7055c23847305cc305d2092feb8b84",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "The Treaty of Versailles entered into force on 10 January 1920, formalizing important postwar territorial arrangements. The map is a December snapshot, after that settlement took effect.",
+      "contextSources": [
+        {
+          "title": "U.S. Government Publishing Office: Treaty of Versailles",
+          "url": "https://www.govinfo.gov/content/pkg/CPRT-94SPRT50127/pdf/CPRT-94SPRT50127.pdf"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 166
+    },
+    {
+      "id": "historical-map-06",
+      "depictedYear": 1923,
+      "depictedDate": "1923-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-06.svg",
+      "assetSha256": "824e51d40b5e37bee876c1acf839e5088f5d76282ce9a29f49c297d653ff948c",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "The Treaty of Lausanne was signed in July 1923 and established the postwar settlement with Turkey. The year-end map reflects the political geography after the treaty.",
+      "contextSources": [
+        {
+          "title": "Republic of Türkiye Ministry of Foreign Affairs: Treaty of Lausanne",
+          "url": "https://www.mfa.gov.tr/treaty-with-turkey-and-other-instruments-signed-at-lausanne.en.mfa"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 169
+    },
+    {
+      "id": "historical-map-07",
+      "depictedYear": 1939,
+      "depictedDate": "1939-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-07.svg",
+      "assetSha256": "21055d0045fd2701a873acb91bce39829f9fb9cca86a12ceb02e9989047e00a3",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "Germany invaded Poland in September 1939; Soviet forces entered from the east later that month, and the country was partitioned. CShapes represents political units and territorial periods, not the full military front line.",
+      "contextSources": [
+        {
+          "title": "U.S. Holocaust Memorial Museum: Invasion of Poland, Fall 1939",
+          "url": "https://encyclopedia.ushmm.org/content/en/article/invasion-of-poland-fall-1939"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 172
+    },
+    {
+      "id": "historical-map-08",
+      "depictedYear": 1945,
+      "depictedDate": "1945-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-08.svg",
+      "assetSha256": "c7e6689890bf9e160605aa99562191001bfc63925495087140d77157cea340f7",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "World War II ended in Europe in 1945. Germany was divided into Allied occupation zones; those administrative zones are not all represented as separate boundaries in this dataset.",
+      "contextSources": [
+        {
+          "title": "U.S. Office of the Historian: Division of Germany, 1949",
+          "url": "https://history.state.gov/countries/german-democratic-republic"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 169
+    },
+    {
+      "id": "historical-map-09",
+      "depictedYear": 1949,
+      "depictedDate": "1949-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-09.svg",
+      "assetSha256": "f996639dfaf00556d6cc794d3c108fe11cd24ebcc6f5b65ef8e1c7ce0a8b3985",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "The People’s Republic of China was proclaimed on 1 October. In Europe, the Federal Republic and German Democratic Republic were established during the year, after occupation-zone administration.",
+      "contextSources": [
+        {
+          "title": "U.S. Office of the Historian: The Chinese Revolution of 1949",
+          "url": "https://history.state.gov/milestones/1945-1952/chinese-rev"
+        },
+        {
+          "title": "U.S. Office of the Historian: Division of Germany, 1949",
+          "url": "https://history.state.gov/countries/german-democratic-republic"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 172
+    },
+    {
+      "id": "historical-map-10",
+      "depictedYear": 1956,
+      "depictedDate": "1956-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-10.svg",
+      "assetSha256": "5fbb83eb9dc07de2647de43e979aa55564549b6a7165a607106aa9da2c524b1b",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "Morocco and Tunisia became independent in 1956, while Sudan had become independent earlier that year. This snapshot captures several shifts away from colonial rule in North Africa.",
+      "contextSources": [
+        {
+          "title": "U.S. Office of the Historian: Morocco recognized as independent",
+          "url": "https://history.state.gov/historicaldocuments/frus1955-57v18/d34"
+        },
+        {
+          "title": "U.S. Office of the Historian: Morocco and Tunisia",
+          "url": "https://history.state.gov/historicaldocuments/frus1961-63v21/d1"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 168
+    },
+    {
+      "id": "historical-map-11",
+      "depictedYear": 1960,
+      "depictedDate": "1960-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-11.svg",
+      "assetSha256": "ada17a2e1ac0fd0d59dccb19c4483773ffaed48e66e037a6d21179c0c99f2e48",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "Seventeen African countries became independent during 1960. The United Nations General Assembly adopted its Declaration on the Granting of Independence to Colonial Countries and Peoples in December.",
+      "contextSources": [
+        {
+          "title": "United Nations: General Assembly resolution 1514 (XV)",
+          "url": "https://digitallibrary.un.org/record/662085?ln=en"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 164
+    },
+    {
+      "id": "historical-map-12",
+      "depictedYear": 1965,
+      "depictedDate": "1965-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-12.svg",
+      "assetSha256": "342045ec6a4131d63f530f714bec0133c11846f6268fd3d96bef8dc28b8efbd5",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "Singapore became an independent republic on 9 August 1965 after separating from Malaysia. The map’s boundaries show state units, not the full political circumstances of the separation.",
+      "contextSources": [
+        {
+          "title": "Singapore Statutes Online: Republic of Singapore Independence Act 1965",
+          "url": "https://sso.agc.gov.sg/Act/RSIA1965"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 163
+    },
+    {
+      "id": "historical-map-13",
+      "depictedYear": 1971,
+      "depictedDate": "1971-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-13.svg",
+      "assetSha256": "352ff955729e1b8e6f3b3ffbe2929f4102815b17e9b51254a03e5c90784235d1",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "Bangladesh declared independence in March 1971 and became a new state after the Bangladesh Liberation War. This year-end snapshot includes Bangladesh as a separate political unit.",
+      "contextSources": [
+        {
+          "title": "Bangladesh Laws: Constitution of the People’s Republic of Bangladesh",
+          "url": "https://bdlaws.minlaw.gov.bd/act-details-367.html"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 162
+    },
+    {
+      "id": "historical-map-14",
+      "depictedYear": 1975,
+      "depictedDate": "1975-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-14.svg",
+      "assetSha256": "446220c29e66e98584214be6fac182a4d25c1987b93c6b8cacf209f650f3e4e5",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "A major year in the end of Portuguese rule in Africa: Angola, Mozambique, Cape Verde, and São Tomé and Príncipe became independent during 1975. The year-end view reflects the resulting political changes.",
+      "contextSources": [
+        {
+          "title": "United Nations Yearbook 1975",
+          "url": "https://cdn.un.org/unyearbook/yun/pdf/1975/1975_863.pdf"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 160
+    },
+    {
+      "id": "historical-map-15",
+      "depictedYear": 1980,
+      "depictedDate": "1980-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-15.svg",
+      "assetSha256": "47c76576b635bd0d0897c6e40e6ec94ac33463659ac620e113db180fa4b833c0",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "Zimbabwe became independent on 18 April 1980. The change followed the end of white-minority rule in Southern Rhodesia and is visible in this year-end political snapshot.",
+      "contextSources": [
+        {
+          "title": "United Nations Security Council document S/14064",
+          "url": "https://digitallibrary.un.org/record/15913/files/S_14064-EN.pdf"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 159
+    },
+    {
+      "id": "historical-map-16",
+      "depictedYear": 1991,
+      "depictedDate": "1991-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-16.svg",
+      "assetSha256": "f1ecb09af316dbd92d667e5c3e294cabeee8c8fa192afe70d5e12fbbfd47d070",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "The Soviet Union dissolved at the end of 1991, with former republics entering the international system as independent states. The dataset records boundaries and status periods, not every recognition dispute.",
+      "contextSources": [
+        {
+          "title": "United Nations: Russian Federation letter on continued membership",
+          "url": "https://www.un.org/sites/un2.un.org/files/un_member_states_2025.pdf"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 172
+    },
+    {
+      "id": "historical-map-17",
+      "depictedYear": 1993,
+      "depictedDate": "1993-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-17.svg",
+      "assetSha256": "aa0a989c4b6472fac3826a7cf5a5a8cd331414e3a3a069d31a10f48869aa4026",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "Eritrea declared independence in 1993, and Czechoslovakia separated into the Czech Republic and Slovakia on 1 January. Both changes appear in the CShapes political-unit record.",
+      "contextSources": [
+        {
+          "title": "United Nations: UN Observer Mission to Verify the Referendum in Eritrea",
+          "url": "https://dppa.un.org/en/united-nations-observer-mission-to-verify-the-referendum-in-eritrea-unover-1992-1993"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 177
+    },
+    {
+      "id": "historical-map-18",
+      "depictedYear": 2002,
+      "depictedDate": "2002-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-18.svg",
+      "assetSha256": "640ae1b709ea16c5030c1e599f2f77e60c2b8a77f5121eeaacdf271152cad561",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "Timor-Leste became independent on 20 May 2002 after a United Nations-administered transition. The map shows the resulting separate state boundary.",
+      "contextSources": [
+        {
+          "title": "United Nations Security Council: Statement on Timor-Leste independence",
+          "url": "https://digitallibrary.un.org/record/465007/files/S_PRST_2002_13-EN.pdf"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 178
+    },
+    {
+      "id": "historical-map-19",
+      "depictedYear": 2006,
+      "depictedDate": "2006-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-19.svg",
+      "assetSha256": "94d292380db663e58fad65f8e0d69d4f1e2b251811ed20a4aa8839300d822d18",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "Montenegro declared independence in June 2006, ending the State Union of Serbia and Montenegro. CShapes includes the resulting state split in its year-end snapshot.",
+      "contextSources": [
+        {
+          "title": "United Nations: Member States and former Yugoslavia",
+          "url": "https://www.un.org/en/node/123222"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 179
+    },
+    {
+      "id": "historical-map-20",
+      "depictedYear": 2011,
+      "depictedDate": "2011-12-31",
+      "mapPublishedYear": null,
+      "assetUrl": "/data/historical/maps/historical-map-20.svg",
+      "assetSha256": "4196ba0231592ddea1ae61ccb27177acaa6c390cb76186497c6e65e17f4c845b",
+      "originalMapUrl": null,
+      "source": {
+        "title": "CShapes 2.1",
+        "originalUrl": "https://icr.ethz.ch/data/cshapes/CShapes-2.1.geojson",
+        "releasePageUrl": "https://icr.ethz.ch/data/cshapes/beta.html",
+        "institution": "ETH Zürich, Center for Comparative and International Studies",
+        "authors": [
+          "Guy Schvitz",
+          "Seraina Rüegger",
+          "Luc Girardin",
+          "Lars-Erik Cederman",
+          "Nils B. Weidmann",
+          "Kristian Skrede Gleditsch"
+        ],
+        "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": "CShapes 2.1 data by Schvitz, Rüegger, Girardin, Cederman, Weidmann and Gleditsch, ETH Zürich; CC BY-NC-SA 4.0. Maproom-generated snapshot.",
+        "adaptationTerms": "Non-commercial reuse only; adaptations must be shared under the same license with attribution."
+      },
+      "geographicContext": "Global political units and dependent territories; international boundaries only, with no subnational divisions.",
+      "historicalContext": "South Sudan became independent on 9 July 2011. The year-end map shows it as a separate state from Sudan; its northern border remained contested in some areas.",
+      "contextSources": [
+        {
+          "title": "United Nations: South Sudan",
+          "url": "https://www.un.org/en/about-us/member-states/south-sudan"
+        }
+      ],
+      "datingUncertainty": "The depicted year is a 31 December snapshot selected from CShapes start/end year, month and day fields. CShapes documents that some event dates are not exact and may use first-of-month or first-of-year defaults. This generated visualization has no original publication year.",
+      "sourceFeatureCount": 181
+    }
+  ]
+}

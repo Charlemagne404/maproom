@@ -31,3 +31,31 @@ Agree one stable ID and route with the Daily stream before adding any typed ID/r
 ## Handoff and acceptance
 
 Provide source URLs, license evidence and attribution text; generated-data checks; documented coverage and known historical/geopolitical limitations; deterministic puzzle tests; game/browser tests; desktop and mobile screenshots in light and dark themes; and the exact registration/Explore changes requested. Keep historical data usable offline after its first successful fetch and document if initial offline use requires precaching.
+
+## Historical stream implementation and integration handoff
+
+The stream selected the agreed stable ID `historical-geography` and route `/games/historical-geography`. The ID has been added only to the shared game ID union, lazy component registry and game artwork switch. This branch intentionally leaves the coordinator-owned catalog, Explore page and Daily scheduler untouched.
+
+Coordinator metadata request:
+
+| Field | Value |
+| --- | --- |
+| `id` | `historical-geography` |
+| `title` | `When Was This Map?` |
+| `shortTitle` | `Historical Maps` |
+| `category` | `Historical` |
+| `description` | `Read a political map from another year, then place it in its historical moment.` |
+| `action` | `Guess the year` |
+| `icon` | `Map` (or another existing map/time icon) |
+| `path` | `/games/historical-geography` |
+| `requiresCountryGeometry` | `false` |
+| `formats` | none; difficulty is selected through shared Free Play settings |
+| Daily | keep `historical-geography` absent from `DAILY_GAME_IDS`; `isDailyGame` must remain `false` |
+
+Mount `HistoricalExploreCollection` from `src/games/historical-geography/HistoricalExploreCollection.tsx` as a modest Explore collection entry. The component provides an editorial summary and Free Play link and is styled by its own colocated stylesheet. Add the `Historical` category with the catalog metadata; do not add a homepage tile or Daily entry. The component is prepared for Explore integration, while the actual catalog/category insertion and Explore mount are coordinator-owned.
+
+The current shared catalog-inventory test expects every `GameId` to have `GameInfo` metadata and a count of 12. Update that coordinator-owned test during catalog integration to expect 13 metadata entries, continue expecting the same six `DAILY_GAME_IDS`, and assert that `isDailyGame('historical-geography')` is false. Until that catalog entry lands, the full unit suite has this one known pre-integration assertion failure.
+
+The game component accepts the existing `{ data, mode, date, seed }` props but only uses the shared session identity fields; it does not need country geometry. It loads `/data/historical/manifest.json` on demand, then the current `/data/historical/maps/historical-map-NN.svg` with native lazy image loading. Successful data requests are handled by the existing `/data/` service-worker cache; offline play is available after each asset has been fetched once. No service-worker edit is requested. Each completed result uses shared score/correct/total/session handling and stores `historicalPuzzleId: historical-geography:<mapId>:v1`, depicted year, guess, distance, difficulty, accepted range and citation titles in its detail payload.
+
+Before accepting a future Daily proposal, review the year deck and inclusive tolerance balance, the CC BY-NC-SA noncommercial restriction, and offline behavior. The current branch is Free Play only.

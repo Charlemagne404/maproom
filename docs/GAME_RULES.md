@@ -1,6 +1,6 @@
 # Game rules and scoring
 
-Maproom has twelve games. The home page curates six daily puzzles: Find the country, Country outlines, Border route, Flag study, Geography grid, and Capitals & cities. Geography Connections, Higher or Lower, Neighbour Challenge, Distance & Direction, Riverways, and Latitude Ladder are Free Play games. Daily dates use the time zone in Settings. In-progress daily sessions are saved locally and reopen with the same question sequence; completed results remain available from the puzzle and Statistics.
+The existing game library has twelve experiences; Historical Geography adds a thirteenth Free Play experience. The home page curates six daily puzzles: Find the country, Country outlines, Border route, Flag study, Geography grid, and Capitals & cities. Geography Connections, Higher or Lower, Neighbour Challenge, Distance & Direction, Riverways, Latitude Ladder, and When Was This Map? are Free Play experiences; historical maps remain explicitly outside the Daily rotation. Daily dates use the time zone in Settings. In-progress daily sessions are saved locally and reopen with the same question sequence; completed results remain available from the puzzle and Statistics.
 
 ## Country pools
 
@@ -53,6 +53,12 @@ Name the highlighted river trace using autocomplete. There are six distinct gues
 ## Latitude Ladder
 
 Order five populated places from north to south or west to east; the selected axis appears in the shared Free Play setup. Arrow buttons move each city one slot, so reordering works with touch and keyboard without relying on drag. The pool is worldwide or one continent and includes GeoNames places with population of at least 100,000, excluding historical, abandoned, destroyed and section records. Each correctly placed city is worth 200 points, up to 1,000. After checking, the answer shows each city's signed hemisphere coordinate and the map marks all five true locations. The game is Free Play only. City coverage follows the GeoNames cities500-derived Maproom file and is not a complete city gazetteer.
+
+## When Was This Map?
+
+Study an unlabeled global political-boundary snapshot and enter the year it depicts. The 20-map seeded deck is deterministic for a session and does not repeat an entry until all 20 have appeared. Easy accepts guesses within 100 years, Medium within 50 years, and Hard within 25 years; each boundary is inclusive and the result shows the exact accepted range. A closer guess earns more points, from 1,000 at the depicted year to zero at twice the selected tolerance. The reveal gives the depicted year, distance from the guess, a short historical explanation, and expandable date, source and license details.
+
+Each SVG is a Maproom-generated 31 December snapshot from CShapes 2.1, not an archival map published in that year. The initial curated years are 1886, 1898, 1914, 1918, 1920, 1923, 1939, 1945, 1949, 1956, 1960, 1965, 1971, 1975, 1980, 1991, 1993, 2002, 2006 and 2011. Attribution, context links, source hashes and dating caveats are recorded per map. CShapes is licensed CC BY-NC-SA 4.0, so the derived collection is for noncommercial use and adaptations must retain the same license. The game is Free Play only and is not in Daily rotation. Its generalized global boundaries omit subnational detail, many occupation fronts and some disputed or de facto arrangements; see [historical data research](data/historical/RESEARCH.md).
 
 ## Local results and review
 
