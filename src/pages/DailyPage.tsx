@@ -4,21 +4,22 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAppData } from '../app/useAppData'
 import { GameCard, LoadingState } from '../components/Kit'
 import { usePuzzleDate, formatPuzzleDate } from '../hooks/usePuzzleDate'
-import { DAILY_GAME_IDS, formatsForGame, games } from '../games/catalog'
+import { formatsForGame, games } from '../games/catalog'
 import { dailyPuzzleId } from '../puzzles/engine'
 import { isCompatibleGameSession } from '../games/sessionCompatibility'
+import { getDailyGameLineup } from '../daily/schedule'
+import { readDailyProgress } from '../daily/progress'
 
 export function DailyPage() {
   const { state, toggleFavorite } = useAppData()
   const carousel = useRef<HTMLDivElement>(null)
   const date = usePuzzleDate(state.settings.timeZone)
   if (!date) return <div className="page daily-page"><LoadingState label="Setting today’s date…" /></div>
-  const dailyGames = DAILY_GAME_IDS.map((id) => games.find((game) => game.id === id)).filter((game) => game !== undefined)
-  const done = new Set(state.history
-    .filter((result) => result.mode === 'daily' && result.completed && result.date === date)
-    .map((result) => result.gameId))
+  const dailyGameIds = getDailyGameLineup(date)
+  const dailyGames = dailyGameIds.map((id) => games.find((game) => game.id === id)).filter((game) => game !== undefined)
+  const dailyProgress = readDailyProgress(date, dailyGameIds, state.history)
   const dateLabel = formatPuzzleDate(date, state.settings.timeZone)
-  const dailyCount = dailyGames.filter((game) => done.has(game.id)).length
+  const dailyCount = dailyProgress.completedCount
   const resumable = [...state.sessions]
     .filter((session) => session.date === date && (session.mode === 'freeplay'
       ? session.version === 1
@@ -36,7 +37,7 @@ export function DailyPage() {
       </section>
       <section className="daily-puzzles" aria-labelledby="daily-puzzles-heading">
         <div className="daily-section-heading">
-            <div><h2 id="daily-puzzles-heading">Today’s puzzles</h2><span className="daily-section-subtitle">Six daily challenges</span></div>
+            <div><h2 id="daily-puzzles-heading">Today’s puzzles</h2><span className="daily-section-subtitle">Six from the Daily rotation</span></div>
           <div className="daily-progress" aria-label={`${dailyCount} of ${dailyGames.length} daily puzzles complete`}>
             <div className="daily-progress-label"><span>{dailyCount} / {dailyGames.length}</span><span>complete</span></div>
             <div className="progress-track"><span style={{ width: `${dailyCount / dailyGames.length * 100}%` }} /></div>
@@ -49,7 +50,7 @@ export function DailyPage() {
               game={game}
               mode="daily"
               favorite={state.favorites.includes(game.id)}
-              completed={done.has(game.id)}
+              completed={dailyProgress.completedGameIds.has(game.id)}
               favoriteContext="Today’s puzzles"
               onFavorite={(gameId) => { void toggleFavorite(gameId) }}
             />
