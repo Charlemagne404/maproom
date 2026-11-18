@@ -1,0 +1,606 @@
+/* Mobile presentation layer. Keep game mechanics and shared desktop styles in their owners. */
+@media (max-width: 760px) {
+  .app-frame {
+    --mobile-safe-top: env(safe-area-inset-top, 0px);
+    --mobile-safe-right: env(safe-area-inset-right, 0px);
+    --mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --mobile-safe-left: env(safe-area-inset-left, 0px);
+    --mobile-header-height: calc(60px + var(--mobile-safe-top));
+    min-block-size: 100svh;
+    min-block-size: 100dvh;
+  }
+
+  .app-frame .site-header {
+    top: 0;
+    width: 100%;
+    min-block-size: var(--mobile-header-height);
+    block-size: var(--mobile-header-height);
+    grid-template-columns: auto 44px minmax(0, 1fr);
+    gap: 8px;
+    padding: var(--mobile-safe-top) max(16px, var(--mobile-safe-right)) 0 max(16px, var(--mobile-safe-left));
+  }
+
+  .app-frame .brand {
+    grid-column: 1;
+    min-width: 0;
+    font-size: clamp(1.14rem, 5.4vw, 1.28rem);
+  }
+
+  .app-frame .mobile-menu-toggle {
+    grid-column: 2;
+    justify-self: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .app-frame .header-tools {
+    grid-column: 3;
+    gap: 0;
+    justify-self: end;
+  }
+
+  .app-frame .header-tools :is(.theme-toggle, .streak-shortcut, .favorite-shortcut, .settings-shortcut) {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    margin: 0;
+    justify-content: center;
+  }
+
+  .app-frame .header-tools .streak-shortcut {
+    width: 48px;
+    min-width: 48px;
+  }
+
+  .app-frame .primary-nav {
+    position: fixed;
+    z-index: 42;
+    inset: var(--mobile-header-height) 0 auto;
+    width: auto;
+    max-height: calc(100dvh - var(--mobile-header-height));
+    overflow-y: auto;
+    padding: 6px max(16px, var(--mobile-safe-left)) max(12px, var(--mobile-safe-bottom));
+    border-bottom: 1px solid var(--border);
+    background: var(--paper);
+    box-shadow: 0 14px 20px rgba(17, 15, 13, .14);
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html[data-theme='dark'] .app-frame .primary-nav {
+    inset: var(--mobile-header-height) 0 auto;
+    max-height: calc(100dvh - var(--mobile-header-height));
+  }
+
+  .app-frame .primary-nav .nav-link {
+    width: 100%;
+    min-height: 48px;
+    padding-inline: 8px;
+  }
+
+  .app-frame .main-content,
+  .app-frame .site-footer {
+    width: calc(100% - max(16px, var(--mobile-safe-left) + 16px) - max(16px, var(--mobile-safe-right) + 16px));
+  }
+
+  .app-frame .page {
+    padding-block-start: 23px;
+  }
+
+  .app-frame .daily-page {
+    padding-block-start: 0;
+  }
+
+  .app-frame .welcome-hero {
+    min-block-size: clamp(140px, 38svh, 178px);
+    padding: 20px 10px 17px;
+  }
+
+  .app-frame .welcome-hero h1 {
+    max-width: 14ch;
+    font-size: clamp(2.1rem, 9.5vw, 3.1rem);
+    text-wrap: balance;
+  }
+
+  .app-frame .welcome-hero time {
+    margin-block-start: 8px;
+    font-size: .88rem;
+  }
+
+  .app-frame .daily-section-heading {
+    min-block-size: 56px;
+    justify-content: space-between;
+    gap: 10px;
+    margin-block-end: 10px;
+  }
+
+  .app-frame .daily-section-heading > div:first-child {
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .app-frame .daily-section-heading h2 {
+    font-size: clamp(1.08rem, 4.9vw, 1.34rem);
+  }
+
+  .app-frame .daily-section-subtitle {
+    font-size: .72rem;
+  }
+
+  .app-frame .daily-progress {
+    position: static;
+    width: min(92px, 27%);
+    flex: 0 0 auto;
+    transform: none;
+  }
+
+  .app-frame .daily-progress-label {
+    display: flex;
+    justify-content: flex-end;
+    margin-block-end: 4px;
+    font-size: .58rem;
+  }
+
+  .app-frame .daily-progress-label span:last-child {
+    display: none;
+  }
+
+  .app-frame .daily-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(8px, 2.5vw, 12px);
+  }
+
+  .app-frame .daily-grid .game-card-countries {
+    min-block-size: 106px;
+  }
+
+  .app-frame .daily-grid .game-card-countries .game-card-link {
+    min-block-size: 106px;
+    display: grid;
+    grid-template-columns: min(24vw, 80px) minmax(0, 1fr);
+    grid-template-rows: 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 42px 12px 14px;
+  }
+
+  .app-frame .daily-grid .game-card-countries .game-card-art {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    height: 70px;
+    margin: 0;
+  }
+
+  .app-frame .daily-grid .game-card-countries .game-card-copy {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .app-frame .daily-grid .game-card-countries .game-card-copy h2 {
+    margin: 0;
+    font-size: clamp(1rem, 4.3vw, 1.2rem);
+  }
+
+  .app-frame .daily-grid .game-card-countries .game-card-action {
+    right: 12px;
+    bottom: 50%;
+    transform: translateY(50%);
+  }
+
+  .app-frame .daily-grid .game-card:last-child {
+    grid-column: 1 / -1;
+    min-block-size: 106px;
+  }
+
+  .app-frame .daily-grid .game-card:last-child .game-card-link {
+    min-block-size: 106px;
+    display: grid;
+    grid-template-columns: min(24vw, 80px) minmax(0, 1fr);
+    grid-template-rows: 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 42px 12px 14px;
+  }
+
+  .app-frame .daily-grid .game-card:last-child .game-card-art {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    height: 70px;
+    margin: 0;
+  }
+
+  .app-frame .daily-grid .game-card:last-child .game-card-copy {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .app-frame .daily-grid .game-card:last-child .game-card-copy h2 {
+    margin: 0;
+    font-size: clamp(1rem, 4.3vw, 1.2rem);
+  }
+
+  .app-frame .daily-grid .game-card:last-child .game-card-action {
+    right: 12px;
+    bottom: 50%;
+    transform: translateY(50%);
+  }
+
+  .app-frame .explore-page,
+  .app-frame .statistics-page,
+  .app-frame .settings-page {
+    padding-block-start: 23px;
+  }
+
+  .app-frame .explore-page .page-heading {
+    align-items: flex-start;
+    margin-block-end: 11px;
+  }
+
+  .app-frame .explore-page .page-heading h1,
+  .app-frame .statistics-page .page-heading h1,
+  .app-frame .settings-page .page-heading h1 {
+    font-size: clamp(2.05rem, 9vw, 2.45rem);
+  }
+
+  .app-frame .explore-controls {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+    padding-block: 8px;
+  }
+
+  .app-frame .explore-controls .search-field {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .app-frame .search-field input,
+  .app-frame input:is([type='text'], [type='search'], [type='number']),
+  .app-frame input:not([type]) {
+    min-width: 0;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .app-frame .clear-search {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    margin-inline-end: -8px;
+  }
+
+  .app-frame .filter-row {
+    align-items: center;
+    gap: 6px;
+    margin-block-end: 12px;
+  }
+
+  .app-frame .filter-chip {
+    min-height: 44px;
+    padding: 7px 11px;
+    font-size: .72rem;
+  }
+
+  .app-frame .explore-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .app-frame .explore-grid .game-card,
+  .app-frame .explore-grid .game-card-link {
+    min-width: 0;
+  }
+
+  .app-frame .favorite-button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    margin: 0;
+  }
+
+  .app-frame .daily-progress-track,
+  .app-frame .progress-track {
+    min-height: 5px;
+  }
+
+  .app-frame .other-games-controls button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .app-frame .other-games-carousel {
+    scroll-padding-inline: 4px;
+    scroll-snap-stop: always;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-frame .other-games-carousel:focus-visible,
+  .app-frame .activity-calendar-scroll:focus-visible {
+    outline-offset: 2px;
+  }
+
+  .app-frame .site-footer {
+    padding-block-end: max(13px, var(--mobile-safe-bottom));
+  }
+
+  .app-frame .footer-links {
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
+  .app-frame .footer-links a {
+    min-block-size: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding-inline: 2px;
+  }
+
+  .app-frame .settings-section .setting-control:not(.setting-toggle-row) {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .app-frame .settings-section .setting-control select {
+    width: 100%;
+    max-width: 100%;
+    min-block-size: 46px;
+    font-size: 16px;
+  }
+
+  .app-frame .settings-section .setting-control.setting-toggle-row {
+    min-block-size: 48px;
+    align-items: center;
+  }
+
+  .app-frame .setting-actions .button,
+  .app-frame .reset-confirmation .button,
+  .app-frame .button {
+    min-block-size: 44px;
+  }
+
+  .app-frame .game-settings-button {
+    min-inline-size: 44px;
+    min-block-size: 44px;
+  }
+
+  .app-frame .map-tool {
+    width: 44px;
+    height: 44px;
+  }
+
+  .app-frame .latitude-move-controls button {
+    width: 44px;
+    min-height: 44px;
+  }
+
+  .app-frame .city-place-button {
+    min-block-size: 44px;
+  }
+
+  .app-frame .game-settings-panel {
+    position: fixed;
+    top: calc(var(--mobile-header-height) + 8px);
+    right: max(12px, var(--mobile-safe-right));
+    left: max(12px, var(--mobile-safe-left));
+    width: auto;
+    max-width: 350px;
+    margin-inline: auto;
+    max-block-size: calc(100dvh - var(--mobile-header-height) - max(16px, var(--mobile-safe-bottom)));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-frame .setup-choice {
+    min-block-size: 44px;
+  }
+
+  .app-frame .suggestion-option {
+    min-block-size: 44px;
+  }
+
+  .app-frame .game-context-bar {
+    min-block-size: 50px;
+    gap: 8px;
+  }
+
+  .app-frame .game-context-back {
+    min-block-size: 44px;
+    flex: 0 0 auto;
+  }
+
+  .app-frame .game-context-title,
+  .app-frame .game-context-daily {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .app-frame .game-setup-dialog[open] {
+    max-block-size: 100dvh;
+    padding-block-start: max(8px, var(--mobile-safe-top));
+    padding-block-end: max(8px, var(--mobile-safe-bottom));
+    padding-inline: max(8px, var(--mobile-safe-left)) max(8px, var(--mobile-safe-right));
+  }
+
+  .app-frame .game-setup-panel {
+    max-block-size: calc(100dvh - max(16px, var(--mobile-safe-top)) - max(16px, var(--mobile-safe-bottom)));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-frame .game-setup-close,
+  .app-frame .game-setup-start,
+  .app-frame .game-results-close,
+  .app-frame .game-results-return {
+    min-inline-size: 44px;
+    min-block-size: 44px;
+  }
+
+  .app-frame .game-results-dialog[open] {
+    max-block-size: calc(100dvh - max(20px, var(--mobile-safe-top)) - max(20px, var(--mobile-safe-bottom)));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .app-frame .activity-calendar {
+    gap: 5px;
+  }
+
+  .app-frame .activity-week {
+    width: 24px;
+    flex-basis: 24px;
+    gap: 5px;
+  }
+
+  .app-frame .activity-week-days {
+    grid-template-rows: repeat(7, 24px);
+    gap: 5px;
+  }
+
+  .app-frame .activity-cell {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+  }
+
+  .app-frame .activity-legend .activity-cell {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+  }
+
+  .app-frame .activity-weekday-labels {
+    top: 23px;
+    grid-template-rows: repeat(7, 24px);
+    gap: 5px;
+    font-size: .58rem;
+    line-height: 24px;
+  }
+
+  .app-frame .autocomplete-list,
+  .app-frame [role='listbox'] {
+    max-block-size: min(42dvh, 20rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 380px) {
+  .app-frame .site-header {
+    padding-inline: max(12px, var(--mobile-safe-left)) max(12px, var(--mobile-safe-right));
+  }
+
+  .app-frame .brand {
+    font-size: 1.12rem;
+  }
+
+  .app-frame .header-tools :is(.streak-shortcut, .favorite-shortcut) {
+    display: none;
+  }
+
+  .app-frame .welcome-hero {
+    min-block-size: 140px;
+    padding-inline: 4px;
+  }
+
+  .app-frame .daily-section-heading {
+    min-block-size: 54px;
+  }
+
+  .app-frame .daily-section-heading h2 {
+    font-size: 1.08rem;
+  }
+
+  .app-frame .daily-progress {
+    width: 72px;
+  }
+
+  .app-frame .game-setup-panel {
+    padding: 14px;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 980px) {
+  .app-frame .header-tools :is(.theme-toggle, .streak-shortcut, .favorite-shortcut, .settings-shortcut),
+  .app-frame .nav-link {
+    min-block-size: 44px;
+  }
+
+  .app-frame .header-tools :is(.theme-toggle, .streak-shortcut, .favorite-shortcut, .settings-shortcut) {
+    min-inline-size: 44px;
+  }
+
+  .app-frame .filter-chip,
+  .app-frame .settings-page .button,
+  .app-frame .other-games-controls button {
+    min-block-size: 44px;
+  }
+
+  .app-frame .favorite-button {
+    inline-size: 44px;
+    min-inline-size: 44px;
+    block-size: 44px;
+  }
+}
+
+@media (max-width: 760px) and (orientation: landscape) and (max-height: 560px) {
+  .app-frame .welcome-hero {
+    min-block-size: 110px;
+    padding-block: 10px;
+  }
+
+  .app-frame .welcome-hero h1 {
+    font-size: clamp(1.9rem, 7vw, 2.5rem);
+  }
+
+  .app-frame .welcome-hero time {
+    margin-block-start: 4px;
+  }
+
+  .app-frame .page {
+    padding-block-start: 15px;
+  }
+
+  .app-frame .daily-page {
+    padding-block-start: 0;
+  }
+
+  .app-frame .game-page {
+    min-block-size: calc(100dvh - var(--mobile-header-height));
+  }
+
+  .app-frame .game-setup-panel {
+    padding: 12px 15px;
+  }
+}
+
+@media (hover: none) and (max-width: 760px) {
+  .app-frame .game-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .app-frame .game-card-link:hover .game-card-action svg,
+  .app-frame .game-card-outlines:hover .art-outline img,
+  .app-frame .game-card-connections:hover .art-connections,
+  .app-frame .game-card-higher-lower:hover .art-comparison,
+  .app-frame .game-card-neighbours:hover .art-neighbours,
+  .app-frame .game-card-distance:hover .art-distance,
+  .app-frame .game-card-cities:hover .city-ring,
+  .app-frame .game-card-cities:hover .city-pin,
+  .app-frame .game-card-flags:hover .art-flags {
+    transform: none;
+  }
+}
