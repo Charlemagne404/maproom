@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ExternalLink, Search } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { PageHeading } from '../components/Kit'
 
 interface SourceManifest {
@@ -42,7 +43,8 @@ function AboutPage() {
         <h2>Play, then look closer</h2>
         <p>Each game starts with one clear question. You can find a country on a map, recognise an outline, trace a land route, learn a flag, fill a geography grid or place a city. Free play stays open when the daily set is done.</p>
         <h2>Maps with provenance</h2>
-        <p>Country boundaries and geographic facts come from open datasets. Administrative boundaries and city names include source-specific coverage and license notes. Open <a href="/data">Data sources</a> to see the files used by the current build.</p>
+        <p>Country boundaries and geographic facts come from open datasets. Administrative boundaries and city names include source-specific coverage and license notes. Open <Link to="/data">Data sources</Link> to see the files used by the current build.</p>
+        <p><Link to="/explore">Explore the geography games</Link>, from country quizzes and capital-city challenges to flags, routes and map puzzles.</p>
         <h2>Small by design</h2>
         <p>There are no accounts, leaderboards, ads or tracking. Your game history belongs to this browser, and you can export it from Settings.</p>
       </article>

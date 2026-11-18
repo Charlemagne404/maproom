@@ -9,6 +9,7 @@ import { FreePlaySetupContext } from './FreePlaySetupContext'
 import { GameSetupOverlay } from './GameSetupOverlay'
 import { formatsForGame, getGame } from '../games/catalog'
 import { LoadingState } from './Kit'
+import '../seo/site-header-polish.css'
 
 const GamePage = lazy(() => import('../pages/GamePage').then(({ GamePage }) => ({ default: GamePage })))
 
@@ -272,7 +273,7 @@ export function Shell() {
       <a className="skip-link" href="#main-content">Skip to content</a>
       {offline && <div className="offline-banner" role="status">Offline mode · your saved games are still here</div>}
       {!state.storageAvailable && <div className="offline-banner storage-banner" role="status">Browser storage is unavailable. This session may not be saved.</div>}
-      <header className="site-header">
+      <header className="site-header site-header-polished">
         <NavLink className="brand" to="/" aria-label="maproom. home"><span>maproom<span className="brand-period">.</span></span></NavLink>
         <nav ref={navigationRef} id="primary-navigation" className={`primary-nav${isMenuOpen ? ' is-open' : ''}`} aria-label="Main navigation">
           {navigation.map(({ to, label }) => <NavLink key={to} to={to} end={to === '/'} onClick={() => setMenuOpen(false)} className={({ isActive }) => `nav-link${isActive ? ' is-current' : ''}`}>{label}</NavLink>)}
