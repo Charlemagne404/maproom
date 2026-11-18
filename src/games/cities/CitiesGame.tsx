@@ -15,6 +15,7 @@ import { useAppData } from '../../app/useAppData'
 import { useGameSession } from '../session'
 import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
 import { useFreePlayFormat } from '../../components/FreePlaySetupContext'
+import './CitiesGame.css'
 
 type CityTask = 'capitals' | 'locate' | 'identify'
 type PracticeCount = '10' | '20' | '50' | 'infinite'
@@ -169,7 +170,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
 
   const question = questions[index]
   const countrySuggestions: Suggestion[] = useMemo(() => eligible.map((country) => ({ value: country.iso3, label: country.name, detail: country.continent ?? undefined, aliases: country.aliases })), [eligible])
-  const capitalSuggestions: Suggestion[] = useMemo(() => capitals.map((country) => ({ value: country.iso3, label: country.capital ?? '', detail: country.name, aliases: country.capitals })), [capitals])
+  const capitalSuggestions: Suggestion[] = useMemo(() => capitals.map((country) => ({ value: country.iso3, label: country.capital ?? '', aliases: country.capitals })), [capitals])
   const identifySuggestions: Suggestion[] = useMemo(() => question?.city
     ? uniqueCitySuggestions(cities.filter((city) => (mode === 'daily' || isCurrentWholeSettlement(city)) && city.countryIso3 === question.city?.countryIso3)).map((city) => ({ value: city.id, label: city.name, detail: data.countriesByCode.get(city.countryIso3)?.name, aliases: city.aliases }))
     : [], [mode, question, cities, data.countriesByCode])
@@ -342,7 +343,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
       : `Which city is marked in ${data.countriesByCode.get(question.city?.countryIso3 ?? '')?.name ?? 'this country'}?`
 
   return (
-    <div className="game-body cities-game-body">
+    <div className={`game-body cities-game-body${question.kind === 'capitals' ? '' : ' cities-map-game-body'}`}>
       <div className="question-toolbar">
         <div><span className="eyebrow">{modeLabel}</span><h2 ref={questionHeading} tabIndex={-1}>{prompt}</h2></div>
         <div className="question-toolbar-tools">
@@ -362,18 +363,18 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
       </div>
       {mode === 'freeplay' && <div className="city-practice-status"><span><strong>{score.toLocaleString()}</strong> points · <strong>{correct}</strong> accurate answers</span><span>{timed ? `${seconds}s left` : task === 'locate' ? 'Closer markers earn more points' : '100 points per correct answer'}</span>{infinitePractice && resolved > 0 && <button className="button button-outline" type="button" disabled={locked} onClick={() => { setFinished(true); void save(score, correct, resolved, { task, continent, direction, answerStyle, minimumPopulation, questionCount, timed }) }}>End session</button>}</div>}
       {question.kind === 'capitals' && (mode === 'daily' || answerStyle === 'choices') ? <div className="capital-choice-grid" role="group" aria-label="Choose the correct country or capital">
-        {(question.direction === 'country-to-capital' ? capitalChoices.map((country) => ({ code: country.iso3, label: country.capital ?? 'Capital unavailable', detail: country.name })) : countryChoicesFromCapitals(capitals, question.country?.iso3 ?? '', seed, index)).map((choice) => <button className={`answer-choice${selected === choice.code ? (choice.code === question.country?.iso3 ? ' is-right' : ' is-wrong') : ''}`} type="button" key={choice.code} disabled={locked} onClick={() => submitCountry(choice.code)}><span>{choice.label}</span><small>{choice.detail}</small></button>)}
+        {(question.direction === 'country-to-capital' ? capitalChoices.map((country) => ({ code: country.iso3, label: country.capital ?? 'Capital unavailable' })) : countryChoicesFromCapitals(capitals, question.country?.iso3 ?? '', seed, index)).map((choice) => <button className={`answer-choice${selected === choice.code ? (choice.code === question.country?.iso3 ? ' is-right' : ' is-wrong') : ''}`} type="button" key={choice.code} disabled={locked} onClick={() => submitCountry(choice.code)}><span>{choice.label}</span></button>)}
       </div> : null}
       {question.kind === 'capitals' && mode !== 'daily' && answerStyle === 'typed' && <AutocompleteInput id="capital-answer" label={question.direction === 'country-to-capital' ? 'Type the capital city' : 'Type the country'} placeholder={question.direction === 'country-to-capital' ? 'Capital city' : 'Country name'} value={input} onChange={setInput} suggestions={question.direction === 'country-to-capital' ? capitalSuggestions : countrySuggestions} onPick={(item) => { setInput(item.label) }} onSubmit={submitCapitalText} submitLabel="Answer" disabled={locked} />}
       {question.kind === 'identify' && question.city && <>
         <div className="map-playfield city-map-playfield">
-          <div className="game-map-stage city-map-stage"><GeoMap features={data.features} markers={[{ point: question.city, kind: 'answer', label: 'City location' }]} ariaLabel="Map with a marked city location" showHoverLabels={state.settings.mapLabels} /></div>
+          <div className="game-map-stage city-map-stage"><GeoMap features={data.features} focusCodes={[question.city.countryIso3]} focusPadding={88} localFit markers={[{ point: question.city, kind: 'answer', label: 'City location' }]} ariaLabel="Map with a marked city location" showHoverLabels={state.settings.mapLabels} /></div>
           <div className="map-answer-dock city-answer-dock"><AutocompleteInput id="city-identify-answer" label="Name the marked city" placeholder="Type a city name" value={input} onChange={setInput} suggestions={identifySuggestions} onPick={(item) => setInput(item.label)} onSubmit={submitCityText} submitLabel="Identify" disabled={locked} /></div>
         </div>
       </>}
       {question.kind === 'locate' && question.city && <>
         <div className="map-playfield city-map-playfield">
-          <div className="game-map-stage city-map-stage"><GeoMap features={data.features} onPointSelect={recordLocation} markers={guess ? [{ point: guess, kind: 'guess', label: 'Your marker' }, ...(locked ? [{ point: question.city, kind: 'answer' as const, label: 'City location' }] : [])] : []} ariaLabel="World map. Click or tap to place or move your marker." showHoverLabels={state.settings.mapLabels} /></div>
+          <div className="game-map-stage city-map-stage"><GeoMap features={data.features} focusCodes={[question.city.countryIso3]} focusPadding={88} localFit onPointSelect={recordLocation} markers={guess ? [{ point: guess, kind: 'guess', label: 'Your marker' }, ...(locked ? [{ point: question.city, kind: 'answer' as const, label: 'City location' }] : [])] : []} ariaLabel="Map focused on the named country. Click or tap to place or move your marker." showHoverLabels={state.settings.mapLabels} /></div>
           <div className="map-answer-dock city-marker-dock">
             <button className="button button-dark city-place-button" type="button" disabled={locked || (!guess && (!latitude.trim() || !longitude.trim()))} onClick={submitLocation}><MapPin size={16} /> Place marker</button>
             <details className="coordinate-tools"><summary>Enter coordinates</summary><div className="coordinate-fields"><label>Latitude<input type="number" min="-90" max="90" step="0.01" value={latitude} onChange={(event) => setLatitude(event.target.value)} placeholder="e.g. 59.33" /></label><label>Longitude<input type="number" min="-180" max="180" step="0.01" value={longitude} onChange={(event) => setLongitude(event.target.value)} placeholder="e.g. 18.07" /></label></div><p className="coordinate-help">Enter latitude and longitude for a keyboard-accessible guess.</p></details>
@@ -411,5 +412,5 @@ function restoreCityQuestionOrder(generated: Question[], saved: unknown, data: G
 function countryChoicesFromCapitals(capitals: GeographyData['countries'], answerCode: string, seed: string, index: number) {
   const correct = capitals.find((country) => country.iso3 === answerCode)
   const distractors = seededShuffle(capitals.filter((country) => country.iso3 !== answerCode), `${seed}:country-choice:${index}`).slice(0, 3)
-  return seededShuffle([...(correct ? [correct] : []), ...distractors], `${seed}:country-choice-order:${index}`).map((country) => ({ code: country.iso3, label: country.name, detail: country.continent ?? '' }))
+  return seededShuffle([...(correct ? [correct] : []), ...distractors], `${seed}:country-choice-order:${index}`).map((country) => ({ code: country.iso3, label: country.name }))
 }

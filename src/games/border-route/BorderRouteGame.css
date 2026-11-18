@@ -1,0 +1,334 @@
+.route-game-body.route-game-map-focus {
+  display: block;
+  width: min(100%, 1320px);
+  max-width: 1320px;
+  margin-inline: auto;
+}
+
+.route-game-map-focus > .route-practice-toolbar {
+  margin: 2px 0 10px;
+}
+
+.route-game-map-focus .route-map-frame {
+  width: 100%;
+  height: clamp(470px, 73svh, 820px);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  isolation: isolate;
+}
+
+.route-game-map-focus .route-map-stage {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.route-game-map-focus .route-map-stage .map-shell,
+.route-game-map-focus .route-map-stage .geo-map {
+  width: 100%;
+  height: 100%;
+}
+
+.route-game-map-focus .route-map-endpoints {
+  max-width: calc(100% - 86px);
+  position: absolute;
+  z-index: 4;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-raised) 94%, transparent);
+  box-shadow: 0 3px 14px rgba(20, 18, 16, .14);
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+}
+
+.route-game-map-focus .route-map-endpoint {
+  min-width: 112px;
+  display: grid;
+  gap: 1px;
+  padding: 5px 8px;
+  border-radius: 7px;
+}
+
+.route-game-map-focus .route-map-endpoint > span,
+.route-game-map-focus .route-map-distance > span {
+  color: var(--muted);
+  font-size: .58rem;
+  font-weight: 750;
+  letter-spacing: .07em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.route-game-map-focus .route-map-endpoint > strong,
+.route-game-map-focus .route-map-distance > strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: .83rem;
+  font-weight: 760;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-game-map-focus .route-map-endpoint-start {
+  background: color-mix(in srgb, #64856f 15%, var(--surface-raised));
+  box-shadow: inset 3px 0 #64856f;
+}
+
+.route-game-map-focus .route-map-endpoint-finish {
+  background: color-mix(in srgb, #e28a54 17%, var(--surface-raised));
+  box-shadow: inset 3px 0 #e28a54;
+}
+
+.route-game-map-focus .route-map-endpoints > svg {
+  flex: none;
+  color: var(--muted);
+}
+
+.route-game-map-focus .route-map-distance {
+  display: grid;
+  gap: 2px;
+  margin-left: 2px;
+  padding: 4px 7px;
+  border-left: 1px solid var(--border);
+}
+
+.route-game-map-focus .route-map-input-dock {
+  width: min(640px, calc(100% - 24px));
+  position: absolute;
+  z-index: 4;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 50%;
+  display: grid;
+  gap: 5px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--surface-raised) 96%, transparent);
+  box-shadow: 0 5px 22px rgba(20, 18, 16, .23);
+  transform: translateX(-50%);
+  backdrop-filter: blur(12px);
+}
+
+.route-game-map-focus .route-map-input-dock > * {
+  grid-area: auto;
+}
+
+.route-game-map-focus .route-selected-set {
+  max-height: 39px;
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 1px;
+  scrollbar-width: thin;
+}
+
+.route-game-map-focus .route-selected-set button {
+  min-height: 30px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: .68rem;
+  font-weight: 650;
+}
+
+.route-game-map-focus .route-selected-set button:hover:not(:disabled) {
+  border-color: var(--accent-ink);
+  background: var(--surface-hover);
+}
+
+.route-game-map-focus .route-selected-set button:disabled {
+  cursor: default;
+}
+
+.route-game-map-focus .route-selected-number {
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--muted);
+  font-size: .57rem;
+  font-weight: 750;
+}
+
+.route-game-map-focus .route-remove-mark {
+  color: var(--muted);
+  font-size: .95rem;
+  line-height: .8;
+}
+
+.route-game-map-focus .route-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 6px;
+}
+
+.route-game-map-focus .route-input-row .autocomplete-field {
+  min-width: 0;
+  min-height: 44px;
+}
+
+.route-game-map-focus .route-input-row .autocomplete-field > input {
+  min-height: 40px;
+}
+
+.route-game-map-focus .route-input-row .hint-button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding-inline: 11px;
+  white-space: nowrap;
+}
+
+.route-game-map-focus .route-set-status {
+  min-height: 16px;
+  padding: 0 2px;
+  color: var(--muted);
+  font-size: .63rem;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.route-game-map-focus .route-set-status.is-valid {
+  color: var(--success-text);
+  font-weight: 700;
+}
+
+.route-game-map-focus .route-hint,
+.route-game-map-focus .form-message {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 7px;
+  font-size: .68rem;
+}
+
+.route-game-map-focus .route-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-left: 2px solid var(--accent);
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
+.route-game-map-focus .route-stops.is-ordered {
+  max-height: 54px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  overflow: auto;
+  padding: 0 1px;
+  list-style: none;
+}
+
+.route-game-map-focus .route-stops.is-ordered li {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: .63rem;
+}
+
+.route-game-map-focus .route-stops.is-ordered li.is-start {
+  background: #64856f;
+  color: #fff;
+}
+
+.route-game-map-focus .route-stops.is-ordered li.is-destination {
+  background: #e28a54;
+  color: #292622;
+}
+
+@media (max-width: 760px) {
+  .route-game-map-focus .route-map-frame {
+    height: clamp(420px, 69svh, 650px);
+  }
+
+  .route-game-map-focus .route-map-endpoints {
+    top: 8px;
+    left: 8px;
+    max-width: calc(100% - 62px);
+    gap: 3px;
+    padding: 5px;
+  }
+
+  .route-game-map-focus .route-map-endpoint {
+    min-width: 0;
+    max-width: min(34vw, 150px);
+    padding: 4px 6px;
+  }
+
+  .route-game-map-focus .route-map-endpoint > strong {
+    font-size: .72rem;
+  }
+
+  .route-game-map-focus .route-map-distance {
+    padding-inline: 5px;
+  }
+
+  .route-game-map-focus .route-map-distance > strong {
+    font-size: .7rem;
+  }
+
+  .route-game-map-focus .route-map-input-dock {
+    width: calc(100% - 16px);
+    bottom: max(8px, env(safe-area-inset-bottom));
+    gap: 4px;
+    padding: 7px;
+  }
+
+  .route-game-map-focus .route-selected-set button {
+    min-height: 28px;
+    font-size: .63rem;
+  }
+
+  .route-game-map-focus .route-input-row .autocomplete-field > input {
+    padding-inline: 9px;
+  }
+
+  .route-game-map-focus .route-input-row .hint-button {
+    padding-inline: 9px;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 761px) {
+  .route-game-map-focus .route-map-frame {
+    height: min(72svh, 590px);
+    min-height: 420px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-game-map-focus .route-selected-set button {
+    transition: none;
+  }
+}

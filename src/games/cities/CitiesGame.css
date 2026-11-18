@@ -1,0 +1,127 @@
+.cities-game-body.cities-map-game-body {
+  display: block;
+  width: min(100%, 1440px);
+  max-width: 1440px;
+  margin-inline: auto;
+}
+
+.cities-map-game-body > .question-toolbar {
+  margin: 2px 0 10px;
+}
+
+.cities-map-game-body > .city-practice-status {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 9px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  font-size: .7rem;
+}
+
+.cities-map-game-body .city-map-playfield {
+  width: 100%;
+  position: relative;
+  isolation: isolate;
+}
+
+.cities-map-game-body .city-map-stage {
+  width: 100%;
+  height: clamp(540px, 74svh, 850px);
+  min-height: 0;
+  aspect-ratio: auto;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 12px;
+}
+
+.cities-map-game-body .city-map-stage .map-shell,
+.cities-map-game-body .city-map-stage .geo-map {
+  width: 100%;
+  height: 100%;
+}
+
+.cities-map-game-body .map-answer-dock {
+  width: min(600px, calc(100% - 24px));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 50%;
+  border-color: color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--surface-raised) 96%, transparent);
+  box-shadow: 0 5px 22px rgba(20, 18, 16, .22);
+  transform: translateX(-50%);
+  backdrop-filter: blur(12px);
+}
+
+.cities-map-game-body .city-marker-dock {
+  min-width: min(310px, calc(100% - 24px));
+  justify-content: center;
+  padding: 7px;
+}
+
+.cities-map-game-body .city-marker-dock .city-place-button {
+  min-width: 160px;
+  min-height: 42px;
+}
+
+.cities-map-game-body .coordinate-tools summary {
+  min-height: 40px;
+}
+
+.cities-map-game-body .coordinate-tools[open] {
+  right: 0;
+  bottom: calc(100% + 8px);
+  border-color: var(--border);
+  border-radius: 10px;
+  background: var(--surface-raised);
+}
+
+.cities-map-game-body > .answer-feedback {
+  width: fit-content;
+  max-width: min(860px, 100%);
+  justify-self: center;
+  margin: 10px auto 0;
+  padding: 9px 13px;
+  border-radius: 9px;
+  line-height: 1.45;
+}
+
+.cities-map-game-body .city-answer-dock .autocomplete-field > input {
+  min-height: 42px;
+}
+
+@media (max-width: 760px) {
+  .cities-map-game-body .city-map-stage {
+    height: clamp(460px, 68svh, 660px);
+  }
+
+  .cities-map-game-body .map-answer-dock {
+    width: calc(100% - 16px);
+    bottom: max(8px, env(safe-area-inset-bottom));
+    padding: 7px;
+  }
+
+  .cities-map-game-body .city-marker-dock {
+    min-width: calc(100% - 16px);
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .cities-map-game-body .city-marker-dock .city-place-button {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .cities-map-game-body .coordinate-tools summary {
+    padding-inline: 7px;
+    font-size: .64rem;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 761px) {
+  .cities-map-game-body .city-map-stage {
+    height: min(70svh, 580px);
+    min-height: 410px;
+  }
+}

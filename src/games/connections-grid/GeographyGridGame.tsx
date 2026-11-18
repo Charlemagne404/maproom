@@ -9,6 +9,7 @@ import { gridAnswerScore, gridCandidates, seededShuffle, validGridPresets, type 
 import { useGameSession } from '../session'
 import { useAppData } from '../../app/useAppData'
 import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
+import './GeographyGridGame.css'
 
 export function GeographyGridGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const { state } = useAppData()
@@ -141,8 +142,15 @@ function GridRound({ countries, mode, date, seed, preset, eligibility, onEligibi
     else setErrors((current) => ({ ...current, [key]: 'Choose an exact country name from the suggestions.' }))
   }
 
+  function closeGridDialog() {
+    const key = activeKey
+    setPopoverPosition(null)
+    setActiveKey(null)
+    if (key) requestAnimationFrame(() => gridRef.current?.querySelector<HTMLButtonElement>(`[data-cell-key="${key}"] .grid-cell-trigger`)?.focus())
+  }
+
   return (
-    <div className="game-body grid-game-body">
+    <div className="game-body grid-game-body map-grid-game-body">
       <div className="question-toolbar">
         <div><span className="eyebrow">{mode === 'daily' ? 'Today’s 3 × 3' : 'A fresh set of crossings'}</span><h2>{preset.title}</h2><p>Fill all nine crossings with different countries that fit both clues.</p></div>
         <div className="question-toolbar-tools">
@@ -178,8 +186,26 @@ function GridRound({ countries, mode, date, seed, preset, eligibility, onEligibi
         if (!row || !column || answers[activeKey]) return null
         const candidates = gridCandidates(countries, row, column)
         const result = criteriaResult?.key === activeKey ? criteriaResult : null
-        return <div className="grid-entry-panel" role="dialog" aria-label={`Answer for ${row.label} and ${column.label}`} style={popoverPosition ? { top: popoverPosition.top, left: popoverPosition.left, width: popoverPosition.width } : undefined}>
-          <div className="grid-entry-heading"><div className="grid-entry-prompt"><span className="eyebrow">Your pick</span><strong>{row.label}<b>×</b>{column.label}</strong><small>{candidates.length} possible answers</small></div><button type="button" className="grid-entry-close" onClick={() => { setPopoverPosition(null); setActiveKey(null) }} aria-label="Close answer input"><X size={17} /></button></div>
+        return <>
+        <div className="grid-entry-scrim" aria-hidden="true" onClick={closeGridDialog} />
+        <div className="grid-entry-panel" role="dialog" aria-modal="true" aria-label={`Answer for ${row.label} and ${column.label}`} onKeyDown={(event) => {
+          if (event.key === 'Escape') {
+            event.preventDefault()
+            closeGridDialog()
+          } else if (event.key === 'Tab') {
+            const focusable = [...event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])')]
+            const first = focusable[0]
+            const last = focusable.at(-1)
+            if (event.shiftKey && document.activeElement === first) {
+              event.preventDefault()
+              last?.focus()
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault()
+              first?.focus()
+            }
+          }
+        }} style={popoverPosition ? { top: popoverPosition.top, left: popoverPosition.left, width: popoverPosition.width } : undefined}>
+          <div className="grid-entry-heading"><div className="grid-entry-prompt"><span className="eyebrow">Your pick</span><strong>{row.label}<b>×</b>{column.label}</strong><small>{candidates.length} possible answers</small></div><button type="button" className="grid-entry-close" onClick={closeGridDialog} aria-label="Close answer input"><X size={17} /></button></div>
           <AutocompleteInput
             id="grid-answer-input"
             label={`Country for ${row.label} and ${column.label}`}
@@ -193,12 +219,13 @@ function GridRound({ countries, mode, date, seed, preset, eligibility, onEligibi
             autoFocus
           />
           {result && <div className="grid-criteria-feedback" aria-label="Criteria feedback">
-            <span className={result.rowMatches ? 'is-met' : 'is-missed'}>{result.rowMatches ? <Check size={14} /> : <X size={14} />}<span>{row.label}</span><small>{result.rowMatches ? 'Fits' : 'Does not fit'}</small></span>
-            <span className={result.columnMatches ? 'is-met' : 'is-missed'}>{result.columnMatches ? <Check size={14} /> : <X size={14} />}<span>{column.label}</span><small>{result.columnMatches ? 'Fits' : 'Does not fit'}</small></span>
-            {result.duplicate && <span className="is-missed"><X size={14} /><span>Distinct answer</span><small>Already used</small></span>}
+            <span className={result.rowMatches ? 'is-met' : 'is-missed'} role="status" aria-label={`${row.label}: ${result.rowMatches ? 'fits' : 'does not fit'}`}>{result.rowMatches ? <Check size={14} /> : <X size={14} />}<span>{row.label}</span><small className="sr-only">{result.rowMatches ? 'Fits' : 'Does not fit'}</small></span>
+            <span className={result.columnMatches ? 'is-met' : 'is-missed'} role="status" aria-label={`${column.label}: ${result.columnMatches ? 'fits' : 'does not fit'}`}>{result.columnMatches ? <Check size={14} /> : <X size={14} />}<span>{column.label}</span><small className="sr-only">{result.columnMatches ? 'Fits' : 'Does not fit'}</small></span>
+            {result.duplicate && <span className="is-missed" role="status" aria-label="Already used"><X size={14} /><span>Distinct answer</span><small className="sr-only">Already used</small></span>}
           </div>}
           {errors[activeKey] && <div className="grid-cell-error" role="alert">{errors[activeKey]}</div>}
         </div>
+        </>
       })()}
       <div className="grid-scoring-note"><CircleHelp size={15} /><span>9 unique answers · rarer crossings score more · <strong>{score.toLocaleString()}</strong> points</span></div>
       <details className="grid-source-note"><summary>How clues are defined</summary><p>Population uses 2023 country observations; area and listed land neighbors come from the country catalog. Southern Europe follows UN M49. EU membership reflects the 27 member states listed on 18 November 2026.</p><a href="https://unstats.un.org/unsd/methodology/m49/overview" target="_blank" rel="noreferrer">UN M49 classification</a><a href="https://european-union.europa.eu/principles-countries-history/eu-countries_en" target="_blank" rel="noreferrer">EU member countries</a></details>

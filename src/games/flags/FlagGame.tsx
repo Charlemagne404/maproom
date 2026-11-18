@@ -13,6 +13,7 @@ import { missedCountryCodes } from '../../statistics/mistakes'
 import { useGameSession } from '../session'
 import { adaptiveFlagQuestionSequence, flagAnswerChoices, flagCountryPool, type PracticeQuestionCount } from './questionPool'
 import { initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
+import './FlagGame.css'
 
 type Direction = 'flag-to-country' | 'country-to-flag'
 type AnswerStyle = 'choices' | 'typed'
@@ -54,7 +55,7 @@ export function FlagGame({ data, mode, date, seed }: { data: GeographyData; mode
   </div></GameSettingsMenu> : null
 
   return (
-    <div className="game-body flag-game-body">
+    <div className="game-body flag-game-body flag-study-game-body">
       <FlagRound
         key={`${round}:${continent}:${direction}:${answerStyle}:${progressive}:${reviewMissed}:${questionCount}:${eligibility}`}
         data={data}

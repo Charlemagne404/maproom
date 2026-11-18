@@ -9,7 +9,10 @@ import { flagCountryPool } from '../src/games/flags/questionPool'
 import { gridCandidates, shortestPath, validGridPresets } from '../src/puzzles/engine'
 import { exploreExperienceCount, freePlayCardCount } from './gameCatalogCounts'
 
-test.beforeAll(() => mkdirSync('artifacts/qa/product-consistency', { recursive: true }))
+test.beforeAll(() => {
+  mkdirSync('artifacts/qa/product-consistency', { recursive: true })
+  mkdirSync('artifacts/qa/maps-gameplay-ux', { recursive: true })
+})
 
 interface CountryRecord {
   iso3: string
@@ -952,14 +955,15 @@ test('country outlines load first-level regional silhouettes on demand', async (
 
 test('border route accepts an actual shortest path and scores it', async ({ page }) => {
   await openGame(page, 'routes')
-  await expect(page.locator('.route-map-legend')).toContainText('Start')
-  await expect(page.locator('.route-map-legend')).toContainText('Finish')
-  await expect(page.locator('.route-map-legend')).toContainText('Selected')
+  await expect(page.locator('.route-map-endpoints')).toContainText('Start')
+  await expect(page.locator('.route-map-endpoints')).toContainText('Destination')
+  await expect(page.locator('.route-map-distance')).toContainText('Shortest')
   const routeMap = page.locator('.route-map-stage .geo-map')
   await expect(routeMap).toHaveAttribute('aria-label', /fixed start, destination and selected intermediate countries/)
   await expect(routeMap.locator('.map-country.is-map-start')).toHaveCount(1)
   await expect(routeMap.locator('.map-country.is-map-destination')).toHaveCount(1)
   await expect(routeMap.locator('path[role="button"]')).toHaveCount(0)
+  await page.screenshot({ path: 'artifacts/qa/maps-gameplay-ux/border-route-endpoints.png', fullPage: true })
   const routeMapBounds = await routeMap.boundingBox()
   expect(routeMapBounds).not.toBeNull()
   const endpointCenters = await routeMap.locator('.map-country.is-map-start, .map-country.is-map-destination').evaluateAll((countries) => countries.map((country) => {
@@ -989,8 +993,8 @@ test('border route accepts an actual shortest path and scores it', async ({ page
   const graphCountries = eligibleCountries(await countryData(page) as unknown as Country[], 'standard').filter((country) => country.hasGeometry)
   const countriesByCode = new Map(graphCountries.map((country) => [country.iso3, country]))
   const countriesByName = new Map(graphCountries.map((country) => [country.name, country]))
-  const startName = await page.locator('.route-pair > div').nth(0).locator('strong').innerText()
-  const endName = await page.locator('.route-pair > div').nth(2).locator('strong').innerText()
+  const startName = await page.locator('.route-map-endpoint-start strong').innerText()
+  const endName = await page.locator('.route-map-endpoint-finish strong').innerText()
   const start = countriesByName.get(startName)
   const end = countriesByName.get(endName)
   expect(start).toBeDefined()
@@ -1012,9 +1016,9 @@ test('border route accepts an actual shortest path and scores it', async ({ page
   expect(disconnected, 'the Standard country graph has an isolated place to check a disconnected selection').toBeDefined()
   await chooseSuggestion(page, '#route-country', disconnected!.name)
   await expect(page.locator('.route-selected-set button')).toHaveCount(1)
-  await expect(page.locator('.route-set-status')).toContainText('do not connect')
+  await expect(page.locator('.route-set-status')).toContainText('does not connect')
   await page.getByRole('button', { name: `Remove ${disconnected!.name}` }).click()
-  await expect(page.locator('.route-set-hint')).toBeVisible()
+  await expect(page.locator('.route-set-status')).toContainText('Add countries in any order')
 
   await page.getByRole('button', { name: 'Hint' }).click()
   await expect(page.locator('.route-hint')).toContainText('One shortest route includes')
@@ -1024,10 +1028,18 @@ test('border route accepts an actual shortest path and scores it', async ({ page
   const entryOrder = [...intermediate].reverse()
   for (const [index, code] of entryOrder.entries()) {
     const country = countriesByCode.get(code)!
-    await chooseSuggestion(page, '#route-country', country.name)
+    if (index === 0) {
+      const input = page.locator('#route-country')
+      await input.fill(country.name)
+      await expect(page.getByRole('option', { name: new RegExp(`^${country.name}`) })).toBeVisible()
+      await input.press('ArrowDown')
+      await input.press('Enter')
+      await input.press('Enter')
+    } else await chooseSuggestion(page, '#route-country', country.name)
     if (index < entryOrder.length - 1) {
-      await expect(page.locator('.route-set-status')).toContainText('do not connect')
+      await expect(page.locator('.route-set-status')).toContainText('does not connect')
       await expect(page.locator('.route-selected-set button')).toHaveCount(index + 1)
+      if (index === 0) await page.screenshot({ path: 'artifacts/qa/maps-gameplay-ux/border-route-selected-set.png', fullPage: true })
     }
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
@@ -1387,7 +1399,10 @@ test('geography grid accepts nine distinct countries from real category intersec
     .filter((country) => country.hasGeometry).map((country) => country.iso3))
   const invalidCountry = countries.find((country) => country.hasGeometry && !firstCandidates.has(country.iso3))
   expect(invalidCountry, 'first Grid crossing has an eligible invalid answer').toBeDefined()
-  await page.locator('.grid-cell[data-cell-key="0:0"] .grid-cell-trigger').click()
+  const firstCellTrigger = page.locator('.grid-cell[data-cell-key="0:0"] .grid-cell-trigger')
+  await firstCellTrigger.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('dialog', { name: /Answer for/ })).toBeVisible()
   await chooseSuggestion(page, '#grid-answer-input', invalidCountry!.name)
   await expect(page.getByRole('alert')).toHaveCount(1)
   await expect(page.getByRole('alert')).toHaveText(`${invalidCountry!.name} doesn’t meet both clues.`)
@@ -1396,7 +1411,9 @@ test('geography grid accepts nine distinct countries from real category intersec
   await expect(criteriaFeedback.locator(':scope > span')).toHaveCount(2)
   await expect(criteriaFeedback).toContainText('Does not fit')
   await expect(progressAnnouncement).toHaveText('0 of 9 squares filled')
-  await page.getByRole('button', { name: 'Close answer input' }).click()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog', { name: /Answer for/ })).toBeHidden()
+  await expect(firstCellTrigger).toBeFocused()
 
   const cells = rows.flatMap((_, rowIndex) => columns.map((__, columnIndex) => ({
     key: `${rowIndex}:${columnIndex}`,
@@ -1421,6 +1438,11 @@ test('geography grid accepts nine distinct countries from real category intersec
   for (const cell of cells) expect(place(cell, new Set())).toBe(true)
   let filled = 0
   for (const [key, country] of assigned) {
+    const activeDialog = page.getByRole('dialog', { name: /Answer for/ })
+    if (await activeDialog.isVisible()) {
+      await page.keyboard.press('Escape')
+      await expect(activeDialog).toBeHidden()
+    }
     await page.locator(`.grid-cell[data-cell-key="${key}"] .grid-cell-trigger`).click()
     await chooseSuggestion(page, '#grid-answer-input', country.name)
     filled += 1

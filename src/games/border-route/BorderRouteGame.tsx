@@ -10,6 +10,7 @@ import { buildAdjacency, findRouteOrdering, generateRoutePuzzle, resolveCountryA
 import { useGameSession } from '../session'
 import { eligibleCountries, eligibleFeatures, initialGeographyEligibility, isStandardCountry, type GeographyEligibility } from '../../geography/eligibility'
 import { useAppData } from '../../app/useAppData'
+import './BorderRouteGame.css'
 
 export function BorderRouteGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const { state } = useAppData()
@@ -106,54 +107,53 @@ function RouteRound({ data, countries, mode, date, seed, scope, scopes, difficul
   }
 
   return (
-    <div className="game-body route-game-body">
+    <div className="game-body route-game-body route-game-map-focus">
       {mode === 'freeplay' && <div className="question-toolbar route-practice-toolbar"><div><span className="eyebrow">Border route</span><h2>Connect the countries by land</h2></div><div className="question-toolbar-tools"><GameSettingsMenu><div className="practice-config">
         <GameSettingSelect label="Geographic scope" value={scope} control="select" options={scopes.map((item) => ({ value: item, label: item }))} onChange={onScope} />
         <GameSettingSelect label="Route length" value={difficulty} options={[{ value: 'short', label: 'Short · 2–4' }, { value: 'standard', label: 'Standard · 3–6' }, { value: 'long', label: 'Long · 5–8' }]} onChange={(value) => onDifficulty(value as RouteDifficulty)} />
         <AdvancedGameSettings><GameSettingSelect label="Country pool" value={eligibility} options={[{ value: 'standard', label: 'Standard · 195 states' }, { value: 'extended', label: 'Extended · territories included' }]} onChange={(value) => onEligibility(value as GeographyEligibility)} /></AdvancedGameSettings>
         <span className="practice-config-note">All routes use recorded land borders and are solvable.</span>
       </div></GameSettingsMenu></div></div>}
-      <div className="route-pair">
-        <div><span className="eyebrow">Start here</span><strong>{start.name}</strong></div>
-        <div className="route-pair-arrow"><RouteIcon size={19} /><span>across land</span></div>
-        <div><span className="eyebrow">Arrive here</span><strong>{end.name}</strong></div>
-        <div className="route-distance"><span>Shortest possible</span><strong>{puzzle.shortest.length - 1} {puzzle.shortest.length - 1 === 1 ? 'border' : 'borders'}</strong></div>
-      </div>
       <div className="route-map-frame">
-        <div className="game-map-stage route-map-stage"><GeoMap features={eligibleFeatures(data.features, mapEligibility)} activeCodes={selectedCountries} startCode={puzzle.start} destinationCode={puzzle.end} focusCodes={focusCodes} focusPadding={72} hideFeatureNames showHoverLabels={false} ariaLabel="Map showing the fixed start, destination and selected intermediate countries. Use the country input to add intermediate countries." /></div>
-        <div className="route-map-legend" aria-label="Map key">
-          <span><i className="route-map-key-start" aria-hidden="true" />Start</span>
-          <span><i className="route-map-key-finish" aria-hidden="true" />Finish</span>
-          <span><i className="route-map-key-path" aria-hidden="true" />Selected</span>
+        <div className="game-map-stage route-map-stage"><GeoMap features={eligibleFeatures(data.features, mapEligibility)} activeCodes={selectedCountries} startCode={puzzle.start} destinationCode={puzzle.end} focusCodes={focusCodes} focusPadding={84} localFit hideFeatureNames showHoverLabels={false} ariaLabel="Map showing the fixed start, destination and selected intermediate countries. Use the country input to add intermediate countries." /></div>
+        <div className="route-map-endpoints" aria-label="Border route endpoints">
+          <div className="route-map-endpoint route-map-endpoint-start"><span>Start</span><strong>{start.name}</strong></div>
+          <RouteIcon size={17} aria-hidden="true" />
+          <div className="route-map-endpoint route-map-endpoint-finish"><span>Destination</span><strong>{end.name}</strong></div>
+          <div className="route-map-distance"><span>Shortest</span><strong>{puzzle.shortest.length - 1} {puzzle.shortest.length - 1 === 1 ? 'border' : 'borders'}</strong></div>
         </div>
-        <div className="route-game-dock">
-          <div className="route-builder">
-            <div className="route-builder-head"><span className="eyebrow">Intermediate countries</span><span>{selectedCountries.length} selected</span></div>
-            {routeOrdering ? <ol className="route-stops is-ordered" aria-label="A valid border route">
-              {routeNames.map((name, index) => <li key={`${routeOrdering[index]}-${index}`} className={index === 0 ? 'is-start' : index === routeNames.length - 1 ? 'is-destination' : ''}><span>{name}</span>{index < routeNames.length - 1 && <ArrowRight size={13} aria-hidden="true" />}</li>)}
-            </ol> : selectedNames.length > 0 ? <div className="route-selected-set" aria-label="Selected countries, in entry order">
-              {selectedNames.map(({ code, name }) => <button key={code} type="button" disabled={finished} aria-label={`Remove ${name}`} onClick={() => { setSelectedCountries((current) => current.filter((item) => item !== code)); setError('') }}>{name}<span aria-hidden="true">×</span></button>)}
-            </div> : <p className="route-set-hint">Add any countries in any order. The map will show when the set connects.</p>}
-          </div>
+        <div className="route-map-input-dock">
+          {!finished && selectedNames.length > 0 && <div className="route-selected-set" aria-label="Selected intermediate countries, entered in any order">
+            {selectedNames.map(({ code, name }, index) => <button key={code} type="button" disabled={finished} aria-label={`Remove ${name}`} onClick={() => { setSelectedCountries((current) => current.filter((item) => item !== code)); setError('') }}><span className="route-selected-number">{index + 1}</span>{name}<XIcon /></button>)}
+          </div>}
+          {finished && routeOrdering && <ol className="route-stops is-ordered" aria-label="A valid border route">
+            {routeNames.map((name, index) => <li key={`${routeOrdering[index]}-${index}`} className={index === 0 ? 'is-start' : index === routeNames.length - 1 ? 'is-destination' : ''}><span>{name}</span>{index < routeNames.length - 1 && <ArrowRight size={13} aria-hidden="true" />}</li>)}
+          </ol>}
           {!finished && <div className="route-input-row">
-            <AutocompleteInput id="route-country" label="Add an intermediate country in any order" placeholder="Type any country name" value={input} onChange={(value) => { setInput(value); setError('') }} suggestions={suggestions} onPick={(item) => { setInput(item.label); void addCountry(item.value) }} onSubmit={submitName} submitLabel="Add" />
-            <button className="button button-outline hint-button" type="button" onClick={() => {
+            <AutocompleteInput id="route-country" label="Add an intermediate country in any order" placeholder="Add any country" value={input} onChange={(value) => { setInput(value); setError('') }} suggestions={suggestions} onPick={(item) => { setInput(item.label); void addCountry(item.value) }} onSubmit={submitName} submitLabel="Add" />
+            <button className="button button-outline hint-button" type="button" aria-label="Hint" onClick={() => {
               const shortest = shortestPath(puzzle.start, puzzle.end, adjacency) ?? []
               const nextCode = shortest.slice(1, -1).find((candidate) => !selectedCountries.includes(candidate))
               if (nextCode) {
                 setHintShown(`One shortest route includes ${data.countriesByCode.get(nextCode)?.name ?? nextCode}.`)
                 setHintsUsed((value) => value + 1)
               }
-            }}><Lightbulb size={15} /> Hint</button>
+            }}><Lightbulb size={15} /><span>Hint</span></button>
           </div>}
           {error && <div className="form-message form-message-error" role="alert">{error}</div>}
           {hintShown && <div className="route-hint" role="status"><Lightbulb size={15} /><span>{hintShown}</span></div>}
-          {!finished && <div className={`route-set-status${routeOrdering ? ' is-valid' : ''}`} role="status" aria-live="polite">{routeOrdering ? 'A continuous route is ready.' : selectedCountries.length === 0 ? 'Add countries in any order; the map will show when the set connects.' : 'The selected countries do not connect in one route yet.'}</div>}
+          <div className={`route-set-status${routeOrdering ? ' is-valid' : ''}`} role="status" aria-live="polite">
+            {routeOrdering ? 'A continuous route is ready.' : selectedCountries.length === 0 ? `Add countries in any order · shortest route ${puzzle.shortest.length - 1} borders.` : `${selectedCountries.length} selected · the set does not connect yet.`}
+          </div>
         </div>
       </div>
       <GameResultsDialog complete={finished} gameId="routes" mode={mode} score={finalScore} correct={finished ? 1 : 0} total={1} title={selectedCountries.length === puzzle.shortest.length - 2 ? 'The shortest way through.' : 'A valid route across the map.'} message={routeNames.join(' → ')} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Build another route" />
     </div>
   )
+}
+
+function XIcon() {
+  return <span className="route-remove-mark" aria-hidden="true">×</span>
 }
 
 function restoreRouteSelection(savedSelected: unknown, savedRoute: unknown, start: string, end: string, countries: GeographyData['countries']): string[] {
