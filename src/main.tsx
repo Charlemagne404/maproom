@@ -12,6 +12,7 @@ import 'flag-icons/css/flag-icons.min.css'
 import './index.css'
 import './refinement.css'
 import './theme.css'
+import './styles/mobile/mobile.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
