@@ -1,0 +1,78 @@
+# Geography Connections: editorial guide
+
+## Library and runtime
+
+Boards are fixed editorial content in `src/puzzles/connections-content.ts`. The game never invents a category or combines predicates at runtime. `src/puzzles/connections.ts` selects a board from the chosen overall difficulty, seeded-shuffles its 16 country tiles, and runs the authoring audit. The data, interaction layer, and browser styles stay in the Geography Connections workstream.
+
+The opening library contains 24 boards: 8 each in the Easy, Medium, and Hard pools. Each board has four separately ranked groups (tiers 1–4). Overall difficulty describes the combined board; tier describes a group's intended reveal color/order. Both assignments are editorial judgments and need a human play-through before a new board is added.
+
+Each group records its visible label, explanation, four ISO3 entries, tier, and a machine-readable fact rule. The rule and selected country codes must agree exactly on that board. Where an organization has more than four members, the label says **among** and the explanation states the full set size; the remaining members must not be extra tiles on that board.
+
+## Authoring checklist
+
+1. Choose four relationships that use different kinds of geography knowledge. Avoid a board made only of continents, broad subregions, or easy name endings.
+2. Give every group four distinct ISO3 codes from the bundled country catalogue. Across the four groups, all 16 codes must be unique and appear once.
+3. Write a short category label and a one-sentence reveal that states the actual rule, its boundary, and any date or subset limit.
+4. Record the exact fact rule. Add a named set when membership requires a human-authored list; give that set a source and a note in `CONNECTIONS_NAMED_FACT_SETS`.
+5. Put plausible decoys on the same board, then check what else the 16 entries share: borders, continents, subregions, landlocked status, names, capital names, coast sets, history lists, and any relevant data band.
+6. Run `npm test -- --run src/puzzles/connections.test.ts`. Every board must pass the structural, country-code, declared-fact and exact-alternative checks. Read all reported overlaps and decide whether they are broad red herrings or a second usable four-country answer.
+7. Play every category both before and after another category is solved. Check that a knowledgeable player can infer the label from the reveal, that the wording is defensible, and that the group is challenging without requiring a trick definition.
+
+An overlap of more than four board tiles is reported for human review. It is not silently treated as an exact quartet: a set with five matches can still provide several plausible four-country guesses. Keep such overlaps deliberate and explain them in the puzzle's editorial note. An exact alternate quartet that does not equal one of the four intended answer sets is an audit error.
+
+### Starter-library overlap review
+
+The 24-board audit reports no unassigned exact quartet. The following broad matches were reviewed as deliberate cross-group decoys; counts are the number of tiles matching that rule, not additional answer groups. This is the baseline to compare against when content changes. Any new warning must be reviewed and recorded before publication.
+
+| Board | Reviewed broad matches |
+| --- | --- |
+| Atlas 02 | landlocked (5); Europe (5); Africa (5) |
+| Atlas 03 | landlocked (6); Asia (7); Europe (6) |
+| Atlas 04 | Asia (6); Europe (8); Northern Europe (5) |
+| Atlas 05 | Asia (5); South-Eastern Asia (5) |
+| Atlas 06 | landlocked (5); Africa (7) |
+| Atlas 07 | Asia (12); Western Asia (6) |
+| Atlas 08 | Europe (6); Africa (6) |
+| Atlas 09 | Asia (6); Europe (6) |
+| Atlas 11 | landlocked (6); Europe (8) |
+| Atlas 12 | Asia (6); Africa (6) |
+| Atlas 13 | landlocked (5); Asia (5); Europe (6) |
+| Atlas 14 | Europe (10) |
+| Atlas 15 | country names beginning B (7); Asia (7); Europe (6); 2023 population above 100 million (5) |
+| Atlas 16 | Asia (8) |
+| Atlas 17 | landlocked (8); Asia (6); Europe (6) |
+| Atlas 18 | landlocked (5); Asia (6); Africa (6) |
+| Atlas 19 | Asia (7) |
+| Atlas 20 | Asia (6); Africa (6) |
+| Atlas 21 | landlocked (6); Asia (6); Europe (6) |
+| Atlas 22 | Europe (8) |
+| Atlas 23 | Europe (11) |
+| Atlas 24 | Asia (7) |
+
+Atlas 01 and Atlas 10 produce no broad-match warning under the checked rule set. The audit intentionally avoids treating arbitrary population or area cutoffs as plausible alternatives: such bins can be invented endlessly and are not clues unless the board names and dates them. It does check authored bands, the recurring under-1,000 km² and above-100-million thresholds, country and capital initials, name patterns, all catalogue borders and regions, landlocked status, and every named set.
+
+## Fact sources and interpretation
+
+| Fact family | Source and use |
+| --- | --- |
+| Names, capitals, capital coordinates, area, landlocked status, subregion and shared land borders | The checked-in [country catalogue](../../../public/data/data-manifest.json) identifies the `mledoze/countries` ODbL snapshot and the transformations used to create `public/data/countries.json`. Border clues use its reciprocal land-neighbor list; they do not mean maritime neighbors. |
+| 2023 population | [World Bank WDI, SP.POP.TOTL](https://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL?format=json&date=2023&per_page=20000), joined by ISO3. Labels name the year. A band includes its lower bound and excludes its upper bound. |
+| Equator, Tropic of Capricorn, and named-sea shorelines | [Natural Earth 1:50m cultural vectors](https://www.naturalearthdata.com/downloads/50m-cultural-vectors/) and a board-by-board line/coastline review. These are generalized world-scale geometries, so a shoreline or tiny-island decision follows the stated map scale. The Tropic fact is land-only at 23.4366° south; territorial waters do not count. The Equator set retains São Tomé and Príncipe because the generalized Natural Earth geometry omits the tiny Rolas Islet land crossing. |
+| Danube capitals | National-capital coordinates from the checked-in GeoNames data and the pinned Natural Earth 1:50m river centerlines. The set concerns four capitals on the river, not every country in the basin. |
+| Lake Chad shore | [NASA Earth Observatory](https://science.nasa.gov/earth/earth-observatory/lake-chads-water-wetlands-and-dunes-154407/) and the [International Lake Environment Committee World Lake Database](https://wldb.ilec.or.jp/Lake/AFR-02). Cameroon, Niger, Nigeria and Chad are the four lake-border countries; this excludes other Lake Chad basin states. |
+| ASEAN founders | [ASEAN's founding history](https://asean.org/the-founding-of-asean/): Indonesia, Malaysia, the Philippines, Singapore and Thailand signed the 1967 Bangkok Declaration. Current membership is not substituted for the founding set. |
+| CPLP / Portuguese official language | [CPLP member-state pages](https://www.cplp.org/estados-membros/) and country language designations. The named set includes Equatorial Guinea's Portuguese official-language designation; a clue says Portuguese is official, not that it is the only language. |
+| Nordic sovereign states | [Nordic cooperation](https://www.norden.org/en/information/about-presidency-nordic-council-ministers), restricted to Denmark, Finland, Iceland, Norway and Sweden. Autonomous areas are not country tiles. |
+| Central Asian former Soviet republics | The five former Soviet republics of Kazakhstan, Kyrgyzstan, Tajikistan, Turkmenistan and Uzbekistan. This is an explicitly historical subset, not the full modern Central Asia region. |
+| Former Yugoslav republics | The [International Criminal Tribunal for the former Yugoslavia](https://www.icty.org/en/about/what-former-yugoslavia) identifies the six SFRY republics. Kosovo was not one of the six republics. |
+| G7 | [G7 Italia](https://www.g7italy.it/en/about-g7/) lists the seven country members; the European Union is not a country tile. |
+| Visegrad Four | [The International Visegrad Fund](https://www.visegradgroup.eu/about) describes Czechia, Hungary, Poland and Slovakia as the V4. |
+| OPEC founding members | [OPEC's 1960 history](https://www.opec.org/pr-detail/77-14-sep-2022.html): Iran, Iraq, Kuwait, Saudi Arabia and Venezuela. A four-tile board category says “among” the five. |
+| SACU members | [Southern African Customs Union](https://www.sacu.int/about-sacu): Botswana, Eswatini, Lesotho, Namibia and South Africa. A four-tile board category says “among” the five. |
+| EEC founding members | [European Commission enlargement timeline](https://commission.europa.eu/topics/enlargement/together-eu_en): Belgium, France, Germany, Italy, Luxembourg and the Netherlands signed the Treaty of Rome. A four-tile board category says “among” the six. |
+
+The snapshot hashes, retrieval dates, licenses and transformation notes for the bundled sources are recorded in `public/data/data-manifest.json`; the ODbL notice is included at `public/data/COUNTRY-CATALOG-ODbL-1.0.txt`. At runtime the game uses only bundled data and authored content, so a played or replayed board needs no network connection.
+
+## Validation limits
+
+The validator can prove shape, catalogue membership, a declared rule's exact board membership, and absence of an unassigned exact quartet among its known fact rules. It cannot prove that a historical membership list is correct or that a category feels fair. Named-set membership therefore needs its linked source and note, and every new board still needs editorial review. Broad overlaps such as “same continent” are useful decoys only when the board does not leave a different exact four-country answer under that rule.

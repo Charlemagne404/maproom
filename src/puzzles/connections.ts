@@ -1,166 +1,239 @@
 import type { Country } from '../geography/types'
 import { eligibleCountries, type GeographyEligibility } from '../geography/eligibility'
-import { buildAdjacency, seededShuffle } from './engine'
+import { seededShuffle } from './engine'
+import {
+  CONNECTIONS_NAMED_FACT_SETS,
+  CONNECTIONS_PUZZLES,
+  type ConnectionsDifficulty,
+  type ConnectionsEditorialGroup,
+  type ConnectionsFactRule,
+} from './connections-content'
 
-export type ConnectionsDifficulty = 'easy' | 'medium' | 'hard'
-type CategoryTier = 1 | 2 | 3
+export type { ConnectionsDifficulty } from './connections-content'
+export type ConnectionsTier = 1 | 2 | 3 | 4
 
-export interface ConnectionsGroup {
-  id: string
-  label: string
-  difficulty: CategoryTier
-  countryCodes: string[]
-  explanation: string
-}
+export interface ConnectionsGroup extends ConnectionsEditorialGroup {}
 
 export interface ConnectionsPuzzle {
+  id: string
   groups: ConnectionsGroup[]
   tiles: Country[]
   difficulty: ConnectionsDifficulty
   eligibility: GeographyEligibility
+  editorialNote: string
 }
 
-interface CandidateGroup extends ConnectionsGroup {
-  members: Country[]
+export interface ConnectionsPuzzleAudit {
+  issues: string[]
+  overlaps: string[]
 }
 
-const FAMILIAR_BORDERING_COUNTRIES = ['ARG', 'BRA', 'CHN', 'DEU', 'FRA', 'IND', 'RUS', 'ZAF']
+const namedFactSetById = new Map(CONNECTIONS_NAMED_FACT_SETS.map((set) => [set.id, set]))
 
+/** Selects a fully authored board. Only the board order and tile order use a seed. */
 export function generateConnectionsPuzzle(
   countries: Country[],
   seed: string,
   difficulty: ConnectionsDifficulty = 'easy',
   eligibility: GeographyEligibility = 'standard',
+  roundIndex = 0,
 ): ConnectionsPuzzle {
   const eligible = eligibleCountries(countries, eligibility)
-  const categories = availableCategories(eligible, difficulty)
+  const byCode = new Map(eligible.map((country) => [country.iso3, country]))
+  const pool = CONNECTIONS_PUZZLES.filter((candidate) => candidate.difficulty === difficulty
+    && candidate.groups.every((group) => group.countryCodes.every((code) => byCode.has(code))))
+  if (!pool.length) throw new Error(`No authored ${difficulty} Connections board is available for this country pool.`)
 
-  for (let attempt = 0; attempt < 2_000; attempt += 1) {
-    const groups: CandidateGroup[] = []
-    const used = new Set<string>()
-    const options = seededShuffle(categories, `${seed}:categories:${attempt}`)
-    for (const option of options) {
-      const available = option.members.filter((country) => !used.has(country.iso3))
-      if (available.length < 4) continue
-      const members = seededShuffle(available, `${seed}:members:${attempt}:${option.id}`).slice(0, 4)
-      const codes = members.map((country) => country.iso3).sort()
-      groups.push({ ...option, members, countryCodes: codes })
-      for (const code of codes) used.add(code)
-      if (groups.length === 4) break
+  const ordered = seededShuffle(pool, `${seed}:connections-pool:${difficulty}`)
+  const selected = ordered[((roundIndex % ordered.length) + ordered.length) % ordered.length]
+  const answerCodes = selected.groups.flatMap((group) => group.countryCodes)
+  const tiles = answerCodes.map((code) => byCode.get(code)!)
+
+  return {
+    id: selected.id,
+    groups: selected.groups.map((group) => ({ ...group, countryCodes: [...group.countryCodes], fact: { ...group.fact } })),
+    tiles: seededShuffle(tiles, `${seed}:connections-tiles:${selected.id}:${roundIndex}`),
+    difficulty,
+    eligibility,
+    editorialNote: selected.editorialNote,
+  }
+}
+
+/**
+ * Checks the authored answer shape, fact declarations, and exact alternate
+ * four-country matches in the editorial fact bank and common catalog facts.
+ * Larger attribute intersections are returned separately for human review as
+ * intentional red herrings rather than being treated as a second exact group.
+ */
+export function auditConnectionsPuzzle(
+  puzzle: Pick<ConnectionsPuzzle, 'id' | 'groups' | 'tiles' | 'difficulty' | 'eligibility'>,
+  countries: Country[],
+): ConnectionsPuzzleAudit {
+  const issues: string[] = []
+  const overlaps: string[] = []
+  const eligible = eligibleCountries(countries, puzzle.eligibility)
+  const byCode = new Map(eligible.map((country) => [country.iso3, country]))
+  const tileCodes = puzzle.tiles.map((country) => country.iso3)
+  const board = new Set(tileCodes)
+
+  if (puzzle.groups.length !== 4) issues.push(`${puzzle.id}: expected four groups, found ${puzzle.groups.length}.`)
+  if (puzzle.tiles.length !== 16) issues.push(`${puzzle.id}: expected sixteen tiles, found ${puzzle.tiles.length}.`)
+  if (board.size !== 16) issues.push(`${puzzle.id}: tile country codes must be distinct.`)
+  for (const code of tileCodes) if (!byCode.has(code)) issues.push(`${puzzle.id}: ${code} is missing from the eligible country catalogue.`)
+
+  const groupIds = new Set<string>()
+  const answerSets: Set<string>[] = []
+  const allAnswerCodes = new Set<string>()
+  for (const group of puzzle.groups) {
+    if (groupIds.has(group.id)) issues.push(`${puzzle.id}: duplicate group id ${group.id}.`)
+    groupIds.add(group.id)
+    const codes = new Set(group.countryCodes)
+    if (group.countryCodes.length !== 4 || codes.size !== 4) issues.push(`${puzzle.id}/${group.id}: expected four distinct countries.`)
+    for (const code of codes) {
+      if (!board.has(code)) issues.push(`${puzzle.id}/${group.id}: ${code} is not a tile on this board.`)
+      if (allAnswerCodes.has(code)) issues.push(`${puzzle.id}: ${code} appears in more than one answer group.`)
+      allAnswerCodes.add(code)
     }
-
-    if (groups.length !== 4 || used.size !== 16 || !hasUniqueGrouping(groups, categories, used)) continue
-    const tiles = seededShuffle(groups.flatMap((group) => group.members), `${seed}:tile-order`)
-    return {
-      groups: groups.map(({ members: _members, ...group }) => group),
-      tiles,
-      difficulty,
-      eligibility,
+    answerSets.push(codes)
+    const factMembers = new Set(membersForFact(group.fact, eligible))
+    const matchedOnBoard = new Set([...board].filter((code) => factMembers.has(code)))
+    if (!sameSet(matchedOnBoard, codes)) {
+      issues.push(`${puzzle.id}/${group.id}: the declared fact must match exactly its four board tiles; found ${[...matchedOnBoard].join(', ')}.`)
     }
   }
+  if (allAnswerCodes.size !== 16) issues.push(`${puzzle.id}: answer groups must cover all sixteen tiles exactly once.`)
 
-  throw new Error(`No unambiguous ${difficulty} Connections puzzle is available from this country pool.`)
+  for (const rule of auditFacts(puzzle.groups, eligible)) {
+    const matched = new Set([...board].filter((code) => membersForFact(rule, eligible).includes(code)))
+    if (matched.size < 4) continue
+    if (answerSets.some((answer) => sameSet(answer, matched))) continue
+    const label = describeFact(rule)
+    if (matched.size === 4) issues.push(`${puzzle.id}: unintended four-country alternative (${label}: ${[...matched].join(', ')}).`)
+    else overlaps.push(`${label} matches ${matched.size} board tiles (${[...matched].join(', ')}).`)
+  }
+
+  return { issues: [...new Set(issues)], overlaps: [...new Set(overlaps)] }
 }
 
 export function connectionsBoardIsUnambiguous(puzzle: ConnectionsPuzzle, countries: Country[]): boolean {
-  if (puzzle.groups.length !== 4 || puzzle.tiles.length !== 16) return false
-  const used = new Set(puzzle.tiles.map((country) => country.iso3))
-  if (used.size !== 16) return false
-  const categories = availableCategories(eligibleCountries(countries, puzzle.eligibility), puzzle.difficulty)
-  const groups = puzzle.groups.map((group) => ({ ...group, members: group.countryCodes.flatMap((code) => {
-    const country = countries.find((item) => item.iso3 === code)
-    return country ? [country] : []
-  }) }))
-  return groups.every((group) => group.members.length === 4 && new Set(group.countryCodes).size === 4)
-    && hasUniqueGrouping(groups, categories, used)
+  return auditConnectionsPuzzle(puzzle, countries).issues.length === 0
 }
 
-function buildCategories(countries: Country[], difficulty: ConnectionsDifficulty): CandidateGroup[] {
-  const categories: CandidateGroup[] = []
-  const adjacency = buildAdjacency(countries)
-  const add = (tier: CategoryTier, id: string, label: string, explanation: string, matches: (country: Country) => boolean) => {
-    const members = countries.filter(matches)
-    if (members.length >= 4) categories.push({ id, label, explanation, difficulty: tier, countryCodes: [], members })
+export function auditConnectionsLibrary(countries: Country[]): ConnectionsPuzzleAudit {
+  const issues: string[] = []
+  const overlaps: string[] = []
+  const expectedCounts: Record<ConnectionsDifficulty, number> = { easy: 8, medium: 8, hard: 8 }
+  for (const difficulty of Object.keys(expectedCounts) as ConnectionsDifficulty[]) {
+    const actual = CONNECTIONS_PUZZLES.filter((puzzle) => puzzle.difficulty === difficulty).length
+    if (actual !== expectedCounts[difficulty]) issues.push(`Expected ${expectedCounts[difficulty]} ${difficulty} boards, found ${actual}.`)
   }
+  if (CONNECTIONS_PUZZLES.length !== 24) issues.push(`Expected 24 authored boards, found ${CONNECTIONS_PUZZLES.length}.`)
 
-  const continents = [...new Set(countries.map((country) => country.continent).filter((value): value is string => Boolean(value)))].sort()
-  if (difficulty === 'easy') {
-    for (const continent of continents) {
-      add(1, `continent:${slug(continent)}`, `In ${continent}`, `All four are in ${continent}.`, (country) => country.continent === continent)
-      add(1, `landlocked-continent:${slug(continent)}`, `Landlocked in ${continent}`, `Each has no coastline and is in ${continent}.`, (country) => country.continent === continent && country.landlocked)
+  const puzzleIds = new Set<string>()
+  for (const source of CONNECTIONS_PUZZLES) {
+    if (puzzleIds.has(source.id)) issues.push(`Duplicate puzzle id ${source.id}.`)
+    puzzleIds.add(source.id)
+    const puzzle: ConnectionsPuzzle = {
+      ...source,
+      tiles: source.groups.flatMap((group) => group.countryCodes.map((code) => countries.find((country) => country.iso3 === code)).filter((country): country is Country => Boolean(country))),
+      eligibility: 'standard',
     }
-    add(1, 'landlocked', 'Landlocked countries', 'Each has no coastline.', (country) => country.landlocked)
-    for (const code of FAMILIAR_BORDERING_COUNTRIES) {
-      const anchor = countries.find((country) => country.iso3 === code)
-      if (!anchor) continue
-      const neighbors = new Set(adjacency.get(code) ?? [])
-      add(1, `borders:${code}`, `Border ${anchor.name}`, `Each shares a recorded land border with ${anchor.name}.`, (country) => neighbors.has(country.iso3))
-    }
+    const result = auditConnectionsPuzzle(puzzle, countries)
+    issues.push(...result.issues)
+    overlaps.push(...result.overlaps.map((overlap) => `${source.id}: ${overlap}`))
   }
-
-  if (difficulty === 'medium' || difficulty === 'hard') {
-    for (const subregion of [...new Set(countries.map((country) => country.subregion).filter((value): value is string => Boolean(value)))].sort()) {
-      const key = slug(subregion)
-      add(2, `subregion:${key}`, `In ${subregion}`, `Each is catalogued in ${subregion}.`, (country) => country.subregion === subregion)
-      add(2, `landlocked-subregion:${key}`, `Landlocked in ${subregion}`, `Each is landlocked and in ${subregion}.`, (country) => country.subregion === subregion && country.landlocked)
-    }
-    for (const code of FAMILIAR_BORDERING_COUNTRIES) {
-      const anchor = countries.find((country) => country.iso3 === code)
-      if (!anchor) continue
-      const neighbors = new Set(adjacency.get(code) ?? [])
-      add(2, `borders-medium:${code}`, `Border ${anchor.name}`, `Each shares a recorded land border with ${anchor.name}.`, (country) => neighbors.has(country.iso3))
-    }
+  for (const set of CONNECTIONS_NAMED_FACT_SETS) {
+    const unique = new Set(set.members)
+    if (unique.size !== set.members.length) issues.push(`Named fact set ${set.id} contains duplicate countries.`)
+    for (const code of unique) if (!countries.some((country) => country.iso3 === code)) issues.push(`Named fact set ${set.id} references unknown country ${code}.`)
   }
-
-  if (difficulty === 'hard') {
-    const populationBands: Array<[string, string, (value: number) => boolean]> = [
-      ['pop-under-1m', 'Population under 1m', (value) => value < 1_000_000],
-      ['pop-1m-5m', 'Population 1–5m', (value) => value >= 1_000_000 && value < 5_000_000],
-      ['pop-5m-25m', 'Population 5–25m', (value) => value >= 5_000_000 && value < 25_000_000],
-      ['pop-25m-100m', 'Population 25–100m', (value) => value >= 25_000_000 && value < 100_000_000],
-      ['pop-over-100m', 'Population over 100m', (value) => value >= 100_000_000],
-    ]
-    for (const [id, label, within] of populationBands) add(3, id, label, `Each falls in the ${label.toLocaleLowerCase('en')} band.`, (country) => country.population !== null && within(country.population))
-    const areaBands: Array<[string, string, (value: number) => boolean]> = [
-      ['area-under-10k', 'Area under 10,000 km²', (value) => value < 10_000],
-      ['area-10k-100k', 'Area 10,000–100,000 km²', (value) => value >= 10_000 && value < 100_000],
-      ['area-100k-500k', 'Area 100,000–500,000 km²', (value) => value >= 100_000 && value < 500_000],
-      ['area-500k-2m', 'Area 500,000–2m km²', (value) => value >= 500_000 && value < 2_000_000],
-      ['area-over-2m', 'Area over 2m km²', (value) => value >= 2_000_000],
-    ]
-    for (const [id, label, within] of areaBands) add(3, id, label, `Each falls in the ${label.toLocaleLowerCase('en')} band.`, (country) => country.areaKm2 !== null && country.areaKm2 > 0 && within(country.areaKm2))
-  }
-  return categories
+  return { issues: [...new Set(issues)], overlaps: [...new Set(overlaps)] }
 }
 
-function availableCategories(countries: Country[], difficulty: ConnectionsDifficulty): CandidateGroup[] {
-  const categories = buildCategories(countries, difficulty)
-  // Hard boards stay inferable by using smaller, more specific fact groups.
-  // A category with dozens of possible countries would make a 16-tile board
-  // feel like a database filter rather than a solvable grouping puzzle.
-  return difficulty === 'hard' ? categories.filter((category) => category.members.length <= 32) : categories
+function auditFacts(groups: ConnectionsGroup[], countries: Country[]): ConnectionsFactRule[] {
+  const rules = new Map<string, ConnectionsFactRule>()
+  const add = (rule: ConnectionsFactRule) => rules.set(factKey(rule), rule)
+  for (const group of groups) add(group.fact)
+  for (const set of CONNECTIONS_NAMED_FACT_SETS) add({ type: 'named-set', id: set.id })
+  add({ type: 'landlocked' })
+  add({ type: 'country-name-direction' })
+  for (const initial of new Set(countries.map((country) => normalize(country.name).slice(0, 1).toUpperCase()).filter(Boolean))) {
+    add({ type: 'country-name-initial', initial })
+  }
+  for (const initial of new Set(countries.map((country) => country.capital ? normalize(country.capital).slice(0, 1).toUpperCase() : '').filter(Boolean))) {
+    add({ type: 'capital-initial', initial })
+  }
+  for (const value of ['Guinea']) add({ type: 'country-name-contains', value })
+  for (const value of ['land', 'stan']) add({ type: 'country-name-suffix', value })
+  add({ type: 'capital-country-name' })
+  for (const country of countries) {
+    if (country.continent) add({ type: 'continent', value: country.continent })
+    if (country.continent) add({ type: 'landlocked-continent', continent: country.continent })
+    if (country.subregion) add({ type: 'subregion', value: country.subregion })
+    add({ type: 'border-country', countryCode: country.iso3 })
+  }
+  add({ type: 'area-under', value: 1_000 })
+  for (const year of new Set(countries.map((country) => country.populationYear).filter((value): value is string => Boolean(value)))) {
+    add({ type: 'population-over', value: 100_000_000, year })
+  }
+  return [...rules.values()]
 }
 
-function hasUniqueGrouping(groups: CandidateGroup[], categories: CandidateGroup[], codes: Set<string>): boolean {
-  const intended = groups.map((group) => new Set(group.countryCodes))
-  for (const category of categories) {
-    const categoryMembers = new Set(category.members.map((country) => country.iso3))
-    const matched = new Set([...codes].filter((code) => categoryMembers.has(code)))
-    if (matched.size < 4) continue
-    if (!intended.some((group) => sameSet(group, matched))) return false
+function membersForFact(rule: ConnectionsFactRule, countries: Country[]): string[] {
+  if (rule.type === 'named-set') return namedFactSetById.get(rule.id)?.members.filter((code) => countries.some((country) => country.iso3 === code)) ?? []
+  return countries.filter((country) => factMatches(rule, country)).map((country) => country.iso3)
+}
+
+function factMatches(rule: ConnectionsFactRule, country: Country): boolean {
+  switch (rule.type) {
+    case 'border-country': return country.iso3 !== rule.countryCode && country.borders.includes(rule.countryCode)
+    case 'capital-country-name': return Boolean(country.capital && normalize(country.capital) === normalize(country.name))
+    case 'capital-initial': return Boolean(country.capital && normalize(country.capital).startsWith(normalize(rule.initial)))
+    case 'continent': return country.continent === rule.value
+    case 'country-name-contains': return normalize(country.name).includes(normalize(rule.value))
+    case 'country-name-direction': return /^(north|south)\b/i.test(country.name)
+    case 'country-name-initial': return normalize(country.name).startsWith(normalize(rule.initial))
+    case 'country-name-suffix': return normalize(country.name).endsWith(normalize(rule.value))
+    case 'landlocked': return country.landlocked
+    case 'landlocked-continent': return country.landlocked && country.continent === rule.continent
+    case 'named-set': return false
+    case 'population-band': return country.populationYear === rule.year && country.population !== null && country.population >= rule.minimum && country.population < rule.maximum
+    case 'population-over': return country.populationYear === rule.year && country.population !== null && country.population > rule.value
+    case 'area-band': return country.areaKm2 !== null && country.areaKm2 > 0 && country.areaKm2 >= rule.minimum && country.areaKm2 < rule.maximum
+    case 'area-under': return country.areaKm2 !== null && country.areaKm2 > 0 && country.areaKm2 < rule.value
+    case 'subregion': return country.subregion === rule.value
   }
-  return groups.every((group) => {
-    const category = categories.find((item) => item.id === group.id)
-    if (!category) return false
-    const categoryMembers = new Set(category.members.map((country) => country.iso3))
-    return sameSet(new Set(group.countryCodes), new Set([...codes].filter((code) => categoryMembers.has(code))))
-  })
+}
+
+function factKey(rule: ConnectionsFactRule): string {
+  return `${rule.type}:${Object.entries(rule).filter(([key]) => key !== 'type').sort(([left], [right]) => left.localeCompare(right)).map(([key, value]) => `${key}=${value}`).join(';')}`
+}
+
+function describeFact(rule: ConnectionsFactRule): string {
+  switch (rule.type) {
+    case 'border-country': return `countries that border ${rule.countryCode}`
+    case 'capital-country-name': return 'capital shares the country name'
+    case 'capital-initial': return `capital begins with ${rule.initial}`
+    case 'continent': return `same continent (${rule.value})`
+    case 'country-name-contains': return `country name contains ${rule.value}`
+    case 'country-name-direction': return 'country name begins with north or south'
+    case 'country-name-initial': return `country name begins with ${rule.initial}`
+    case 'country-name-suffix': return `country name ends in ${rule.value}`
+    case 'landlocked': return 'landlocked countries'
+    case 'landlocked-continent': return `landlocked in ${rule.continent}`
+    case 'named-set': return namedFactSetById.get(rule.id)?.id ?? rule.id
+    case 'population-band': return `2023 population ${rule.minimum}–${rule.maximum}`
+    case 'population-over': return `2023 population above ${rule.value}`
+    case 'area-band': return `area ${rule.minimum}–${rule.maximum} km²`
+    case 'area-under': return `area under ${rule.value} km²`
+    case 'subregion': return `same subregion (${rule.value})`
+  }
+}
+
+function normalize(value: string): string {
+  return value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('en').trim()
 }
 
 function sameSet(left: Set<string>, right: Set<string>): boolean {
   return left.size === right.size && [...left].every((value) => right.has(value))
-}
-
-function slug(value: string): string {
-  return value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('en').replace(/[^a-z0-9]+/g, '-')
 }
