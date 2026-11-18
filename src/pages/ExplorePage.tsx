@@ -46,17 +46,17 @@ export function ExplorePage() {
 
   return (
     <div className="page explore-page">
-      <PageHeading eyebrow="Free play" title="Explore" />
+      <PageHeading eyebrow="Free play" title="Geography games" description="Country quizzes, capital-city challenges, map puzzles, flags and more. Choose a game and play at your own pace." />
       <div className="explore-controls">
         <label className="search-field">
           <Search size={18} aria-hidden="true" />
           <span className="sr-only">Search games</span>
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search games or subjects" />
+          <input type="search" name="games" autoComplete="off" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search games or subjects" />
           {query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => setQuery('')}>×</button>}
         </label>
         <div className="filter-caption"><SlidersHorizontal size={15} aria-hidden="true" /> Browse by</div>
       </div>
-      <div className="filter-row" aria-label="Game category filters">
+      <div className="filter-row" role="group" aria-label="Game category filters">
         {categories.map((item) => (
           <button type="button" key={item} className={`filter-chip${category === item ? ' is-selected' : ''}`} aria-pressed={category === item} onClick={() => selectCategory(item)}>{item}</button>
         ))}

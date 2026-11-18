@@ -1,0 +1,68 @@
+.site-header.site-header-polished .nav-link::after {
+  transform: scaleX(0);
+  opacity: 0;
+  transition: none;
+}
+
+.site-header.site-header-polished .nav-link.is-current::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+.site-header.site-header-polished .nav-link:not(.is-current):hover::after,
+.site-header.site-header-polished .nav-link:not(.is-current):focus-visible::after {
+  transform: scaleX(0);
+  opacity: 0;
+}
+
+.site-header.site-header-polished .nav-link:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: -6px;
+  border-radius: 5px;
+}
+
+.site-header.site-header-polished .header-tools :is(.theme-toggle, .streak-shortcut, .favorite-shortcut, .settings-shortcut) {
+  border-color: transparent;
+  background: transparent;
+  transition: color .18s ease;
+}
+
+.site-header.site-header-polished .header-tools :is(.theme-toggle, .streak-shortcut, .favorite-shortcut, .settings-shortcut):hover,
+.site-header.site-header-polished .header-tools :is(.theme-toggle, .streak-shortcut, .favorite-shortcut, .settings-shortcut):focus-visible {
+  border-color: transparent;
+  background: transparent;
+  color: var(--accent-ink);
+}
+
+.site-header.site-header-polished .header-tools svg {
+  transition: color .18s ease, transform .18s cubic-bezier(.2, .7, .2, 1), fill .18s ease;
+}
+
+.site-header.site-header-polished .theme-toggle:hover svg,
+.site-header.site-header-polished .theme-toggle:focus-visible svg {
+  transform: rotate(-12deg) scale(1.08);
+}
+
+.site-header.site-header-polished .streak-shortcut:hover svg,
+.site-header.site-header-polished .streak-shortcut:focus-visible svg {
+  color: #d46c28;
+  transform: translateY(-1px) scale(1.12);
+}
+
+.site-header.site-header-polished .favorite-shortcut:hover svg,
+.site-header.site-header-polished .favorite-shortcut:focus-visible svg {
+  color: #bd615b;
+  fill: rgb(189 97 91 / 14%);
+  transform: scale(1.14);
+}
+
+.site-header.site-header-polished .settings-shortcut:hover svg,
+.site-header.site-header-polished .settings-shortcut:focus-visible svg {
+  transform: rotate(15deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header.site-header-polished .header-tools svg {
+    transition: none;
+  }
+}
