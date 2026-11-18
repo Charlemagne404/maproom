@@ -32,10 +32,11 @@ test('build emits route-specific metadata and useful HTML snapshots before JavaS
 test('the sitemap lists only canonical public content routes', async () => {
   const sitemap = await readFile(path.join(distDir, 'sitemap.xml'), 'utf8')
   const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]!)
-  expect(urls).toHaveLength(17)
+  expect(urls).toHaveLength(18)
   expect(urls).toContain(`${productionOrigin}/`)
   expect(urls).toContain(`${productionOrigin}/explore`)
   expect(urls).toContain(`${productionOrigin}/games/countries`)
+  expect(urls).toContain(`${productionOrigin}/games/historical-geography`)
   expect(urls).not.toContain(`${productionOrigin}/settings`)
   expect(urls).not.toContain(`${productionOrigin}/statistics`)
   expect(urls.every((url) => !url.includes('?'))).toBe(true)

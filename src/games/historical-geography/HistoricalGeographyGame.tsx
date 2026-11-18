@@ -159,7 +159,7 @@ function HistoricalMapRound({ map, mapsCount, mode, round, difficulty, saved, sa
         <div>
           <span className="eyebrow">Historical geography · map {round % mapsCount + 1} of {mapsCount}</span>
           <h2 id="historical-round-title">When was this map?</h2>
-          <p>Study the borders and enter the year represented.</p>
+          <p>Study this Maproom-generated snapshot of global political boundaries on 31 December, then enter the depicted year.</p>
         </div>
         <div className="historical-round-meta" aria-label={`${difficulty} difficulty`}><Clock3 size={15} aria-hidden="true" /><span>{difficultyOptions.find((option) => option.value === difficulty)?.label}</span></div>
       </header>
@@ -172,7 +172,7 @@ function HistoricalMapRound({ map, mapsCount, mode, round, difficulty, saved, sa
       </figure>
 
       <div className="historical-attribution">
-        <span>CShapes 2.1 · Schvitz et al. · ETH Zürich · CC BY-NC-SA 4.0</span>
+        <span>CShapes 2.1 · Maproom-generated · ETH Zürich · CC BY-NC-SA 4.0 · non-commercial</span>
         <a href={map.source.originalUrl} target="_blank" rel="noreferrer">Source and reuse terms</a>
       </div>
 
@@ -219,7 +219,7 @@ function HistoricalReveal({ map, result, difficulty }: { map: HistoricalMap; res
       <p className="historical-context">{map.historicalContext}</p>
       <details className="historical-source-details">
         <summary>Map date, context and sources</summary>
-        <p>This is a Maproom-generated CShapes 2.1 snapshot dated <strong>{map.depictedDate}</strong>. It was not published as an original map in {map.depictedYear}; the depicted year and any source publication date are separate fields.</p>
+        <p>This is a Maproom-generated CShapes 2.1 snapshot dated <strong>{map.depictedDate}</strong>. The year identifies the depicted political geography and is separate from any archival map publication date.</p>
         <p>{map.datingUncertainty}</p>
         <ul>{map.contextSources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul>
         <p>Attribution: {map.source.attribution} <a href={map.source.licenseUrl} target="_blank" rel="noreferrer">License terms</a>.</p>

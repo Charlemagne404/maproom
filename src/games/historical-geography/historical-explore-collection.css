@@ -40,6 +40,7 @@
 .historical-explore-link svg { color: var(--accent-ink); }
 .historical-explore-link:hover { text-decoration: underline; text-underline-offset: 4px; }
 .historical-explore-link:focus-visible { outline: 3px solid var(--accent-ink); outline-offset: 4px; }
+.historical-explore-license { display: block; margin-top: 6px; color: var(--muted); font-size: .62rem; }
 
 .historical-explore-art {
   position: relative;

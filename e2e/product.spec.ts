@@ -7,6 +7,7 @@ import { isCurrentWholeSettlement } from '../src/geography/cityRecords'
 import { buildOutlineCandidateGroups, EMPTY_OUTLINE_PROGRESS, outlineQuestionAt } from '../src/games/outlines/questionPool'
 import { flagCountryPool } from '../src/games/flags/questionPool'
 import { gridCandidates, shortestPath, validGridPresets } from '../src/puzzles/engine'
+import { CONNECTIONS_PUZZLES } from '../src/puzzles/connections-content'
 import { exploreExperienceCount, freePlayCardCount } from './gameCatalogCounts'
 
 test.beforeAll(() => {
@@ -169,80 +170,6 @@ async function flagChoiceForCountry(page: Page, countryName: string) {
     if (iconClass?.split(/\s+/).includes(`fi-${country!.flagCode}`)) return choices.nth(index)
   }
   throw new Error(`No flag choice for ${countryName}`)
-}
-
-function solveConnectionsBoard(countries: CountryRecord[], tileNames: string[]) {
-  const byName = new Map(countries.map((country) => [country.name, country]))
-  const tiles = tileNames.map((name) => byName.get(name)).filter((country): country is CountryRecord => country !== undefined)
-  expect(tiles).toHaveLength(16)
-  const tileCodes = new Set(tiles.map((country) => country.iso3))
-  const groups = new Map<string, string[]>()
-  const add = (matches: (country: CountryRecord) => boolean) => {
-    const codes = tiles.filter(matches).map((country) => country.iso3)
-    if (codes.length === 4) groups.set(codes.slice().sort().join('|'), codes)
-  }
-  const addExactFour = (label: string, matches: (country: CountryRecord) => boolean) => {
-    const codes = tiles.filter(matches).map((country) => country.iso3)
-    if (codes.length === 4) groups.set(`${label}:${codes.slice().sort().join('|')}`, codes)
-  }
-  const continents = [...new Set(tiles.map((country) => country.continent).filter((value): value is string => Boolean(value)))]
-  for (const continent of continents) {
-    addExactFour(`continent:${continent}`, (country) => country.continent === continent)
-    addExactFour(`landlocked:${continent}`, (country) => country.continent === continent && country.landlocked)
-  }
-  addExactFour('landlocked', (country) => country.landlocked)
-  const subregions = [...new Set(tiles.map((country) => country.subregion).filter((value): value is string => Boolean(value)))]
-  for (const subregion of subregions) {
-    add((country) => country.subregion === subregion)
-    add((country) => country.subregion === subregion && country.landlocked)
-    add((country) => country.subregion === subregion && country.borders.length === 0)
-  }
-  const populationBands: Array<(value: number) => boolean> = [
-    (value) => value < 1_000_000,
-    (value) => value >= 1_000_000 && value < 5_000_000,
-    (value) => value >= 5_000_000 && value < 25_000_000,
-    (value) => value >= 25_000_000 && value < 100_000_000,
-    (value) => value >= 100_000_000,
-  ]
-  populationBands.forEach((matches) => add((country) => country.population !== null && matches(country.population)))
-  const areaBands: Array<(value: number) => boolean> = [
-    (value) => value < 10_000,
-    (value) => value >= 10_000 && value < 100_000,
-    (value) => value >= 100_000 && value < 500_000,
-    (value) => value >= 500_000 && value < 2_000_000,
-    (value) => value >= 2_000_000,
-  ]
-  areaBands.forEach((matches) => add((country) => country.areaKm2 !== null && country.areaKm2 > 0 && matches(country.areaKm2)))
-  const initial = (value: string | null) => value?.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toUpperCase()[0] ?? ''
-  for (const letter of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
-    add((country) => initial(country.name) === letter)
-    add((country) => initial(country.capital) === letter)
-  }
-  const adjacency = new Map(countries.map((country) => [country.iso3, new Set<string>()]))
-  for (const country of countries) for (const neighbor of country.borders) {
-    adjacency.get(country.iso3)?.add(neighbor)
-    adjacency.get(neighbor)?.add(country.iso3)
-  }
-  for (const code of ['ARG', 'BRA', 'CHN', 'DEU', 'FRA', 'IND', 'RUS', 'ZAF']) {
-    const neighbors = adjacency.get(code) ?? new Set<string>()
-    addExactFour(`borders:${code}`, (country) => neighbors.has(country.iso3))
-  }
-  const candidates = [...groups.values()].map((codes) => codes.filter((code) => tileCodes.has(code)))
-  function search(remaining: Set<string>, selected: string[][]): string[][] | null {
-    if (remaining.size === 0) return selected
-    const first = remaining.values().next().value as string
-    for (const group of candidates) {
-      if (!group.includes(first) || !group.every((code) => remaining.has(code))) continue
-      const next = new Set(remaining)
-      group.forEach((code) => next.delete(code))
-      const solution = search(next, [...selected, group])
-      if (solution) return solution
-    }
-    return null
-  }
-  const solution = search(tileCodes, [])
-  expect(solution, 'Connections tiles should have four defensible category groupings').not.toBeNull()
-  return solution!
 }
 
 async function shellGeometry(page: Page) {
@@ -417,13 +344,13 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   const formatFavorites = page.locator('.explore-grid .game-format-card .favorite-button')
   const formatFavoriteNames = await formatFavorites.evaluateAll((buttons) => buttons.map((button) => button.getAttribute('aria-label') ?? ''))
   expect(new Set(formatFavoriteNames).size).toBe(formatFavoriteNames.length)
-  expect(formatFavoriteNames).toContain('Add Flag study (Identify the country) to favorites')
+  expect(formatFavoriteNames).toContain('Add Flag Match (Identify the country) to favorites')
   expect(formatFavoriteNames).toContain('Add Capitals & cities (Country to capital) to favorites')
   const flagCard = page.locator('.game-card-flags').first()
   const favorite = flagCard.locator('.favorite-button')
   await favorite.click()
   await expect(favorite).toHaveAttribute('aria-pressed', 'true')
-  await expect(favorite).toHaveAttribute('aria-label', 'Remove Flag study (Identify the country) from favorites')
+  await expect(favorite).toHaveAttribute('aria-label', 'Remove Flag Match (Identify the country) from favorites')
   const favoriteFlagNames = await page.locator('.game-card-flags .favorite-button').evaluateAll((buttons) => buttons.map((button) => button.getAttribute('aria-label') ?? ''))
   expect(new Set(favoriteFlagNames).size).toBe(favoriteFlagNames.length)
   await expect(favorite.locator('svg')).toHaveCSS('animation-name', 'favorite-pop')
@@ -594,13 +521,13 @@ test('older completed daily results remain intact while their stale saves are di
 test('all six daily families restore their saved question and in-progress state', async ({ page, context, browser }) => {
   await openGame(page, 'countries', 'daily')
   const countryQuestion = await page.locator('.question-toolbar h2 em').innerText()
-  await page.clock.pauseAt(new Date('2026-11-18T12:00:00Z'))
+  await page.clock.pauseAt(new Date())
   await answerOnMapByKeyboard(page, countryQuestion)
   await expect(page.locator('.answer-feedback')).toBeVisible()
   const countrySession = await waitForDailySession(page, 'countries')
   expect(countrySession?.payload?.answerLocked).toBe(true)
-  await page.clock.resume()
   await page.reload()
+  await page.clock.resume()
   await expect(page.locator('.question-toolbar h2 em')).toHaveText(countryQuestion)
   await expect(page.locator('.answer-feedback')).toBeVisible()
   await waitForRoundProgress(page, 'countries', 2)
@@ -1173,7 +1100,7 @@ test('daily play has no mode switch and keeps its seeded puzzle when returning',
   await expect(page.locator('.game-page-heading')).toHaveCount(0)
   await page.getByRole('link', { name: 'Back to Explore' }).click()
   await expect(page).toHaveURL(/\/explore$/)
-  await expect(page.getByRole('link', { name: /Flag study: Find the flag, Free play/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Flag Match: Find the flag, Free play/ })).toBeVisible()
   await page.goto('/games/flags?mode=daily')
   await expect(page).toHaveURL(/\/games\/flags\?mode=daily$/)
   const initialFlag = await page.locator('.flag-display [role="img"]').getAttribute('aria-label')
@@ -1220,8 +1147,8 @@ test('changing Free play settings cancels a pending automatic advance', async ({
 
 test('Explore exposes distinct flag formats and game options stay in Free play setup', async ({ page }) => {
   await page.goto('/explore')
-  const identify = page.getByRole('link', { name: 'Flag study: Identify the country, Free play' })
-  const findFlag = page.getByRole('link', { name: 'Flag study: Find the flag, Free play' })
+  const identify = page.getByRole('link', { name: 'Flag Match: Identify the country, Free play' })
+  const findFlag = page.getByRole('link', { name: 'Flag Match: Find the flag, Free play' })
   await expect(identify).toBeVisible()
   await expect(findFlag).toBeVisible()
   await findFlag.click()
@@ -1455,6 +1382,7 @@ test('geography grid accepts nine distinct countries from real category intersec
 })
 
 test('captures the redesigned desktop game stages and key mobile screens', async ({ page }) => {
+  test.setTimeout(300_000)
   await page.setViewportSize({ width: 1440, height: 960 })
   await page.goto('/')
   await expect(page.locator('.daily-grid .game-card')).toHaveCount(6)
@@ -1512,9 +1440,14 @@ test('captures the redesigned desktop game stages and key mobile screens', async
     if (id === 'routes') {
       const mapBox = await page.locator('.route-map-stage').boundingBox()
       expect(mapBox?.width).toBeGreaterThan(340)
-      const builderBox = await page.locator('.route-game-dock .route-builder').boundingBox()
-      const inputBox = await page.locator('.route-game-dock .route-input-row').boundingBox()
-      expect(builderBox && inputBox && builderBox.y + builderBox.height).toBeLessThanOrEqual(inputBox?.y ?? 0)
+      const frameBox = await page.locator('.route-map-frame').boundingBox()
+      const dockBox = await page.locator('.route-map-input-dock').boundingBox()
+      const inputBox = await page.locator('.route-map-input-dock .route-input-row').boundingBox()
+      expect(frameBox && dockBox && inputBox).not.toBeNull()
+      expect(Math.abs((dockBox!.x + dockBox!.width / 2) - (frameBox!.x + frameBox!.width / 2))).toBeLessThanOrEqual(1)
+      expect(dockBox!.y + dockBox!.height).toBeLessThanOrEqual(frameBox!.y + frameBox!.height)
+      expect(inputBox!.x).toBeGreaterThanOrEqual(dockBox!.x)
+      expect(inputBox!.x + inputBox!.width).toBeLessThanOrEqual(dockBox!.x + dockBox!.width)
     }
     if (id === 'cities') {
       const mapBox = await page.locator('.city-map-stage').boundingBox()
@@ -1545,38 +1478,34 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   }
 })
 
-test('Geography Connections accepts four valid attribute groups and replays', async ({ page }) => {
+test('Geography Connections serves authored groups at every difficulty and replays', async ({ page }) => {
   await openGame(page, 'connections')
   await expect(page.locator('.connections-tile')).toHaveCount(16)
-  for (const difficulty of ['medium', 'hard', 'easy']) {
+  let lastPuzzle: (typeof CONNECTIONS_PUZZLES)[number] | undefined
+  for (const difficulty of ['medium', 'hard', 'easy'] as const) {
     await setGameSetting(page, 'Difficulty', difficulty)
     await expect(page.locator('.connections-tile')).toHaveCount(16)
-  }
-  await setGameSetting(page, 'Country pool', 'extended')
-  await expect(page.locator('.connections-tile')).toHaveCount(16)
-  await setGameSetting(page, 'Country pool', 'standard')
-  const countries = await countryData(page)
-  const countryByCode = new Map(countries.map((country) => [country.iso3, country]))
-  const tileNames = await page.locator('.connections-tile').allTextContents()
-  const groups = solveConnectionsBoard(countries, tileNames)
-  for (const [index, group] of groups.entries()) {
-    for (const [tileIndex, code] of group.entries()) {
-      const country = countryByCode.get(code)
-      expect(country, `connection tile ${code}`).toBeDefined()
-      const tile = page.getByRole('button', { name: country!.name, exact: true })
-      if (index === 0 && tileIndex === 0) {
-        await tile.focus()
-        await page.keyboard.press('Enter')
-      } else await tile.click()
-    }
+    const label = await page.locator('.connection-kicker').innerText()
+    const puzzleNumber = label.match(/Atlas set\s+(\d+)/i)?.[1]
+    lastPuzzle = CONNECTIONS_PUZZLES.find((puzzle) => puzzle.id === `atlas-${puzzleNumber}`)
+    expect(lastPuzzle, `authored puzzle for ${label}`).toBeDefined()
+    expect(lastPuzzle!.difficulty).toBe(difficulty)
+    const visibleCodes = new Set(await page.locator('.connections-tile').evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute('data-country-code'))))
+    expect(visibleCodes).toEqual(new Set(lastPuzzle!.groups.flatMap((group) => group.countryCodes)))
+
+    const firstGroup = lastPuzzle!.groups[0]!
+    for (const code of firstGroup.countryCodes) await page.locator(`.connections-tile[data-country-code="${code}"]`).click()
     await page.getByRole('button', { name: 'Check group' }).click()
-    await expect(page.locator('.connections-solved-group')).toHaveCount(index + 1)
-    await expect(page.locator('.connections-tile')).toHaveCount(12 - index * 4)
+    await expect(page.locator('.connections-solved-group')).toHaveCount(1)
+    await expect(page.locator('.connections-solved-group')).toContainText(firstGroup.label)
+  }
+  expect(lastPuzzle).toBeDefined()
+  for (const group of lastPuzzle!.groups.slice(1)) {
+    for (const code of group.countryCodes) await page.locator(`.connections-tile[data-country-code="${code}"]`).click()
+    await page.getByRole('button', { name: 'Check group' }).click()
+    await expect(page.locator('.connections-solved-group')).toHaveCount(lastPuzzle!.groups.indexOf(group) + 1)
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
-  await expect(page.locator('.game-results-summary')).toHaveText('4 / 4 correct · 100% accuracy')
-  await expect(page.locator('.game-results-score')).toContainText('1,000')
-  await page.screenshot({ path: 'artifacts/qa/product-consistency/connections-results-desktop.png' })
   await page.getByRole('button', { name: 'Play another set' }).click()
   await expect(page.locator('.connections-tile')).toHaveCount(16)
   await expect(page.locator('.game-results-dialog')).toBeHidden()

@@ -1,6 +1,6 @@
 # Maproom game audit
 
-Audit completed 18 November 2026 from the twelve integrated game implementations plus the new Historical Geography feature branch, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
+Audit completed 18 November 2026 across all thirteen integrated game implementations, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
 
 ## Game-by-game review
 
@@ -11,7 +11,7 @@ Audit completed 18 November 2026 from the twelve integrated game implementations
 - **Visual, mobile and accessibility:** The map is the primary interaction, with pan/zoom, neutral styling for non-selectable countries and enlarged hit areas for eligible small islands. Keyboard focus/selection and touch map controls are covered by product tests; visible outlines and focus states remain available. Progress is shown as segments, and feedback includes both icon/state and a spoken status.
 - **Performance and geographic accuracy:** Country data loads with the route and ADM1 files load only for selected supported countries. Country and territory identities are curated; generalized Natural Earth boundaries and disputed boundary conventions remain limitations.
 
-### Country outlines
+### Country Outline Quiz
 
 - **Gameplay, rules and balance:** The player identifies a silhouette with a difficulty-scaled guess budget. A curated outline eligibility audit avoids tiny or dispersed shapes that would make questions arbitrary; Standard/Extended practice settings are balanced.
 - **Feedback and replay:** Distance/direction and later position hints make misses informative; the answer is revealed when attempts run out. Practice uses a seeded pool and avoids repeating eligible silhouettes before exhaustion.
@@ -25,7 +25,7 @@ Audit completed 18 November 2026 from the twelve integrated game implementations
 - **Visual, mobile and accessibility:** A map-centered view is paired with a compact bottom input dock and removable selected-country chips. Labeled autocomplete and map controls support keyboard and touch; the displayed route communicates geographic order even when entry order differed.
 - **Performance and geographic accuracy:** Uses the small country catalog and world geometry. Border answers follow reciprocal land neighbors; maritime borders and contested claims are not represented.
 
-### Flag study
+### Flag Match
 
 - **Gameplay, rules and balance:** Country-to-flag and flag-to-country directions plus typed and multiple-choice modes create meaningful variation. Distractors prefer the same continent, keeping the task challenging without turning it into a visual-guess lottery.
 - **Feedback and replay:** Optional progressive reveal and missed-flag review make practice useful; a selected wrong answer and the correct option receive distinct visual states. Resolved questions advance automatically after brief feedback. Daily remains curated to eight questions.
@@ -93,7 +93,7 @@ Audit completed 18 November 2026 from the twelve integrated game implementations
 - **Gameplay, rules and balance:** Enter the year shown by a large, unlabeled political map. Easy/Medium/Hard use inclusive tolerances of 100/50/25 years. The accepted interval appears in the result, and a linear distance score gives 1,000 at the exact year and zero at twice the tolerance. A seeded shuffle shows every map once before wrapping; the current pack contains 20 distinct years from 1886 to 2011.
 - **Feedback and replay:** Submission reveals the year, signed distance in years, whether the guess was within range, a short historical note and expandable citations and license terms. The shared results dialog records the score; replay advances to another map and session progress is stored through the existing local session service.
 - **Visual, mobile and accessibility:** The year input is labeled and keyboard-submittable; the map has alternative text, status text, visible focus styles and a responsive entry layout. Reveal and map transitions honor reduced-motion preference. Dark theme changes the surrounding controls and panels; the generated map itself remains a warm paper palette in both themes. No physical-device or formal assistive-technology review has yet been performed.
-- **Performance and geographic accuracy:** The game lazily loads one manifest and only the current local SVG; successful `/data/` requests use the existing service-worker cache for later offline use. CShapes 2.1 gives generalized international boundaries and dependent territories, not subnational geography, every front line or a complete record of contested/de facto borders. Every displayed year is a 31 December snapshot, not an archival publication date. The data and derived maps are CC BY-NC-SA 4.0: noncommercial use only, attribution and ShareAlike required. Automated unit/content checks cover tolerances, deterministic variety, manifest completeness and asset hashes; browser integration awaits the coordinator-owned catalog and Explore wiring.
+- **Performance and geographic accuracy:** The game lazily loads one manifest and only the current local SVG; successful `/data/` requests use the existing service-worker cache for later offline use. CShapes 2.1 gives generalized international boundaries and dependent territories, not subnational geography, every front line or a complete record of contested/de facto borders. Every displayed year is a 31 December snapshot, not an archival publication date. The data and derived maps are CC BY-NC-SA 4.0: noncommercial use only, attribution and ShareAlike required. Unit, browser, production-artifact and offline checks cover tolerance boundaries, deterministic variety, source disclosure, manifest completeness and asset hashes.
 
 ## Shared findings and changes from this mission
 
@@ -112,3 +112,7 @@ Audit completed 18 November 2026 from the twelve integrated game implementations
 2. Continue assistive-technology review, especially the final spoken casing of the Grid counter and screen-reader operation of map-heavy games. Voice control, braille, human listening and other assistive technologies remain untested.
 3. Measure cold-load, storage and touch behavior on physical mobile devices and on a hosted connection; current performance evidence is local Chromium evidence.
 4. Revisit country population questions only when a new, versioned source year is deliberately adopted. Keep speculative physical-geography concepts conditional on data, license and pedagogical review.
+
+## Integration verification
+
+Historical Geography is registered in the shared catalog and lazy component registry, linked as a secondary Explore collection, available by direct route, and explicitly excluded from Daily with a review reason. Riverways and Latitude Ladder are eligible in Daily. The eight-game allowlist remains explicit; Connections, Higher or Lower, Neighbour Challenge, Distance & Direction, and Historical Geography remain excluded. See [the integration report](parallel-development/INTEGRATION_REPORT.md) for final integrated checks, host routing behavior and test evidence.

@@ -8,15 +8,15 @@ type SetupEntranceSnapshot = {
 
 const freePlayGames: Array<{ id: string; title: string; format?: string }> = [
   { id: 'countries', title: 'Find the country' },
-  { id: 'outlines', title: 'Country outlines' },
+  { id: 'outlines', title: 'Country Outline Quiz' },
   { id: 'routes', title: 'Border route' },
-  { id: 'flags', title: 'Flag study', format: '&format=flag-to-country' },
+  { id: 'flags', title: 'Flag Match', format: '&format=flag-to-country' },
   { id: 'grid', title: 'Geography grid' },
   { id: 'cities', title: 'Capitals & cities', format: '&format=country-to-capital' },
   { id: 'connections', title: 'Geography Connections' },
-  { id: 'higher-lower', title: 'Higher or Lower' },
+  { id: 'higher-lower', title: 'Higher or Lower: Countries' },
   { id: 'neighbours', title: 'Neighbour Challenge' },
-  { id: 'distance', title: 'Distance & Direction' },
+  { id: 'distance', title: 'City Distance & Direction' },
   { id: 'rivers', title: 'Riverways' },
   { id: 'latitude-ladder', title: 'Latitude Ladder', format: '&format=west-east' },
 ]

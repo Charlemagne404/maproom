@@ -28,7 +28,7 @@ async function captureTheme(page: Page, viewport: 'desktop' | 'mobile', theme: '
   await page.goto('/explore')
   await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreExperienceCount)
   const exploreGrid = await page.locator('.explore-grid').boundingBox()
-  for (const gameId of ['rivers', 'latitude-ladder']) {
+  for (const gameId of ['rivers', 'latitude-ladder', 'historical-geography']) {
     const cardWidths = await page.locator(`.game-card-${gameId}`).evaluateAll((cards) => cards.map((card) => card.getBoundingClientRect().width))
     expect(cardWidths.length).toBeGreaterThan(0)
     expect(cardWidths.every((width) => width > (exploreGrid?.width ?? 0) * 0.25)).toBe(true)
@@ -57,6 +57,21 @@ async function captureTheme(page: Page, viewport: 'desktop' | 'mobile', theme: '
   await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.locator('.image-choice-grid .flag-choice')).toHaveCount(4)
   await page.screenshot({ path: `${screenshotDirectory}/${prefix}-freeplay-game.png` })
+
+  if (viewport === 'desktop') {
+    const gameModes = [
+      ['countries', 'daily'], ['outlines', 'daily'], ['routes', 'daily'], ['flags', 'daily'],
+      ['grid', 'daily'], ['cities', 'daily'], ['connections', 'freeplay'], ['higher-lower', 'freeplay'],
+      ['neighbours', 'freeplay'], ['distance', 'freeplay'], ['rivers', 'daily'],
+      ['latitude-ladder', 'daily'], ['historical-geography', 'freeplay'],
+    ] as const
+    for (const [gameId, mode] of gameModes) {
+      await page.goto(`/games/${gameId}?mode=${mode}`)
+      if (mode === 'freeplay') await page.getByRole('button', { name: 'Start free play' }).click()
+      await expect(page.locator('.game-body')).toBeVisible()
+      await page.screenshot({ path: `${screenshotDirectory}/${prefix}-game-${gameId}.png`, animations: 'disabled' })
+    }
+  }
 }
 
 test('captures the product experience in light and dark at desktop and mobile sizes', async ({ page }) => {

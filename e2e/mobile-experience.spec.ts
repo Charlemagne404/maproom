@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { expect, test } from '@playwright/test'
+import { CONNECTIONS_PUZZLES } from '../src/puzzles/connections-content'
 
 const pageRoutes = [
   ['daily', '/'],
@@ -22,6 +23,7 @@ const gameRoutes = [
   ['distance', 'freeplay'],
   ['rivers', 'freeplay'],
   ['latitude-ladder', 'freeplay'],
+  ['historical-geography', 'freeplay'],
 ] as const
 
 const representativeViewports = [
@@ -61,7 +63,7 @@ test('core pages fit phone and tablet viewports without horizontal overflow', as
   await context.close()
 })
 
-test('all twelve games open and remain within narrow phone widths', async ({ browser, baseURL }) => {
+test('all thirteen games open and remain within narrow phone widths', async ({ browser, baseURL }) => {
   test.setTimeout(300_000)
   const context = await browser.newContext({
     viewport: { width: 320, height: 568 },
@@ -173,8 +175,9 @@ test('search stays focused through a keyboard-sized viewport and uses a non-zoom
   })
   const page = await context.newPage()
   await page.goto(appUrl(baseURL, '/explore'))
-  const search = page.getByRole('textbox', { name: 'Search games' })
-  await search.focus()
+  const search = page.getByRole('searchbox', { name: 'Search games' })
+  await expect(search).toBeVisible()
+  await search.evaluate((input) => (input as HTMLInputElement).focus({ preventScroll: true }))
   expect(await search.evaluate((input) => getComputedStyle(input).fontSize)).toBe('16px')
   await page.setViewportSize({ width: 390, height: 430 })
   await expect(search).toBeFocused()
@@ -365,12 +368,15 @@ async function startFreePlay(page: import('@playwright/test').Page) {
 
 async function revealConnectionResults(page: import('@playwright/test').Page) {
   const resultDialog = page.locator('.game-results-dialog[open]')
-  for (let attempt = 0; attempt < 10 && await resultDialog.count() === 0; attempt++) {
-    const tiles = page.locator('.connections-tile')
-    const count = await tiles.count()
-    for (let index = 0; index < Math.min(4, count); index++) await tiles.nth(index).tap()
+  const heading = await page.locator('.connection-kicker').innerText()
+  const puzzleNumber = heading.match(/Atlas set\s+(\d+)/i)?.[1]
+  const puzzle = CONNECTIONS_PUZZLES.find((candidate) => candidate.id === `atlas-${puzzleNumber}`)
+  expect(puzzle, `authored Connections board for ${heading}`).toBeDefined()
+
+  for (const [groupIndex, group] of puzzle!.groups.entries()) {
+    for (const code of group.countryCodes) await page.locator(`.connections-tile[data-country-code="${code}"]`).tap()
     await page.getByRole('button', { name: 'Check group' }).tap()
-    await page.waitForTimeout(120)
+    await expect(page.locator('.connections-solved-group')).toHaveCount(groupIndex + 1, { timeout: 10_000 })
   }
   await expect(resultDialog).toBeVisible({ timeout: 10_000 })
 }

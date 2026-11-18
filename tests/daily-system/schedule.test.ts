@@ -84,6 +84,9 @@ describe('versioned Daily rotation', () => {
   it('keeps Historical Geography out unless it receives an explicit, reviewed eligibility entry', () => {
     expect(isDailyEligible('historical-geography')).toBe(false)
     expect(getEligibleDailyGameIds()).not.toContain('historical-geography')
-    expect(DAILY_GAME_ELIGIBILITY.some((entry) => entry.gameId === 'historical-geography')).toBe(false)
+    expect(DAILY_GAME_ELIGIBILITY.find((entry) => entry.gameId === 'historical-geography')).toMatchObject({
+      eligible: false,
+      reason: expect.stringContaining('Excluded from Daily'),
+    })
   })
 })

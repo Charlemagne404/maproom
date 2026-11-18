@@ -15,16 +15,16 @@ export const staticPages: PageMetadata[] = [
   {
     path: '/',
     title: 'Maproom | Daily geography puzzles and free games',
-    description: 'Take on six daily geography puzzles or explore free country quizzes, map games, flag matches, capital-city challenges and more.',
+    description: 'Take on six daily geography puzzles or explore free country quizzes, historical maps, flags, capital-city challenges and more.',
     heading: 'Today’s geography puzzles',
-    summary: 'Play six daily challenges, then keep exploring with free geography games for countries, capitals, flags, routes and maps.',
+    summary: 'Play six daily challenges, then keep exploring with free geography games for countries, capitals, flags, routes and historical maps.',
     robots: 'index,follow',
     kind: 'website',
   },
   {
     path: '/explore',
     title: 'Geography games and country quizzes | Maproom',
-    description: 'Choose a geography game: find countries, match flags, explore capitals, solve map puzzles, compare places and trace rivers.',
+    description: 'Choose a geography game: find countries, read historical maps, match flags, explore capitals, solve map puzzles and trace rivers.',
     heading: 'Geography games',
     summary: 'Browse country quizzes, capital-city challenges, map games, flag matches, geography puzzles and more. Choose a game and play at your own pace.',
     robots: 'index,follow',
@@ -93,7 +93,7 @@ const gameCopy = {
     summary: 'Read a clue, then find the country on a world map. Build your knowledge of countries and their locations one round at a time.',
   },
   outlines: {
-    title: 'Country outline quiz',
+    title: 'Country Outline Quiz',
     description: 'Identify countries from the shapes of their borders in this geography quiz. Make a guess, then see where each place lies.',
     summary: 'Recognise a country from its outline and learn where it sits on the map.',
   },
@@ -123,7 +123,7 @@ const gameCopy = {
     summary: 'Select countries in groups of four to uncover the geographic connections linking them.',
   },
   'higher-lower': {
-    title: 'Higher or Lower country quiz',
+    title: 'Higher or Lower: Countries',
     description: 'Compare countries using sourced facts about population, land area and population density in this geography quiz.',
     summary: 'Use population, area and density clues to decide which country is higher or lower.',
   },
@@ -133,7 +133,7 @@ const gameCopy = {
     summary: 'Use the map to complete the full set of land-border neighbours around a country.',
   },
   distance: {
-    title: 'City distance and direction game',
+    title: 'City Distance & Direction',
     description: 'Use real city coordinates to compare distance and direction between places around the world.',
     summary: 'Compare cities by their real-world distance and direction on a geography map.',
   },
@@ -146,6 +146,11 @@ const gameCopy = {
     title: 'Latitude Ladder city puzzle',
     description: 'Put five cities in north-to-south or west-to-east order using their real locations on Earth.',
     summary: 'Arrange five cities by latitude or longitude in a quick world geography puzzle.',
+  },
+  'historical-geography': {
+    title: 'Historical map year guessing game',
+    description: 'Study a Maproom-generated snapshot of international boundaries from 1886 to 2011, then estimate the year depicted.',
+    summary: 'Read a generated historical political-boundary snapshot, enter its depicted year, and learn the context and sources behind it.',
   },
 } satisfies Record<string, { title: string; description: string; summary: string }>
 

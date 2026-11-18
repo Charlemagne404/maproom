@@ -6,41 +6,43 @@ Branch: `codex/maproom-2.0-web-20261118`
 
 ## Architecture and indexability
 
-Maproom is a Vite and React single-page app with React Router. The application shell renders the route after JavaScript starts. The deployment script identifies `https://maproom.continental-hub.com` as the site origin and configures Caddy with `try_files {path} /index.html`.
+Maproom is a Vite and React single-page app with React Router. The application shell renders the route after JavaScript starts. The deployment script identifies `https://maproom.continental-hub.com` as the site origin. During integration, its repository-owned Caddy block was updated and tested against the generated route files.
 
-This branch adds a small build step that emits route-specific HTML snapshots beside the app assets. Each snapshot has its own title, description, canonical URL, robots directive, Open Graph and Twitter card tags, JSON-LD, and a short semantic HTML fallback. The metadata is generated from the existing game catalog; stable game IDs and paths are unchanged. The sitemap contains only the 17 canonical public content routes.
+The build step emits route-specific HTML snapshots beside the app assets. Each snapshot has its own title, description, canonical URL, robots directive, Open Graph and Twitter card tags, JSON-LD, and a short semantic HTML fallback. The metadata is generated from the game catalog; stable game IDs, paths and persistence IDs are unchanged. The integrated sitemap contains the 18 canonical indexable routes.
 
-There is a host integration gate: a local Caddy reproduction of the current `try_files {path} /index.html` rule returned the root `index.html` for `/explore` and `/games/cities`, so the new nested snapshots are not selected by that rule. The build outputs are ready, but they will not reach no-JavaScript crawlers or social-preview bots through the current rule. The integration/deployment owner should try `{path}/index.html` before the SPA fallback and verify direct requests and cache headers. This branch leaves the deployment script and host configuration untouched, as required by the workstream brief. The actual production host was not queried during this review.
+The original workstream reproduced the old `try_files {path} /index.html` issue: `/explore` and `/games/cities` received the root snapshot. Integration changed the repository's finalizer template to try `{path}/index.html`, then `{path}`, then `/index.html` for the known app routes, while serving other files directly. An isolated Caddy 2.11.4 instance served the correct `/explore`, `/games/cities` and `/games/historical-geography` snapshots; `/missing-route` returned the generated Maproom 404 body with HTTP 404. Route HTML and the service worker receive `Cache-Control: no-cache`, and hashed assets receive immutable caching. The deployed host configuration was not inspected, changed or reloaded, so an operator must publish the reviewed block through the normal release process.
 
 | Route group | Sitemap | Robots behavior | Canonical policy |
 | --- | --- | --- | --- |
 | `/` | Included | `index,follow` | Production root URL |
 | `/explore` | Included | `index,follow` | Clean route without filters |
-| `/games/{id}` for the 12 catalog games | Included | `index,follow` | Stable game route; query variants canonicalize to the path |
+| `/games/{id}` for the 13 catalog games | Included | `index,follow` | Stable game route; query variants canonicalize to the path |
 | `/about`, `/data`, `/privacy` | Included | `index,follow` | Clean route |
 | `/statistics`, `/settings`, `/404` | Excluded | `noindex,follow` | Clean route |
 | Filtered Explore and parameterized game routes | Excluded | Runtime `noindex,follow` | Clean route without query parameters |
-| Unknown client routes | Excluded | Runtime `noindex,follow` | Not-found state |
+| Unknown routes | Excluded | Custom not-found HTML, HTTP 404 | The Caddy error route serves the `/404` snapshot with the 404 status |
 
 The sitemap has no category, format, favorite, search, or daily-date URLs. Those states do not create extra landing pages. Explore contains links to every catalog game, and game snapshots link back to Explore and Daily.
 
-The SPA fallback still serves HTTP 200 for unknown paths. The client displays a noindex not-found page, but bots can classify the status as a soft 404. A true HTTP 404 needs an additional host rule or a static-host error-page contract; that change is outside this workstream.
+The Caddy template's final `handle_errors 404` serves the generated `/404/index.html` snapshot and preserves HTTP 404. The local response check confirmed the status and page content. Production behavior remains unverified until an operator applies the repository template.
 
 ## SEO and social previews
 
 - Added per-route titles and natural descriptions covering country quizzes, geography games, capitals, flags, maps, borders, rivers, and city distance. The homepage title begins with “Maproom” to retain the deployment preflight contract.
 - Added browser-managed title, description, canonical, robots, Open Graph, Twitter, and JSON-LD metadata for client-side route changes.
-- Added pre-rendered snapshots for the eight fixed routes and all twelve catalog games. The build checks every game has SEO copy.
+- Added pre-rendered snapshots for eight fixed routes and all thirteen catalog games. The canonical build checks all 21 snapshots and 18 sitemap URLs.
 - Added `robots.txt` and a build-generated sitemap. The sitemap origin is read from `scripts/finalize-deployment.sh`, rather than guessed or inferred from localhost.
 - Added `WebSite`, `WebPage`, and `WebApplication` structured data without ratings, reviews, or other unsupported claims.
 - Added a locally authored 1200×630 SVG and PNG social preview. It uses no remote images, tracking pixels, or third-party font/image requests. The vector is the source artwork; the PNG is its locally rendered share asset.
 - Updated Explore’s H1 to **Geography games** and added one concise description for visitors and search engines. About now links to Data and Explore through client-side links.
 
-The production Caddy route-selection gate above means search engines that render JavaScript can see updated metadata, while unfurled share cards and crawlers that do not run JavaScript need the route snapshots to be served first. Search Console, Bing Webmaster, social-card validators, and actual crawl/index results were not available in this worktree.
+The updated Caddy template serves those snapshots before the SPA fallback, so non-JavaScript crawlers and share-preview fetchers can receive route-specific metadata once the reviewed block is applied on the production host. Search Console, Bing Webmaster, social-card validators, and actual crawl/index results were not available in this worktree.
 
 ## Performance
 
-The existing app already lazy-loads `GamePage`, each game component, TopoJSON, region geometry, and optional data. This branch keeps those boundaries and does not add runtime packages. The precache generator still reports 188 built assets; generated HTML snapshots are not added to its asset list.
+The app lazy-loads `GamePage`, each of the thirteen game components, TopoJSON, region geometry and optional data. Integration preserves those boundaries and adds no runtime packages. The integrated build emits distinct chunks for all thirteen games and a precache list of 197 compiled assets; generated HTML snapshots and the historical map collection remain outside that JavaScript/CSS asset list.
+
+The integrated production preview reported a 301.03 KB main JavaScript chunk (91.76 KB gzip) and 650.13 KB main stylesheet (126.72 KB gzip). The Historical Geography JavaScript chunk is 11.91 KB (4.29 KB gzip) and its game stylesheet is 5.98 KB (1.74 KB gzip). Its SVG maps are loaded individually on demand and cached after first successful fetch. These are local build sizes, not hosted transfer or Core Web Vitals measurements.
 
 | Production asset | Baseline build | Updated build | Change |
 | --- | ---: | ---: | ---: |
@@ -64,37 +66,35 @@ The social preview PNG is 258 KB, loaded by preview crawlers rather than the pag
 - `npm ci` reported zero dependency vulnerabilities. No dependencies were added.
 - A source scan found no `dangerouslySetInnerHTML`, direct `innerHTML` assignment, `eval`, or `new Function` in the application. Static snapshot text is HTML-escaped; JSON-LD is serialized as JSON.
 - Game state remains in local browser storage. The website adds no analytics, tracking, account system, or external API.
-- The deployment script configures HSTS, `nosniff`, frame denial, a referrer policy, a permissions policy, and a same-origin CSP. It currently has `script-src 'self'` while `index.html` contains a small inline theme bootstrap. Under that policy the inline bootstrap is blocked; the app applies the preference after React loads, so this is a theme-flash and CSP-console issue rather than a game-data exposure. The host owner should either allow the exact script hash or move the bootstrap to a same-origin asset and include that asset in offline caching. No header change was made here.
-- If Caddy begins serving nested route snapshots, its no-cache matcher should cover those HTML paths as well as `/index.html`; otherwise browsers may retain a stale route snapshot between releases.
+- The deployment template keeps HSTS, `nosniff`, frame denial, a referrer policy, a permissions policy, and a same-origin CSP. Its `script-src` includes the SHA-256 hash of the exact inline theme bootstrap; it does not add script `unsafe-inline`. The canonical artifact validator recalculates that hash from built HTML and checks the template.
+- Caddy's no-cache matcher includes route snapshots and `/sw.js`; fingerprinted `/assets/*` receive one-year immutable caching. The isolated Caddy response check verified both policies.
 
 ## Homepage and navigation review
 
-The homepage screenshot confirms **Play anytime** already reaches both viewport edges and visually separates free play from Daily challenges. No Daily markup or responsive CSS was changed.
-
-The Daily page is owned by the Daily workstream. Its existing greeting pool has eight short, date-seeded variations and does not use time-of-day categories. The requested continuation redesign and a larger curated greeting pool should be handled with that owner. Suggested handoff: increase the date-seeded pool, keep the Play anytime strip full-bleed, and make the continuation card identify the saved game and mode with one primary Resume action and only useful progress detail. The current heading is generic, so the requested clarity work remains open for integration.
+The Daily page now has 28 date-seeded greetings. The continuation panel names the saved game, mode, and progress and offers a single primary Resume link. **Play anytime** remains full-bleed beneath the Daily content. Navigation underline and utility-icon hover/focus treatments stay in their scoped stylesheet. Final integrated desktop and mobile screenshots are recorded in the integration QA gallery.
 
 ## Game naming review
 
-These recommendations are editorial. No visible catalog titles were changed because game title ownership is shared with the game workstreams. Keep IDs, routes, persistence keys, and historical result labels unchanged.
+Four recommended visible titles were adopted during integration without changing IDs, routes, persistence keys, or saved historical result labels.
 
-| Current name | Recommendation | Confidence and reason |
+| Name before integration | Integrated display name | Reason |
 | --- | --- | --- |
 | Find the country | Keep | High. Directly tells the player what to do. |
-| Country outlines | Consider **Country Outline Quiz** | Medium. Names both the subject and quiz format; keep the card art and description concise. |
+| Country outlines | **Country Outline Quiz** | Medium. Names both the subject and quiz format; keep the card art and description concise. |
 | Border route | Keep as **Border Route** | High. Clear mechanic and a memorable two-word name. |
 | Flag study | **Flag Match** | High. “Study” undersells the matching interaction and is less intuitive. |
 | Geography grid | Keep as **Geography Grid** | High. Accurate, short, and easy to scan. |
 | Capitals & cities | Keep as **Capitals & Cities** | High. Clear subject coverage. |
 | Geography Connections | Keep | High. Distinctive and consistent with the puzzle format. |
-| Higher or Lower | Consider **Higher or Lower: Countries** | Medium. Preserves the familiar game mechanic while making the geography subject explicit. |
+| Higher or Lower | **Higher or Lower: Countries** | Medium. Preserves the familiar game mechanic while making the geography subject explicit. |
 | Neighbour Challenge | Keep | Medium. Clear in British English; retain the current spelling consistently. |
-| Distance & Direction | Consider **City Distance & Direction** | Medium. Signals that the game compares cities, not generic map distances. |
+| Distance & Direction | **City Distance & Direction** | Medium. Signals that the game compares cities, not generic map distances. |
 | Riverways | Keep | High. Memorable and clearly tied to river routes. |
 | Latitude Ladder | Keep | High. Memorable while describing the ordering mechanic. |
 
-Any chosen title changes should be reviewed with the relevant game owner before they are made in the shared catalog.
+The titles are display/SEO copy only; routes and puzzle identities remain stable.
 
-## Validation
+## Workstream-local validation before integration
 
 - `npm ci` — passed; zero vulnerabilities reported.
 - `npm run typecheck` — passed.
@@ -107,10 +107,10 @@ Any chosen title changes should be reviewed with the relevant game owner before 
 - After the final homepage-title compatibility adjustment, Website SEO Playwright — 5 passed; the generated title also passed the existing deployment preflight check (`<title>Maproom`).
 - Local Caddy reproduction — confirmed current `try_files {path} /index.html` falls back to the root HTML for generated nested routes. The required host routing change is documented above, not applied.
 
-The complete Playwright suite should be rerun after branch integration, especially after the Mobile markup/CSS pairing and any Caddy route change.
+The workstream-local run above predates integration. Final integrated browser, visual, and route results are recorded in [INTEGRATION_REPORT.md](INTEGRATION_REPORT.md).
 
 ## Git and integration state
 
-Implementation is on the assigned branch only. No other worktree, production file, service, or deployment configuration was changed. The full browser suite passed locally. Branch commit and push are the remaining handoff steps.
+The original workstream stayed on its assigned branch. Its handoff and test history are preserved here; the coordinator integration and release boundary are recorded in [INTEGRATION_REPORT.md](INTEGRATION_REPORT.md).
 
 Website/Mobile seam preserved: existing `.site-header`, `.primary-nav`, `.nav-link`, `.header-tools`, `.main-content`, `.page`, `.explore-page`, `.page-heading`, `.filter-row`, and `.explore-grid` hooks remain; the shell adds only `.site-header-polished` for its scoped hover rules.

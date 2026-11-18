@@ -51,13 +51,13 @@ When the eligibility pool changes or the ordering algorithm changes, bump the sc
 
 Eligible: Countries, Outlines, Border Route, Flag Study, Geography Grid, Capitals & Cities, Riverways, and Latitude Ladder. These use date-seeded or date-derived puzzle generation, reviewed or stable content pools, daily scoring/completion, and save their active daily progress.
 
-Excluded: Geography Connections, Higher or Lower, Neighbour Challenge, and Distance & Direction. Their current generators are deterministic, but their active answer state is not persisted between visits. Adding them requires daily progress restoration before eligibility is enabled.
+Excluded explicitly: Geography Connections, Higher or Lower, Neighbour Challenge, and Distance & Direction. Their current generators are deterministic, but their active answer state is not persisted between visits. Historical Geography is also explicitly excluded because its generated map deck and one-guess format have not been reviewed for the rotation. The eligibility table records each exclusion and its reason; catalog registration alone never enables Daily.
 
 The eligibility list is separate from the game catalog. Adding a game to Explore does not opt it into the rotation. A future game can declare `eligible: false` with a review reason, then be explicitly enabled after deterministic generation, content variety, scoring, completion, and progress restoration pass review.
 
 ### Historical Geography contract
 
-The proposed stable ID `historical-geography` and route `/games/historical-geography` fit the selector contract. `DailyGameEligibility` is `{ gameId: string, eligible: boolean, reason: string }`. An absent entry is ineligible; Historical Geography should be absent or have `eligible: false` until its content is reviewed. The selector also ignores IDs not yet present in the shared `GAME_IDS` type.
+The stable ID `historical-geography` and route `/games/historical-geography` fit the selector contract. `DailyGameEligibility` is `{ gameId: string, eligible: boolean, reason: string }`. Historical Geography is registered with `eligible: false` and an explicit review reason. The selector also ignores IDs not yet present in the shared `GAME_IDS` type.
 
 If Historical Geography is later enabled, it should use the shared `dailyPuzzleId(gameId, date)` and `dailyPuzzleSeed(gameId, date)` functions and the `gameId:date:version` identity contract. It should not introduce a separate random seed or a special puzzle-ID shape.
 
@@ -73,4 +73,4 @@ The Daily page's progress adapter is read-only over the existing app history. Th
 
 Puzzle selection is local and deterministic. The service worker already caches same-origin `/data/` responses after a successful fetch, so reopening a Daily puzzle after its data loaded online uses the same date seed and cached content. A first-ever visit to a lazy dataset while already offline still requires that dataset to have been fetched earlier; guaranteeing that case needs the coordinator to add the relevant data files to the shared offline precache policy.
 
-This branch does not edit shared game registration or persistence. Integration must update the catalog's Daily allowlist and `GamePage` eligibility guard to accept the eight IDs returned by this module. Historical Geography should remain absent or explicitly `eligible: false`. No shared schema migration is requested.
+The integrated catalog allowlist and `GamePage` guard accept the same eight IDs returned by this module. Historical Geography remains explicitly ineligible. No shared schema migration was required.

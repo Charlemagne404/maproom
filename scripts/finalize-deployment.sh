@@ -130,8 +130,15 @@ grep -Fq 'id="root"' "$BUILD_SOURCE/index.html" || fail 'dist/index.html has no 
 [[ -d "$BUILD_SOURCE/assets" ]] || fail 'dist/assets is missing.'
 find "$BUILD_SOURCE/assets" -maxdepth 1 -type f -name '*.js' -print -quit | grep -q . || fail 'No compiled JavaScript bundle was found.'
 find "$BUILD_SOURCE/assets" -maxdepth 1 -type f -name '*.css' -print -quit | grep -q . || fail 'No compiled stylesheet was found.'
-for relative in manifest.webmanifest sw.js offline.html precache-manifest.json icons/maproom.svg data/countries.json data/countries.topo.json data/countries-outline.topo.json data/cities.json data/cities-major.json data/rivers.json data/data-manifest.json data/coverage.json data/region-index.json; do
+for relative in manifest.webmanifest sw.js offline.html precache-manifest.json robots.txt sitemap.xml social/maproom-preview.png icons/maproom.svg data/countries.json data/countries.topo.json data/countries-outline.topo.json data/cities.json data/cities-major.json data/rivers.json data/data-manifest.json data/coverage.json data/region-index.json data/historical/manifest.json; do
   [[ -s "$BUILD_SOURCE/$relative" ]] || fail "Required production file is missing or empty: dist/$relative"
+done
+for relative in explore about data privacy statistics settings 404 games/countries games/outlines games/routes games/flags games/grid games/cities games/connections games/higher-lower games/neighbours games/distance games/rivers games/latitude-ladder games/historical-geography; do
+  [[ -s "$BUILD_SOURCE/$relative/index.html" ]] || fail "Required route snapshot is missing or empty: dist/$relative/index.html"
+done
+for map_number in {1..20}; do
+  printf -v map_index '%02d' "$map_number"
+  [[ -s "$BUILD_SOURCE/data/historical/maps/historical-map-$map_index.svg" ]] || fail "Required historical map is missing or empty: dist/data/historical/maps/historical-map-$map_index.svg"
 done
 [[ -d "$BUILD_SOURCE/data/regions" ]] || fail 'dist/data/regions is missing.'
 find "$BUILD_SOURCE/data/regions" -maxdepth 1 -type f -name '*.topo.json' -print -quit | grep -q . || fail 'No first-level boundary packages were found.'
@@ -203,17 +210,26 @@ maproom.continental-hub.com {
 		X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
-		Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; font-src 'self'"
+		Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-c+MNE94ONtentQwhmPE0Lf/pVhHThnlI8ODppCushMw='; connect-src 'self'; worker-src 'self'; manifest-src 'self'; font-src 'self'"
 		-Server
 	}
 
 	@immutable path /assets/*
 	header @immutable Cache-Control "public, max-age=31536000, immutable"
-	@revalidate path / /index.html /sw.js /manifest.webmanifest /precache-manifest.json /data/*
+	@revalidate path / /index.html /explore /explore/index.html /about /about/index.html /data /data/index.html /privacy /privacy/index.html /statistics /statistics/index.html /settings /settings/index.html /404 /404/index.html /games/* /sw.js /manifest.webmanifest /precache-manifest.json /data/*
 	header @revalidate Cache-Control "no-cache"
 
+	@spa path / /explore /about /data /privacy /statistics /settings /404 /games/countries /games/outlines /games/routes /games/flags /games/grid /games/cities /games/connections /games/higher-lower /games/neighbours /games/distance /games/rivers /games/latitude-ladder /games/historical-geography
+	handle @spa {
+		try_files {path}/index.html {path} /index.html
+		file_server
+	}
 	handle {
-		try_files {path} /index.html
+		file_server
+	}
+
+	handle_errors 404 {
+		rewrite /404/index.html
 		file_server
 	}
 }

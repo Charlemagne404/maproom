@@ -11,7 +11,7 @@ The shell lazy-loads the game route page when a game is selected, and game featu
 - `src/geography`: normalized domain types, shared Standard/Extended country eligibility, and lazy fetch/validation for country, city, river and ADM1 data.
 - `src/puzzles`: shared answer normalization, date-in-time-zone and seeded randomness; route graph generation; country-measure and city-distance comparison; Connections board validation; city-order questions; river alias/segment grouping; and geography-grid generation/answer scoring.
 - `src/games/catalog.ts`: game titles, routes, categories, setup formats and the explicit daily allowlist. `src/games/components.tsx` maps each stable game ID to its lazy interface. A `Record<GameId, …>` makes missing component registrations a type error.
-- `src/games`: twelve independently implemented game interfaces and their game-specific session controls. `session.ts` gives every game one idempotent result-save path.
+- `src/games`: thirteen independently implemented game interfaces and their game-specific session controls. `session.ts` gives every game one idempotent result-save path.
 - `src/persistence`: IndexedDB schema v2 for settings, favorites, result history and resumable game sessions, localStorage fallback, sanitization and JSON import/export.
 - `src/statistics`: pure aggregation for totals, per-game records, streaks and a 14-day daily-score trend.
 - `src/components/GeoMap.tsx`: D3 Geo Equal Earth/Mercator SVG renderer, keyboard country selection, zoom/pan, city-marker placement and an optional line layer used by river questions.

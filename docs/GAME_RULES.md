@@ -1,6 +1,6 @@
 # Game rules and scoring
 
-The existing game library has twelve experiences; Historical Geography adds a thirteenth Free Play experience. The home page curates six daily puzzles: Find the country, Country outlines, Border route, Flag study, Geography grid, and Capitals & cities. Geography Connections, Higher or Lower, Neighbour Challenge, Distance & Direction, Riverways, Latitude Ladder, and When Was This Map? are Free Play experiences; historical maps remain explicitly outside the Daily rotation. Daily dates use the time zone in Settings. In-progress daily sessions are saved locally and reopen with the same question sequence; completed results remain available from the puzzle and Statistics.
+Maproom has thirteen games. Each Daily lineup selects six of eight eligible games: Find the country, Country Outline Quiz, Border Route, Flag Match, Geography Grid, Capitals & Cities, Riverways and Latitude Ladder. Geography Connections, Higher or Lower: Countries, Neighbour Challenge, City Distance & Direction and When Was This Map? are Free Play experiences; historical maps remain explicitly outside the Daily rotation. Daily dates use the time zone in Settings. In-progress daily sessions are saved locally and reopen with the same question sequence; completed results remain available from the puzzle and Statistics.
 
 ## Country pools
 
@@ -10,7 +10,7 @@ Country-based practice defaults to **Standard**: the 193 United Nations member s
 
 Daily asks for eight countries. Practice offers 10, 20, 50, or unlimited questions, a 60-second round, worldwide or continent scope, and first-level subdivision practice for supported countries. Standard is the default pool; Extended is available in settings. Identify each answer directly on the map; focus a map region and press Enter/Space to select it. There is no country-search answer path. Correct answers earn 100 points; a flag and country name appear with the map result before the next question advances automatically. Optional review puts previously missed countries first. Subdivision files load only when selected; see [DATA_COVERAGE.md](DATA_COVERAGE.md).
 
-## Country outlines
+## Country Outline Quiz
 
 Name the country shown by its Natural Earth 1:10m silhouette, or use practice settings for a supported first-level subdivision. Daily uses the Standard catalogue and a versioned deterministic question. Free play has Standard, balanced Extended, and optional Territory focus pools. Easy, Medium and Hard use an exhaustive curated silhouette rating; entries with generic, tiny or widely dispersed outlines are excluded with documented reasons. Eligible questions do not repeat before the selected pool is exhausted, and no rolling set of ten includes more than three Extended entries while Standard candidates remain. If a region and difficulty produce no eligible outlines, the game explains the limitation instead of silently changing settings. Easy (8 guesses), Medium (6), and Hard (4) also change scoring penalties. Rotation is optional. Misses give approximate distance and direction; later hints narrow the region or position. A correct answer starts at 1,000 points and loses 100, 150, or 250 points per earlier miss by difficulty, with a 100-point floor. Exhausting the guesses reveals the answer. An in-progress version 2 daily outline retains its saved target and attempts as it moves to version 3; completed history remains valid.
 
@@ -18,7 +18,7 @@ Name the country shown by its Natural Earth 1:10m silhouette, or use practice se
 
 Connect the fixed start and destination with intermediate countries that share recorded land borders. Add any intermediate country from autocomplete in any order. The game treats the selected countries as a set, then uses the reciprocal-neighbor graph to find a continuous ordering that uses each selected country once; the ordered map route appears as soon as the collection is valid. A disconnected collection stays editable. Practice offers world or continent scope and Short (2–4 borders), Standard (3–6), or Long (5–8) targets; when a region has no exact match, generation uses the closest reachable route length. A valid route need not be shortest. Score starts at 1,000, losing 150 points per intermediate country beyond a shortest path and 100 per hint. Duplicate countries and endpoint entries are rejected. Hints name a country on a shortest route.
 
-## Flag study
+## Flag Match
 
 Daily gives eight four-choice questions. Practice offers 10, 20, 50, or unlimited questions, region, Standard or Extended country pools, flag-to-country or country-to-flag direction, and typed or multiple-choice answers where applicable. Distractors prefer the same continent, then draw from the selected pool if needed. Optional progressive reveal gives another chance after each of the first two wrong answers, then shows the answer. A wrong selection highlights both the selected option and the correct answer; resolved questions advance automatically after brief feedback. Optional review puts previously missed flags first. Correct answers earn 100 points; missed flag codes are saved in local history.
 
@@ -34,7 +34,7 @@ Daily mixes two capital questions with two city-location and two city-identifica
 
 Group sixteen countries into four sets of four. Select four countries at a time to uncover each shared geographic connection; four mistakes end the round. Easy uses familiar Standard countries and clear continent, landlocked, and named-neighbour connections. Medium adds subregions, landlocked subregions, and less obvious named border relationships. Hard uses more specific subregions and supported population or area bands; Extended is available for territory practice. Every board is checked against the category pool for a unique defensible grouping. Solved groups move into coloured rows and their connection is explained. Each group adds 250 points; each incorrect set costs 40 points. “One away” means three selected countries share one intended group. Practice replays with a new seed.
 
-## Higher or Lower
+## Higher or Lower: Countries
 
 Compare two countries by population, land area, or population density. Practice offers Standard or Extended country pools, world or continent scope, Standard or Close calls, 10, 20, 50, or unlimited questions, and an optional 60-second round. Correct answers earn 100 points plus up to 50 streak points; a wrong answer earns no points and resets the streak. Values and the correct comparison appear after the choice. Population uses the 2023 World Bank estimate where available; area uses the country catalogue, and density is population divided by catalogued area. Missing facts are excluded.
 
@@ -42,7 +42,7 @@ Compare two countries by population, land area, or population density. Practice 
 
 Select every country with a recorded reciprocal land border around the target, then check the set. Practice offers Standard or Extended country pools, world or continent scope, all eligible targets or countries with at least five neighbours, 5, 10, 20, or unlimited rounds, and an optional 60-second round. Each target starts at 1,000 points, scaled by the share of neighbours found; every extra selection costs another 100 points. A round counts as correct only when the full set is exact. Answers reveal missed and extra countries. Country search remains available when a place has no map outline.
 
-## Distance & Direction
+## City Distance & Direction
 
 Compare two populated places around an origin. Practice covers closest-to-origin, farther north, and farther east of Greenwich. It offers Standard or Extended country pools, continent scope, minimum city population of 50,000, 100,000, 250,000, or 1 million, Standard or Close calls, 10, 20, 50, or unlimited comparisons, and an optional 60-second round. No coordinates, distances, bearings, country labels, or other answer metadata are shown until after a choice. Correct answers earn 100 points plus up to 50 streak points; incorrect answers reset the streak. Feedback then reveals coordinates, distance, and bearing. Great-circle distances use the Haversine calculation; north/east comparisons use latitude and signed longitude.
 

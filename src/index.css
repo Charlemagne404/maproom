@@ -615,7 +615,7 @@ h1, h2 { letter-spacing: -.035em; }
 .game-card-outlines { background: var(--accent); color: var(--ink); }
 .game-card-outlines .game-card-action svg { color: var(--ink); }
 .game-card-routes { background: #e9d8c5; }
-.game-card-flags, .game-card-grid, .game-card-cities, .game-card-connections, .game-card-higher-lower, .game-card-neighbours, .game-card-distance, .game-card-rivers, .game-card-latitude-ladder { grid-column: span 4; }
+.game-card-flags, .game-card-grid, .game-card-cities, .game-card-connections, .game-card-higher-lower, .game-card-neighbours, .game-card-distance, .game-card-rivers, .game-card-latitude-ladder, .game-card-historical-geography { grid-column: span 4; }
 .game-card-flags { background: #fffaf3; }
 .game-card-grid { background: #3a342e; color: var(--paper); }
 .game-card-grid .game-card-action { color: var(--paper); }
@@ -870,7 +870,7 @@ h1, h2 { letter-spacing: -.035em; }
 @media (max-width: 980px) {
   .game-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .game-card-countries { grid-column: span 6; }
-  .game-card-outlines, .game-card-routes, .game-card-flags, .game-card-grid, .game-card-cities, .game-card-connections, .game-card-higher-lower, .game-card-neighbours, .game-card-distance, .game-card-rivers, .game-card-latitude-ladder { grid-column: span 3; }
+  .game-card-outlines, .game-card-routes, .game-card-flags, .game-card-grid, .game-card-cities, .game-card-connections, .game-card-higher-lower, .game-card-neighbours, .game-card-distance, .game-card-rivers, .game-card-latitude-ladder, .game-card-historical-geography { grid-column: span 3; }
   .map-game-body, .outline-game-body, .route-game-body, .cities-game-body:has(.city-map-stage) { grid-template-columns: minmax(0, 1.3fr) minmax(245px, .7fr); gap: 0 16px; }
   .route-pair { grid-template-columns: minmax(0, 1fr) 88px minmax(0, 1fr); }
   .route-distance { grid-column: auto; padding: 0 0 0 10px; border-top: 0; border-left: 1px solid #62584e; }
@@ -895,7 +895,7 @@ h1, h2 { letter-spacing: -.035em; }
   .game-card-link { min-height: 180px; padding: 12px 12px 11px; }
   .game-card-countries { grid-column: span 2; min-height: 201px; }
   .game-card-countries .game-card-link { min-height: 201px; padding: 12px 15px 11px; }
-  .game-card-outlines, .game-card-routes, .game-card-flags, .game-card-grid, .game-card-cities, .game-card-connections, .game-card-higher-lower, .game-card-neighbours, .game-card-distance, .game-card-rivers, .game-card-latitude-ladder { grid-column: span 1; }
+  .game-card-outlines, .game-card-routes, .game-card-flags, .game-card-grid, .game-card-cities, .game-card-connections, .game-card-higher-lower, .game-card-neighbours, .game-card-distance, .game-card-rivers, .game-card-latitude-ladder, .game-card-historical-geography { grid-column: span 1; }
   .game-card-art { height: 83px; margin: 2px 3px 2px; }
   .game-card-countries .game-card-art { height: 101px; margin: 0 4px 2px; }
   .game-card-copy h2 { font-size: clamp(1.02rem, 4.4vw, 1.32rem); }

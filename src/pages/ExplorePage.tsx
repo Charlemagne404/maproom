@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useAppData } from '../app/useAppData'
 import { GameCard, GameFormatCard, PageHeading } from '../components/Kit'
 import { categories, formatsForGame, games, type GameFormat, type GameInfo } from '../games/catalog'
+import { HistoricalExploreCollection } from '../games/historical-geography/HistoricalExploreCollection'
 
 export function ExplorePage() {
   const { state, toggleFavorite } = useAppData()
@@ -83,6 +84,7 @@ export function ExplorePage() {
           {(favoritesOnly || query) && <button className="button button-outline" type="button" onClick={() => { setQuery(''); selectCategory('All games'); setParams({}, { replace: true }) }}>Show all games</button>}
         </div>
       )}
+      {!query.trim() && category === 'All games' && !favoritesOnly && <HistoricalExploreCollection />}
       <div className="explore-count">{filtered.length} {filtered.length === 1 ? 'experience' : 'experiences'} available</div>
     </div>
   )

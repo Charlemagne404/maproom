@@ -9,6 +9,7 @@ import { dailyPuzzleId } from '../puzzles/engine'
 import { isCompatibleGameSession } from '../games/sessionCompatibility'
 import { getDailyGameLineup } from '../daily/schedule'
 import { readDailyProgress } from '../daily/progress'
+import { getDailyGreeting } from '../daily/greetings'
 
 export function DailyPage() {
   const { state, toggleFavorite } = useAppData()
@@ -32,7 +33,7 @@ export function DailyPage() {
   return (
     <div className="page daily-page">
       <section className="welcome-hero" aria-label="Welcome">
-        <h1>{greetingForDate(date)}</h1>
+        <h1>{getDailyGreeting(date)}</h1>
         <time dateTime={date}>{dateLabel}</time>
       </section>
       <section className="daily-puzzles" aria-labelledby="daily-puzzles-heading">
@@ -59,11 +60,11 @@ export function DailyPage() {
       </section>
       {resumeGame && resumable && <section className="continue-strip" aria-labelledby="continue-title">
         <div>
-          <span className="eyebrow">In progress</span>
-          <h2 id="continue-title">Pick up where you left off</h2>
-          <p>{resumeGame.title} · {resumable.mode === 'daily' ? 'Today’s puzzle' : 'Free play'}{resumeProgress ? ` · ${resumeProgress}` : ''}</p>
+          <span className="eyebrow">Continue playing</span>
+          <h2 id="continue-title">{resumeGame.title}</h2>
+          <p>{resumable.mode === 'daily' ? 'Today’s puzzle' : 'Free play'}{resumeProgress ? ` · ${resumeProgress}` : ''}</p>
         </div>
-        <Link className="continue-action" to={`${resumeGame.path}?${resumeSearch}`} state={{ from: '/' }}>
+        <Link className="continue-action" aria-label={`Resume ${resumeGame.title}`} to={`${resumeGame.path}?${resumeSearch}`} state={{ from: '/' }}>
           <span>Resume {resumeGame.shortTitle}</span><ArrowRight size={17} aria-hidden="true" />
         </Link>
       </section>}
@@ -86,23 +87,6 @@ export function DailyPage() {
       </section>
     </div>
   )
-}
-
-const dailyGreetings = [
-  'Ready to explore?',
-  'Where are we going today?',
-  'A new day, a new discovery.',
-  'Let’s see what you know.',
-  'Find your next place.',
-  'Your atlas is waiting.',
-  'How well do you know the world?',
-  'Take the scenic route.',
-]
-
-function greetingForDate(date: string): string {
-  let hash = 0
-  for (const character of date) hash = (hash * 31 + character.charCodeAt(0)) >>> 0
-  return dailyGreetings[hash % dailyGreetings.length]!
 }
 
 function createResumeSearch(session: { mode: 'daily' | 'freeplay'; payload: Record<string, unknown> }, formatIds: string[]): string {
