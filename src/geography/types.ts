@@ -63,6 +63,17 @@ export interface GeoFeature {
   geometry: GeoJSON.Geometry
 }
 
+export interface RiverFeature extends GeoFeature {
+  properties: GeoProperties & {
+    id: string
+    name: string
+    nameAlt: string | null
+    nameEnglish: string | null
+    scaleRank: number
+  }
+  geometry: GeoJSON.LineString | GeoJSON.MultiLineString
+}
+
 export interface City {
   id: string
   name: string
@@ -96,7 +107,11 @@ export interface CityData {
   cities: City[]
 }
 
-export type GameId = 'countries' | 'outlines' | 'routes' | 'flags' | 'grid' | 'cities' | 'connections' | 'higher-lower' | 'neighbours' | 'distance'
+export const GAME_IDS = [
+  'countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections',
+  'higher-lower', 'neighbours', 'distance', 'rivers', 'latitude-ladder',
+] as const
+export type GameId = typeof GAME_IDS[number]
 export type GameMode = 'daily' | 'freeplay'
 
 export interface GameResult {

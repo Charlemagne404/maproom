@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
+import { exploreExperienceCount } from './gameCatalogCounts'
 
 const screenshotDirectory = 'artifacts/screenshots/product-overhaul'
 
@@ -8,7 +9,8 @@ test.beforeAll(() => mkdirSync(screenshotDirectory, { recursive: true }))
 async function openFreePlay(page: Page, format: string) {
   await page.goto(`/games/flags?mode=freeplay&format=${format}`)
   await expect(page.getByRole('group', { name: 'Free play setup' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start Free play' }).click()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.locator('.game-body')).toBeVisible()
 }
 
@@ -24,7 +26,13 @@ async function captureTheme(page: Page, viewport: 'desktop' | 'mobile', theme: '
   await page.screenshot({ path: `${screenshotDirectory}/${prefix}-home.png`, fullPage: true })
 
   await page.goto('/explore')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(14)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreExperienceCount)
+  const exploreGrid = await page.locator('.explore-grid').boundingBox()
+  for (const gameId of ['rivers', 'latitude-ladder']) {
+    const cardWidths = await page.locator(`.game-card-${gameId}`).evaluateAll((cards) => cards.map((card) => card.getBoundingClientRect().width))
+    expect(cardWidths.length).toBeGreaterThan(0)
+    expect(cardWidths.every((width) => width > (exploreGrid?.width ?? 0) * 0.25)).toBe(true)
+  }
   await page.screenshot({ path: `${screenshotDirectory}/${prefix}-explore.png`, fullPage: true })
 
   await page.goto('/settings')
@@ -45,7 +53,8 @@ async function captureTheme(page: Page, viewport: 'desktop' | 'mobile', theme: '
   await page.goto('/games/flags?mode=freeplay&format=country-to-flag')
   await expect(page.getByRole('group', { name: 'Free play setup' })).toBeVisible()
   await page.screenshot({ path: `${screenshotDirectory}/${prefix}-freeplay-setup.png`, fullPage: true })
-  await page.getByRole('button', { name: 'Start Free play' }).click()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.locator('.image-choice-grid .flag-choice')).toHaveCount(4)
   await page.screenshot({ path: `${screenshotDirectory}/${prefix}-freeplay-game.png` })
 }
@@ -68,8 +77,8 @@ test('captures the product experience in light and dark at desktop and mobile si
     }
     expect(correctChoice).toBeGreaterThanOrEqual(0)
     await choices.nth(correctChoice).click()
-    await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-    if (index < 9) await expect(page.locator('.flag-progress')).toHaveText(`${String(index + 2).padStart(2, '0')} / 10`, { timeout: 5_000 })
+    await expect(page.locator('.flag-choice.is-right')).toBeVisible()
+    if (index < 9) await expect(page.getByRole('progressbar', { name: 'flags progress' })).toHaveAttribute('aria-valuenow', String(index + 2), { timeout: 5_000 })
   }
 
   await expect(page.locator('.game-results-dialog')).toBeVisible()

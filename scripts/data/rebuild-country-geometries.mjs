@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto'
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { topology } from 'topojson-server'
 import { mergeDetailedFallback, normalizeNaturalEarthGeometry, territoryParentIso3 } from './country-geometry.mjs'
 import { supplementalTerritories } from './supplemental-territories.mjs'
 
@@ -61,12 +62,19 @@ const outlines = { type: 'FeatureCollection', features: outlineFeatures }
 const nextCatalog = { ...catalogFile, countries }
 
 const sha256 = (value) => createHash('sha256').update(value).digest('hex')
-const worldBytes = Buffer.from(JSON.stringify(world))
-const outlineBytes = Buffer.from(JSON.stringify(outlines))
+const geometryQuantization = 1_000_000
+const worldTopology = topology({ countries: world }, geometryQuantization)
+const outlineTopology = topology({ countries: outlines }, geometryQuantization)
+const worldBytes = Buffer.from(JSON.stringify(worldTopology))
+const outlineBytes = Buffer.from(JSON.stringify(outlineTopology))
 const catalogBytes = Buffer.from(JSON.stringify(nextCatalog))
-await writeFile(path.join(dataDir, 'countries.geojson'), worldBytes)
-await writeFile(path.join(dataDir, 'countries-outline.geojson'), outlineBytes)
+await writeFile(path.join(dataDir, 'countries.topo.json'), worldBytes)
+await writeFile(path.join(dataDir, 'countries-outline.topo.json'), outlineBytes)
 await writeFile(path.join(dataDir, 'countries.json'), catalogBytes)
+await Promise.all([
+  unlink(path.join(dataDir, 'countries.geojson')).catch((error) => { if (error.code !== 'ENOENT') throw error }),
+  unlink(path.join(dataDir, 'countries-outline.geojson')).catch((error) => { if (error.code !== 'ENOENT') throw error }),
+])
 
 const coverage = {
   ...coverageFile,
@@ -84,6 +92,13 @@ const coverage = {
 await writeJson(path.join(dataDir, 'coverage.json'), coverage, true)
 
 const sources = manifestFile.sources.filter((source) => !source.name.startsWith('Natural Earth 1:10m'))
+const worldSource = sources.find((source) => source.name.startsWith('Natural Earth 1:50m'))
+if (worldSource) {
+  worldSource.transformations = [...new Set([
+    ...(worldSource.transformations ?? []),
+    'Quantized and converted shared borders to TopoJSON at a 1e6 coordinate grid',
+  ])]
+}
 const sourceSha256 = sha256(await readFile(path.join(rawDir, 'natural-earth-admin0-10m.geojson')))
 sources.splice(sources.findIndex((source) => source.name.startsWith('Natural Earth 1:50m')) + 1, 0, {
   name: 'Natural Earth 1:10m Admin 0 Countries',
@@ -98,6 +113,7 @@ sources.splice(sources.findIndex((source) => source.name.startsWith('Natural Ear
     'Preserved detailed Polygon and MultiPolygon rings for country silhouettes',
     'Separated named territory components from their parent countries',
     'Merged Natural Earth Northern Cyprus and Cyprus U.N. Buffer Zone geometries into the geographic Cyprus island outline',
+    'Quantized and converted shared borders to TopoJSON at a 1e6 coordinate grid',
   ],
 })
 const manifest = {
@@ -105,12 +121,14 @@ const manifest = {
   sources,
   artifacts: {
     ...manifestFile.artifacts,
-    countriesGeoJSONSha256: sha256(worldBytes),
-    countriesOutlineGeoJSONSha256: sha256(outlineBytes),
+    countriesTopologySha256: sha256(worldBytes),
+    countriesOutlineTopologySha256: sha256(outlineBytes),
     countriesCatalogSha256: sha256(catalogBytes),
     coverageSha256: sha256(Buffer.from(JSON.stringify(coverage, null, 2))),
   },
 }
+delete manifest.artifacts.countriesGeoJSONSha256
+delete manifest.artifacts.countriesOutlineGeoJSONSha256
 await writeJson(path.join(dataDir, 'data-manifest.json'), manifest, true)
 
 console.log(JSON.stringify({

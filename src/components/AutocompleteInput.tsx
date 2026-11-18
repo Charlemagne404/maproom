@@ -20,6 +20,7 @@ export function AutocompleteInput({
   onSubmit,
   submitLabel = 'Submit',
   disabled = false,
+  retainFocusWhenDisabled = false,
   autoFocus = false,
 }: {
   id: string
@@ -32,11 +33,14 @@ export function AutocompleteInput({
   onSubmit: () => void
   submitLabel?: string
   disabled?: boolean
+  retainFocusWhenDisabled?: boolean
   autoFocus?: boolean
 }) {
+  const input = useRef<HTMLInputElement>(null)
   const [open, setOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const blurTimer = useRef<number | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const acceptedLabel = useRef<string | null>(null)
   const matches = useMemo(() => {
     const needle = normalizeAnswer(value)
     if (!needle) return []
@@ -53,28 +57,55 @@ export function AutocompleteInput({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (disabled) return
+    if (retainFocusWhenDisabled) input.current?.focus({ preventScroll: true })
+    acceptedLabel.current = null
     setOpen(false)
+    setActiveIndex(null)
     onSubmit()
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === 'Escape') setOpen(false)
+    if (disabled) {
+      if (event.key === 'Enter') event.preventDefault()
+      return
+    }
+    if (event.key === 'Escape' && open && matches.length) {
+      event.preventDefault()
+      setOpen(false)
+      setActiveIndex(null)
+    }
+    if (event.key === 'Enter' && acceptedLabel.current === value) {
+      event.preventDefault()
+      acceptedLabel.current = null
+      setOpen(false)
+      setActiveIndex(null)
+      onSubmit()
+      return
+    }
     if (event.key === 'Enter' && open && matches.length) {
       event.preventDefault()
-      acceptSuggestion(matches[0])
+      acceptSuggestion(matches[activeIndex ?? 0] ?? matches[0]!)
       return
     }
     if (event.key === 'ArrowDown' && matches.length) {
       event.preventDefault()
       setOpen(true)
-      document.getElementById(`${id}-suggestion-0`)?.focus()
+      setActiveIndex((current) => current === null ? 0 : Math.min(current + 1, matches.length - 1))
+    }
+    if (event.key === 'ArrowUp' && matches.length) {
+      event.preventDefault()
+      setOpen(true)
+      setActiveIndex((current) => current === null ? matches.length - 1 : Math.max(Math.min(current, matches.length - 1) - 1, 0))
     }
   }
 
   function acceptSuggestion(suggestion: Suggestion) {
+    if (disabled) return
+    acceptedLabel.current = suggestion.label
     onChange(suggestion.label)
     setOpen(false)
-    inputRef.current?.focus()
+    setActiveIndex(null)
   }
 
   return (
@@ -83,10 +114,10 @@ export function AutocompleteInput({
       <div className="autocomplete-field">
         <Search size={17} aria-hidden="true" />
         <input
-          ref={inputRef}
+          ref={input}
           id={id}
           value={value}
-          onChange={(event) => { onChange(event.target.value); setOpen(true) }}
+          onChange={(event) => { acceptedLabel.current = null; setActiveIndex(null); onChange(event.target.value); setOpen(true) }}
           onFocus={() => {
             if (blurTimer.current !== null) window.clearTimeout(blurTimer.current)
             blurTimer.current = null
@@ -97,55 +128,40 @@ export function AutocompleteInput({
             blurTimer.current = window.setTimeout(() => {
               blurTimer.current = null
               setOpen(false)
+              setActiveIndex(null)
             }, 120)
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoComplete="off"
+          role="combobox"
           aria-autocomplete="list"
+          aria-haspopup="listbox"
           aria-expanded={open && matches.length > 0}
-          aria-controls={`${id}-suggestions`}
-          disabled={disabled}
+          aria-controls={open && matches.length > 0 ? `${id}-suggestions` : undefined}
+          aria-activedescendant={open && activeIndex !== null && matches[activeIndex] ? `${id}-suggestion-${activeIndex}` : undefined}
+          disabled={disabled && !retainFocusWhenDisabled}
+          readOnly={disabled && retainFocusWhenDisabled}
+          aria-disabled={disabled && retainFocusWhenDisabled ? true : undefined}
           autoFocus={autoFocus}
         />
         <button className="button button-dark answer-submit" type="submit" disabled={disabled || !value.trim()}>
           {submitLabel}<ArrowUpRight size={15} aria-hidden="true" />
         </button>
-        {open && matches.length > 0 && (
+        {open && matches.length > 0 && !disabled && (
           <div className="suggestion-list" id={`${id}-suggestions`} role="listbox" aria-label={`${label} suggestions`}>
             {matches.map((suggestion, index) => (
-              <button
+              <div
                 id={`${id}-suggestion-${index}`}
                 key={suggestion.value}
-                type="button"
                 role="option"
-                aria-selected={false}
-                className="suggestion-option"
+                aria-selected={activeIndex === index}
+                className={`suggestion-option${activeIndex === index ? ' is-active' : ''}`}
                 onMouseDown={(event) => event.preventDefault()}
-                onClick={() => { onPick(suggestion); setOpen(false) }}
-                onFocus={() => {
-                  if (blurTimer.current !== null) window.clearTimeout(blurTimer.current)
-                  blurTimer.current = null
-                  setOpen(true)
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    acceptSuggestion(suggestion)
-                  }
-                  if (event.key === 'ArrowDown') {
-                    event.preventDefault()
-                    document.getElementById(`${id}-suggestion-${Math.min(index + 1, matches.length - 1)}`)?.focus()
-                  }
-                  if (event.key === 'ArrowUp') {
-                    event.preventDefault()
-                    if (index === 0) document.getElementById(id)?.focus()
-                    else document.getElementById(`${id}-suggestion-${index - 1}`)?.focus()
-                  }
-                }}
+                onClick={() => { acceptedLabel.current = suggestion.label; onPick(suggestion); setOpen(false); setActiveIndex(null) }}
               >
                 <span>{suggestion.label}</span>{suggestion.detail && <small>{suggestion.detail}</small>}
-              </button>
+              </div>
             ))}
           </div>
         )}

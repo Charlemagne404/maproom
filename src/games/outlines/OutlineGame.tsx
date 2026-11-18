@@ -3,7 +3,7 @@ import { geoCentroid } from 'd3-geo'
 import { Check, CircleHelp } from 'lucide-react'
 import { AutocompleteInput, type Suggestion } from '../../components/AutocompleteInput'
 import { GameResultsDialog } from '../../components/GameResults'
-import { GameSettingsMenu } from '../../components/GameControls'
+import { AdvancedGameSettings, GameSettingSelect, GameSettingToggle, GameSettingsMenu } from '../../components/GameControls'
 import { FreePlaySetupContext } from '../../components/FreePlaySetupContext'
 import { GeoMap } from '../../components/GeoMap'
 import { InlineNotice, LoadingState } from '../../components/Kit'
@@ -319,11 +319,13 @@ function OutlineSettingsControls({ eligibility, onEligibility, scope, onScopeCha
   activePoolSize: number
 }) {
   return <div className="practice-config">
-    <label><span>Outline pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as OutlinePoolMode)}><option value="standard">Standard · eligible countries</option><option value="extended">Extended · balanced territories</option><option value="territories">Territory focus</option></select></label>
-    <label><span>Free play scope</span><select value={scope} onChange={(event) => onScopeChange(event.target.value)}><option value="World">World</option>{continents.map((item) => <option key={item}>{item}</option>)}<option value="Subdivisions">First-level subdivisions</option></select></label>
-    {scope === 'Subdivisions' && <label><span>Country</span><select value={regionCountry} onChange={(event) => onRegionCountryChange(event.target.value)}>{countriesWithRegions.map((country) => <option key={country.iso3} value={country.iso3}>{country.name} · {country.regionCount}</option>)}</select></label>}
-    <label><span>Difficulty</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as OutlineDifficulty)}><option value="easy">Easy · familiar silhouettes</option><option value="medium">Medium · wider geography</option><option value="hard">Hard · challenging outlines</option></select></label>
-    <label className="flag-reveal-setting"><input type="checkbox" checked={rotated} onChange={(event) => onRotated(event.target.checked)} /><span>Rotate silhouettes</span></label>
+    <GameSettingSelect label="Geographic scope" value={scope} control="select" options={[{ value: 'World', label: 'World' }, ...continents.map((item) => ({ value: item, label: item })), { value: 'Subdivisions', label: 'First-level subdivisions' }]} onChange={onScopeChange} />
+    <GameSettingSelect label="Difficulty" value={difficulty} options={[{ value: 'easy', label: 'Easy · familiar' }, { value: 'medium', label: 'Medium · wider geography' }, { value: 'hard', label: 'Hard · challenging' }]} onChange={(value) => onDifficulty(value as OutlineDifficulty)} />
+    <AdvancedGameSettings>
+      <GameSettingSelect label="Outline pool" value={eligibility} options={[{ value: 'standard', label: 'Standard · eligible countries' }, { value: 'extended', label: 'Extended · balanced territories' }, { value: 'territories', label: 'Territory focus' }]} onChange={(value) => onEligibility(value as OutlinePoolMode)} />
+      {scope === 'Subdivisions' && <GameSettingSelect label="Country" value={regionCountry} control="select" options={countriesWithRegions.map((country) => ({ value: country.iso3, label: `${country.name} · ${country.regionCount}` }))} onChange={onRegionCountryChange} />}
+      <GameSettingToggle label="Rotate silhouettes" checked={rotated} onChange={onRotated} />
+    </AdvancedGameSettings>
     {scope !== 'Subdivisions' && <span className="practice-config-note">{activePoolSize} suitable silhouettes. A place repeats only after this pool has been used once.</span>}
     <span className="practice-config-note">Wrong guesses give distance and direction; later guesses reveal the region.</span>
   </div>

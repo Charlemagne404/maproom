@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-16T20:43:02.789Z",
+  "generatedAt": "2026-11-18T01:08:45.953Z",
   "countryCatalogCount": 255,
   "countryGeometryFeatureCount": 259,
   "countryCodesWithGeometry": 255,
@@ -7,6 +7,7 @@
   "admin1CountriesIncluded": 198,
   "admin1UnitsIncluded": 3236,
   "cityCount": 34456,
+  "riverFeatureCount": 148,
   "countriesWithoutAdmin1": 58,
   "limitations": [
     "Country boundaries use Natural Earth 1:50m generalized geometry; tiny islands and disputed boundaries follow Natural Earth conventions.",
@@ -14,8 +15,10 @@
     "GeoNames cities500 includes populated places of 50,000 or more plus national and first-level seats with lower population; cities below that threshold are omitted.",
     "National-capital names and coordinates are incomplete for some territories; capital-location questions use records with a known coordinate.",
     "Population uses World Bank 2023 annual estimates where an ISO3 match exists; area values come from the country catalog. Neither figure is a live statistical feed.",
-    "Explicit parent-territory links split detached overseas components into separate Extended entries while preserving domestic archipelagos. Disputed records without a resolved parent remain separate."
+    "Explicit parent-territory links split detached overseas components into separate Extended entries while preserving domestic archipelagos. Disputed records without a resolved parent remain separate.",
+    "River questions use named, generalized Natural Earth 1:50m centerlines with scale rank 4 or better; they are not complete hydrography or navigational data."
   ],
   "outlineGeometryFeatureCount": 269,
-  "countriesWithoutGeometry": []
+  "countriesWithoutGeometry": [],
+  "majorCityCount": 12405
 }

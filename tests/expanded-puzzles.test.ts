@@ -64,6 +64,26 @@ describe('expanded daily and practice puzzle builders', () => {
     expect(gridAnswerScore(0)).toBe(0)
   })
 
+  it('expands Free Play grid clues and classifies North Macedonia as UN M49 Southern Europe', () => {
+    const dailyPresets = validGridPresets(countries)
+    const freeplayPresets = validGridPresets(countries, { expanded: true })
+    const southernEurope = freeplayPresets.flatMap((preset) => preset.columns).find((column) => column.id === 'm49-southern-europe')
+    const landlocked = freeplayPresets.flatMap((preset) => preset.rows).find((row) => row.id === 'landlocked')
+    const macedonia = countriesByCode.get('MKD')!
+
+    expect(dailyPresets.every((preset) => !preset.columns.some((column) => column.id === 'm49-southern-europe'))).toBe(true)
+    expect(freeplayPresets.length).toBeGreaterThan(50)
+    expect(southernEurope?.label).toBe('Southern Europe · UN M49')
+    expect(landlocked?.matches(macedonia)).toBe(true)
+    expect(southernEurope?.matches(macedonia)).toBe(true)
+    expect(freeplayPresets.some((preset) => preset.columns.some((column) => column.id === 'm49-southern-europe') && preset.rows.some((row) => row.id === 'landlocked'))).toBe(true)
+    expect(freeplayPresets.some((preset) => preset.rows.some((row) => row.id === 'eu-member-2026'))).toBe(true)
+    expect(freeplayPresets.every((preset) => preset.rows.every((row) => preset.columns.every((column) => {
+      const candidates = gridCandidates(countries, row, column)
+      return candidates.length >= 2 && candidates.length <= 90
+    })))).toBe(true)
+  })
+
   it('applies the documented Standard and ordinary Extended pools', () => {
     const standard = eligibleCountries(countries, 'standard')
     const extended = eligibleCountries(countries, 'extended')

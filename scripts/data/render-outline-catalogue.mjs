@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { geoCentroid, geoEqualEarth, geoPath } from 'd3-geo'
+import { feature } from 'topojson-client'
 import { chromium } from '@playwright/test'
 import { classifyGeography, SPECIAL_GEOGRAPHIC_CODES, STANDARD_CODES } from '../../src/geography/catalogue-rules.mjs'
 import { outlinePlayabilitySummary, outlineRuleFor } from '../../src/games/outlines/playability.mjs'
@@ -10,7 +11,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const dataDir = path.join(root, 'public', 'data')
 const outputDir = path.join(root, 'artifacts', 'qa', 'geography-overhaul', 'contact-sheets')
 const countries = JSON.parse(readFileSync(path.join(dataDir, 'countries.json'), 'utf8')).countries
-const outlines = JSON.parse(readFileSync(path.join(dataDir, 'countries-outline.geojson'), 'utf8'))
+const outlineTopology = JSON.parse(readFileSync(path.join(dataDir, 'countries-outline.topo.json'), 'utf8'))
+const outlines = feature(outlineTopology, outlineTopology.objects.countries)
 const sourceManifest = JSON.parse(readFileSync(path.join(dataDir, 'data-manifest.json'), 'utf8'))
 const outlineSource = sourceManifest.sources.find((source) => source.name === 'Natural Earth 1:10m Admin 0 Countries')
 if (!outlineSource) throw new Error('No Natural Earth 1:10m source record found in data-manifest.json')

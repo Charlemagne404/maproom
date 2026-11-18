@@ -1,5 +1,6 @@
 /* Additional semantic colors shared by new controls and dark-theme surfaces. */
 :root {
+  --control-border: #806f5d;
   --surface-soft: #eee1d2;
   --surface-hover: #e8d9c8;
   --surface-raised: #fffaf3;
@@ -28,11 +29,14 @@ html[data-theme='dark'] {
   --paper: #292521;
   --ink: #f2e7d9;
   --accent: #f29a62;
+  --accent-ink: #f5a575;
   --sand: #554b41;
   --slate: #796e62;
   --border: #61574d;
   --muted: #b8aa99;
+  --grid-empty-label: #c5b9aa;
   --water: #211e1b;
+  --control-border: #a08d79;
   --surface: #37322c;
   --surface-soft: #3d3731;
   --surface-hover: #51473d;
@@ -83,14 +87,15 @@ html[data-theme='dark'] .suggestion-list,
 html[data-theme='dark'] .practice-config select,
 html[data-theme='dark'] .setting-control select,
 html[data-theme='dark'] .flag-settings-panel select,
-html[data-theme='dark'] .coordinate-fields input { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme='dark'] .coordinate-fields input { border-color: var(--control-border); background: var(--surface); color: var(--ink); }
 html[data-theme='dark'] .search-field input,
 html[data-theme='dark'] .autocomplete-field > input { color: var(--ink); }
 html[data-theme='dark'] .search-field input::placeholder,
 html[data-theme='dark'] .autocomplete-field > input::placeholder { color: var(--muted); }
 html[data-theme='dark'] .suggestion-option { border-bottom-color: var(--border); color: var(--ink); }
 html[data-theme='dark'] .suggestion-option:hover,
-html[data-theme='dark'] .suggestion-option:focus-visible { background: var(--surface-hover); }
+html[data-theme='dark'] .suggestion-option:focus-visible,
+html[data-theme='dark'] .suggestion-option.is-active { background: var(--surface-hover); }
 html[data-theme='dark'] .filter-chip:hover,
 html[data-theme='dark'] .favorite-shortcut:hover,
 html[data-theme='dark'] .data-shortcut:hover,
@@ -128,6 +133,10 @@ html[data-theme='dark'] .game-card-neighbours .game-card-action { color: var(--i
 html[data-theme='dark'] .game-card-cities,
 html[data-theme='dark'] .game-card-connections { background: #403a34; color: var(--ink); }
 html[data-theme='dark'] .game-card-distance { background: #393a36; color: var(--ink); }
+html[data-theme='dark'] .game-card-rivers { background: #343b36; color: var(--ink); }
+html[data-theme='dark'] .game-card-rivers .game-card-copy h2,
+html[data-theme='dark'] .game-card-rivers .game-card-action { color: var(--ink); }
+html[data-theme='dark'] .game-card-latitude-ladder { background: #3e3933; color: var(--ink); }
 html[data-theme='dark'] .game-card-action { border-color: color-mix(in srgb, var(--ink) 20%, transparent); }
 html[data-theme='dark'] .symbol-ground { fill: rgba(179, 154, 128, .2); }
 html[data-theme='dark'] .symbol-line { stroke: #c0ae99; }
@@ -136,6 +145,14 @@ html[data-theme='dark'] .art-outline .art-outline-dark { display: block; }
 html[data-theme='dark'] .art-outline-orbit { border-color: rgba(242, 231, 217, .42); }
 html[data-theme='dark'] .city-grid-lines { stroke: rgba(242, 231, 217, .24); }
 html[data-theme='dark'] .city-crosshair { stroke: rgba(242, 231, 217, .58); }
+html[data-theme='dark'] .art-riverways > img { opacity: .38; filter: sepia(.3); }
+html[data-theme='dark'] .river-course-shadow { stroke: #181614; }
+html[data-theme='dark'] .river-source { stroke: #343b36; }
+html[data-theme='dark'] .river-mouth { stroke: #343b36; }
+html[data-theme='dark'] .ladder-graticule { stroke: rgba(242, 231, 217, .26); }
+html[data-theme='dark'] .ladder-direction { stroke: #d0bfa9; }
+html[data-theme='dark'] .art-latitude-ladder g circle { fill: #403a34; }
+html[data-theme='dark'] .art-latitude-ladder g text { fill: var(--ink); }
 
 /* Geography stays deliberately illustrated: warm dark water, distinct land and clear borders. */
 html[data-theme='dark'] .game-map-stage,
@@ -152,11 +169,11 @@ html[data-theme='dark'] .map-country:hover,
 html[data-theme='dark'] .map-country.is-hovered { fill: var(--map-land-hover); }
 html[data-theme='dark'] .map-country.is-active { fill: var(--accent); }
 html[data-theme='dark'] .map-country.is-wrong { fill: var(--error); }
-html[data-theme='dark'] .map-country:focus-visible { fill: var(--accent); stroke: var(--ink); }
+html[data-theme='dark'] .map-country:focus-visible { fill: var(--accent-ink); stroke: var(--ink); }
 html[data-theme='dark'] .outline-map-stage .map-country { fill: var(--accent); stroke: var(--map-outline-edge); stroke-width: 1.4px; }
 html[data-theme='dark'] .outline-map-stage .map-country:hover,
 html[data-theme='dark'] .outline-map-stage .map-country.is-hovered { fill: var(--accent); }
-html[data-theme='dark'] .outline-map-stage .map-country:focus-visible { fill: var(--accent); stroke: var(--map-outline-edge); }
+html[data-theme='dark'] .outline-map-stage .map-country:focus-visible { fill: var(--accent-ink); stroke: var(--map-outline-edge); }
 html[data-theme='dark'] .map-tool,
 html[data-theme='dark'] .map-caption { border-color: var(--border); background: var(--surface); color: var(--ink); }
 html[data-theme='dark'] .map-tool:hover { background: var(--accent); color: #30251d; }
@@ -172,10 +189,11 @@ html[data-theme='dark'] .route-pair strong,
 html[data-theme='dark'] .route-distance strong { color: var(--surface-strong-text); }
 html[data-theme='dark'] .route-pair .eyebrow,
 html[data-theme='dark'] .route-pair-arrow span,
-html[data-theme='dark'] .route-distance span { color: var(--muted); }
+html[data-theme='dark'] .route-distance span { color: var(--surface-strong-text); }
 html[data-theme='dark'] .route-distance { border-color: var(--border); }
 html[data-theme='dark'] .route-stops li { background: var(--surface-soft); color: var(--ink); }
 html[data-theme='dark'] .route-stops li.is-start { background: var(--surface-strong); color: var(--surface-strong-text); }
+html[data-theme='dark'] .route-stops li.is-start .route-stop-index { color: var(--accent-ink); }
 html[data-theme='dark'] .route-builder { border-color: var(--border); background: var(--surface-raised); }
 html[data-theme='dark'] .country-practice-status,
 html[data-theme='dark'] .city-practice-status,
@@ -195,10 +213,10 @@ html[data-theme='dark'] .neighbour-target,
 html[data-theme='dark'] .connections-review p { border-color: var(--border); background: var(--surface-raised); color: var(--ink); }
 html[data-theme='dark'] .answer-feedback,
 html[data-theme='dark'] .inline-notice { border-color: var(--border); background: var(--surface-soft); color: var(--ink); }
-html[data-theme='dark'] .flag-choice:hover:not(:disabled),
+html[data-theme='dark'] .flag-choice:hover:not([aria-disabled='true']),
 html[data-theme='dark'] .answer-choice:hover:not(:disabled),
 html[data-theme='dark'] .connections-tile:not(:disabled):hover,
-html[data-theme='dark'] .higher-lower-country:not(:disabled):hover,
+html[data-theme='dark'] .higher-lower-country:not(:disabled):not([aria-disabled="true"]):hover,
 html[data-theme='dark'] .distance-city-choice:not(:disabled):hover { border-color: var(--accent); background: var(--surface-hover); }
 html[data-theme='dark'] .flag-choice.is-right,
 html[data-theme='dark'] .answer-choice.is-right,
@@ -229,8 +247,8 @@ html[data-theme='dark'] .grid-cell { border-color: var(--border); background: va
 html[data-theme='dark'] .grid-cell:has(.grid-cell-trigger:hover) { background: var(--surface-hover); }
 html[data-theme='dark'] .grid-cell.is-current { border-color: var(--accent); background: #4b3a2f; }
 html[data-theme='dark'] .grid-cell.is-filled { border-color: var(--success); background: var(--success-soft); }
-html[data-theme='dark'] .grid-cell-trigger,
-html[data-theme='dark'] .grid-cell-trigger[aria-pressed='true'] { color: var(--muted); }
+html[data-theme='dark'] .grid-cell-trigger { color: var(--grid-empty-label); }
+html[data-theme='dark'] .grid-cell-trigger[aria-pressed='true'],
 html[data-theme='dark'] .grid-cell-trigger:hover { color: var(--ink); }
 html[data-theme='dark'] .flag-display .flag-cover { background: repeating-linear-gradient(135deg, #494138 0 10px, #3c3630 10px 20px); }
 html[data-theme='dark'] .flag-frame { background: #fff; }
@@ -301,8 +319,8 @@ html[data-theme='dark'] .coordinate-fields label { color: var(--ink); }
 .theme-option input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 .theme-option-card { min-height: 76px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; padding: 11px 13px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); color: var(--muted); transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease; }
 .theme-option:hover .theme-option-card { transform: translateY(-1px); background: var(--surface-hover); color: var(--ink); }
-.theme-option.is-selected .theme-option-card { border-color: var(--accent); background: var(--surface-soft); color: var(--ink); box-shadow: inset 0 0 0 1px var(--accent); }
-.theme-option input:focus-visible + .theme-option-card { outline: 3px solid var(--accent); outline-offset: 3px; }
+.theme-option.is-selected .theme-option-card { border-color: var(--accent-ink); background: var(--surface-soft); color: var(--ink); box-shadow: inset 0 0 0 1px var(--accent-ink); }
+.theme-option input:focus-visible + .theme-option-card { outline: 3px solid var(--accent-ink); outline-offset: 3px; }
 .theme-option-card strong { font-size: .78rem; font-weight: 750; }
 .setting-control { min-height: 60px; gap: 15px; padding: 10px 13px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
 .setting-control > span { color: var(--ink); }
@@ -312,9 +330,9 @@ html[data-theme='dark'] .coordinate-fields label { color: var(--ink); }
 .setting-control select:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
 .toggle-input { width: 46px; height: 26px; border-color: var(--border); border-radius: 99px; background: var(--sand); }
 .toggle-input::before { top: 3px; left: 3px; width: 18px; height: 18px; background: var(--surface); }
-.toggle-input:checked { border-color: var(--accent); background: var(--accent); }
-.toggle-input:checked::before { transform: translateX(20px); background: #30251d; }
-.toggle-input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.toggle-input:checked { border-color: var(--accent-ink); background: var(--accent-ink); }
+.toggle-input:checked::before { transform: translateX(20px); background: var(--surface-raised); }
+.toggle-input:focus-visible { outline: 3px solid var(--accent-ink); outline-offset: 3px; }
 .settings-data-content { min-width: 0; }
 .setting-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
 .setting-actions .button { min-height: 43px; justify-content: flex-start; border-radius: 8px; }
@@ -367,8 +385,7 @@ html[data-theme='dark'] .theme-toggle:hover,
 html[data-theme='dark'] .streak-shortcut:hover,
 html[data-theme='dark'] .favorite-shortcut:hover,
 html[data-theme='dark'] .settings-shortcut:hover { border-color: var(--border); background: var(--surface-hover); color: var(--ink); }
-html[data-theme='dark'] .streak-shortcut svg,
-html[data-theme='dark'] .freeplay-setup-heading .eyebrow { color: var(--accent); }
+html[data-theme='dark'] .streak-shortcut svg { color: var(--accent); }
 html[data-theme='dark'] .footer-wordmark,
 html[data-theme='dark'] .footer-links a:hover { color: var(--ink); }
 html[data-theme='dark'] .other-games-section { border-color: var(--border); background: #312c27; }
@@ -407,10 +424,46 @@ html[data-theme='dark'] .reset-confirmation { border-color: color-mix(in srgb, v
 html[data-theme='dark'] .reset-confirmation strong,
 html[data-theme='dark'] .install-note strong { color: var(--ink); }
 html[data-theme='dark'] .button-danger { border-color: var(--danger); background: var(--danger); color: #30251d; }
-html[data-theme='dark'] .freeplay-setup-panel { border-color: var(--border); background: #37322c; box-shadow: 0 18px 55px rgba(0, 0, 0, .42); }
-html[data-theme='dark'] .setup-format-option { border-color: var(--border); background: var(--surface); color: var(--ink); }
-html[data-theme='dark'] .setup-format-option:hover,
-html[data-theme='dark'] .setup-format-option.is-selected { border-color: var(--accent); background: #494037; }
-html[data-theme='dark'] .setup-format-option span { color: var(--muted); }
-html[data-theme='dark'] .freeplay-setup-panel .practice-config { border-color: var(--border); background: transparent; }
 html[data-theme='dark'] .game-context-daily { color: var(--muted); }
+html[data-theme='dark'] .map-line-feature { stroke: #f29a62; filter: drop-shadow(0 0 1.5px #181614); }
+html[data-theme='dark'] .riverways-attempts span.is-used { background: #a89580; }
+html[data-theme='dark'] .latitude-order-panel { border-color: var(--border); background: var(--surface-raised); }
+html[data-theme='dark'] .latitude-order-list li { border-color: var(--border); background: var(--paper); color: var(--ink); }
+html[data-theme='dark'] .latitude-move-controls button { border-color: var(--border); background: var(--surface); color: var(--ink); }
+html[data-theme='dark'] .latitude-move-controls button:hover:not(:disabled) { border-color: var(--accent); background: var(--surface-hover); }
+
+/* Form-control edges need stronger separation than decorative surface dividers. */
+.search-field,
+.autocomplete-field,
+.coordinate-fields input,
+.practice-config select,
+.setting-control select,
+.flag-settings-panel select,
+.game-settings-panel .practice-config select,
+.game-setup-settings .practice-config-field select,
+.settings-section .setting-control select { border-color: var(--control-border); }
+
+/* Keep custom switch tracks and thumbs distinguishable in both themes. */
+.toggle-input { border-color: var(--control-border); }
+.toggle-input:not(:checked) { background: var(--sand); }
+.toggle-input::before { border: 1px solid var(--control-border); }
+.game-setting-toggle i { background: var(--control-border); }
+
+html[data-theme='dark'] .search-field,
+html[data-theme='dark'] .autocomplete-field,
+html[data-theme='dark'] .coordinate-fields input,
+html[data-theme='dark'] .practice-config select,
+html[data-theme='dark'] .setting-control select,
+html[data-theme='dark'] .flag-settings-panel select,
+html[data-theme='dark'] .game-settings-panel .practice-config select,
+html[data-theme='dark'] .game-setup-settings .practice-config-field select,
+html[data-theme='dark'] .settings-section .setting-control select { border-color: var(--control-border); }
+
+html[data-theme='dark'] .toggle-input:not(:checked) {
+  border-color: var(--control-border);
+  background: var(--control-border);
+}
+html[data-theme='dark'] .toggle-input::before {
+  border-color: var(--paper);
+  background: var(--paper);
+}

@@ -16,10 +16,12 @@ const retrievedAt = new Date().toISOString();
 const regionLimit = process.env.MAPROOM_REGION_LIMIT
   ? Number(process.env.MAPROOM_REGION_LIMIT)
   : Infinity;
+const geometryQuantization = 1_000_000;
 
 const sources = {
   naturalEarth: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson',
   naturalEarthDetail: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson',
+  naturalEarthRivers: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/ca96624a56bd078437bca8184e78163e5039ad19/geojson/ne_50m_rivers_lake_centerlines.geojson',
   countryCatalog: 'https://raw.githubusercontent.com/mledoze/countries/master/countries.json',
   countryLicense: 'https://raw.githubusercontent.com/mledoze/countries/master/LICENSE',
   geonamesCities: 'https://download.geonames.org/export/dump/cities500.zip',
@@ -58,9 +60,10 @@ async function fetchJson(url, target, label) {
   };
 }
 
-const [naturalEarth, naturalEarthDetail, countryCatalog, worldBankPopulation, geoBoundaryIndex, cityArchive] = await Promise.all([
+const [naturalEarth, naturalEarthDetail, naturalEarthRivers, countryCatalog, worldBankPopulation, geoBoundaryIndex, cityArchive] = await Promise.all([
   fetchJson(sources.naturalEarth, path.join(rawDir, 'natural-earth-admin0-50m.geojson'), 'Natural Earth country boundaries'),
   fetchJson(sources.naturalEarthDetail, path.join(rawDir, 'natural-earth-admin0-10m.geojson'), 'Natural Earth detailed country boundaries'),
+  fetchJson(sources.naturalEarthRivers, path.join(rawDir, 'natural-earth-rivers-50m.geojson'), 'Natural Earth named rivers'),
   fetchJson(sources.countryCatalog, path.join(rawDir, 'mledoze-countries.json'), 'Country metadata'),
   fetchJson(sources.worldBankPopulation, path.join(rawDir, 'world-bank-population-2023.json'), 'World Bank 2023 population'),
   fetchJson(sources.geoBoundaries, path.join(rawDir, 'geoboundaries-adm1-index.json'), 'geoBoundaries ADM1 index'),
@@ -79,6 +82,30 @@ const normalizedOutlines = normalizeNaturalEarthGeometry({ ...naturalEarthDetail
 const normalizedWorld = normalizeNaturalEarthGeometry({ ...naturalEarth.value, scale: '1:50m' }, catalogCountries);
 const detailedFeatures = normalizedOutlines.features;
 const normalizedFeatures = mergeDetailedFallback(normalizedWorld.features, detailedFeatures);
+const worldTopology = topology({
+  countries: { type: 'FeatureCollection', features: normalizedFeatures },
+}, geometryQuantization);
+const outlineTopology = topology({
+  countries: { type: 'FeatureCollection', features: detailedFeatures },
+}, geometryQuantization);
+const riverFeatures = naturalEarthRivers.value.features
+  .filter((feature) => feature.properties?.featurecla === 'River'
+    && Number(feature.properties.scalerank) <= 4
+    && typeof feature.properties.name === 'string'
+    && feature.geometry)
+  .map((feature, index) => ({
+    type: 'Feature',
+    id: `natural-earth-river-${index + 1}`,
+    properties: {
+      id: `natural-earth-river-${index + 1}`,
+      name: feature.properties.name,
+      nameAlt: feature.properties.name_alt ?? null,
+      nameEnglish: feature.properties.name_en ?? null,
+      scaleRank: Number(feature.properties.scalerank),
+    },
+    geometry: feature.geometry,
+  }));
+if (riverFeatures.length < 100) throw new Error(`Natural Earth returned only ${riverFeatures.length} usable named river lines.`);
 const geometryCodes = new Set(normalizedFeatures.map((feature) => feature.properties.iso3).filter(Boolean));
 const countriesByIso3 = new Map(catalogCountries.map((country) => [country.cca3, country]));
 
@@ -169,6 +196,9 @@ for (const line of cityText.split('\n')) {
   });
 }
 cities.sort((a, b) => a.name.localeCompare(b.name));
+// These games never use places below 50,000 population. Keep a derived,
+// order-preserving pool so they avoid downloading the full city lookup file.
+const majorCities = cities.filter((city) => city.population >= 50000);
 
 const regionEntriesByIso = new Map();
 for (const entry of geoBoundaryIndex.value.filter((item) => item.boundaryType === 'ADM1' && item.boundaryISO && item.simplifiedGeometryGeoJSON)) {
@@ -287,6 +317,8 @@ const coverage = {
   admin1CountriesIncluded: regionResults.filter((entry) => entry.status === 'included').length,
   admin1UnitsIncluded: regionResults.filter((entry) => entry.status === 'included').reduce((sum, entry) => sum + entry.count, 0),
   cityCount: cities.length,
+  majorCityCount: majorCities.length,
+  riverFeatureCount: riverFeatures.length,
   countriesWithoutAdmin1: countryOutput.filter((country) => !country.regionCount).length,
   limitations: [
     'World maps use Natural Earth 1:50m generalized geometry and Country Outlines use detailed 1:10m geometry; tiny islands and disputed boundaries follow Natural Earth conventions.',
@@ -295,16 +327,23 @@ const coverage = {
     'GeoNames cities500 includes populated places of 50,000 or more plus national and first-level seats with lower population; cities below that threshold are omitted.',
     'National-capital names and coordinates are incomplete for some territories; capital-location questions use records with a known coordinate.',
     'Population uses World Bank 2023 annual estimates where an ISO3 match exists; area values come from the country catalog. Neither figure is a live statistical feed.',
+    'River questions use named, generalized Natural Earth 1:50m centerlines with scale rank 4 or better; they are not complete hydrography or navigational data.',
   ],
 };
 
 await Promise.all([
-  writeFile(path.join(dataDir, 'countries.geojson'), JSON.stringify({ type: 'FeatureCollection', features: normalizedFeatures })),
-  writeFile(path.join(dataDir, 'countries-outline.geojson'), JSON.stringify({ type: 'FeatureCollection', features: detailedFeatures })),
+  writeFile(path.join(dataDir, 'countries.topo.json'), JSON.stringify(worldTopology)),
+  writeFile(path.join(dataDir, 'countries-outline.topo.json'), JSON.stringify(outlineTopology)),
   writeFile(path.join(dataDir, 'countries.json'), JSON.stringify({ schemaVersion: 1, countries: countryOutput })),
   writeFile(path.join(dataDir, 'cities.json'), JSON.stringify({ schemaVersion: 1, cities })),
+  writeFile(path.join(dataDir, 'cities-major.json'), JSON.stringify({ schemaVersion: 1, cities: majorCities })),
+  writeFile(path.join(dataDir, 'rivers.json'), JSON.stringify({ schemaVersion: 1, features: riverFeatures })),
   writeFile(path.join(dataDir, 'coverage.json'), JSON.stringify(coverage, null, 2)),
   writeFile(path.join(dataDir, 'region-index.json'), JSON.stringify(regionResults, null, 2)),
+]);
+await Promise.all([
+  unlink(path.join(dataDir, 'countries.geojson')).catch((error) => { if (error.code !== 'ENOENT') throw error; }),
+  unlink(path.join(dataDir, 'countries-outline.geojson')).catch((error) => { if (error.code !== 'ENOENT') throw error; }),
 ]);
 
 const manifest = {
@@ -320,7 +359,7 @@ const manifest = {
       license: 'Public domain',
       licenseUrl: 'https://www.naturalearthdata.com/about/terms-of-use/',
       attribution: 'Made with Natural Earth.',
-      transformations: ['Kept world-scale generalized geometries', 'Normalized country identifiers and display properties', 'Separated named territory components from their parent countries'],
+      transformations: ['Kept world-scale generalized geometries', 'Normalized country identifiers and display properties', 'Separated named territory components from their parent countries', 'Quantized and converted shared borders to TopoJSON at a 1e6 coordinate grid'],
     },
     {
       name: 'Natural Earth 1:10m Admin 0 Countries',
@@ -331,7 +370,18 @@ const manifest = {
       license: 'Public domain',
       licenseUrl: 'https://www.naturalearthdata.com/about/terms-of-use/',
       attribution: 'Made with Natural Earth.',
-      transformations: ['Preserved detailed Polygon and MultiPolygon rings for country silhouettes', 'Separated named territory components from their parent countries'],
+      transformations: ['Preserved detailed Polygon and MultiPolygon rings for country silhouettes', 'Separated named territory components from their parent countries', 'Quantized and converted shared borders to TopoJSON at a 1e6 coordinate grid'],
+    },
+    {
+      name: 'Natural Earth 1:50m Rivers and Lake Centerlines',
+      source: sources.naturalEarthRivers,
+      version: 'Natural Earth 5.0.0; pinned natural-earth-vector snapshot ca96624a56bd078437bca8184e78163e5039ad19',
+      retrievedAt,
+      sha256: naturalEarthRivers.sha256,
+      license: 'Public domain',
+      licenseUrl: 'https://www.naturalearthdata.com/about/terms-of-use/',
+      attribution: 'Made with Natural Earth.',
+      transformations: ['Kept named River features with scale rank 4 or better', 'Removed unused source properties', 'Loaded only when Riverways is opened'],
     },
     {
       name: 'World country metadata',
@@ -365,7 +415,7 @@ const manifest = {
       license: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
       licenseUrl: sources.geoNamesTerms,
       attribution: 'GeoNames (www.geonames.org)',
-      transformations: ['Kept populated-place features with population at least 50,000 plus national and first-level seats', 'Retained coordinates, country and first-level codes, population, and up to eight alternate names'],
+      transformations: ['Kept populated-place features with population at least 50,000 plus national and first-level seats', 'Retained coordinates, country and first-level codes, population, and up to eight alternate names', 'Derived an order-preserving population-50,000 subset for Distance & Direction and Latitude Ladder'],
     },
     {
       name: 'geoBoundaries gbOpen ADM1',
@@ -390,10 +440,12 @@ const manifest = {
     },
   ],
   artifacts: {
-    countriesGeoJSONSha256: sha256File(path.join(dataDir, 'countries.geojson')),
-    countriesOutlineGeoJSONSha256: sha256File(path.join(dataDir, 'countries-outline.geojson')),
+    countriesTopologySha256: sha256File(path.join(dataDir, 'countries.topo.json')),
+    countriesOutlineTopologySha256: sha256File(path.join(dataDir, 'countries-outline.topo.json')),
     countriesCatalogSha256: sha256File(path.join(dataDir, 'countries.json')),
     citiesSha256: sha256File(path.join(dataDir, 'cities.json')),
+    majorCitiesSha256: sha256File(path.join(dataDir, 'cities-major.json')),
+    riversSha256: sha256File(path.join(dataDir, 'rivers.json')),
     coverageSha256: sha256File(path.join(dataDir, 'coverage.json')),
     regionIndexSha256: sha256File(path.join(dataDir, 'region-index.json')),
     regionPackages: regionResults.filter((entry) => entry.status === 'included').map((entry) => ({ iso3: entry.iso3, url: entry.url, releaseRef: entry.releaseRef, license: entry.license, sha256: entry.artifactSha256, bytes: entry.artifactBytes })),
@@ -469,6 +521,8 @@ async function writeCoverageReport(dataCoverage, regions, countries) {
     `- ${dataCoverage.countryCodesWithGeometry} ISO-coded country geometries across ${dataCoverage.countryGeometryFeatureCount} map features.`,
     `- ${supported.length} ADM1 country packages with ${dataCoverage.admin1UnitsIncluded.toLocaleString('en')} divisions.`,
     `- ${dataCoverage.cityCount.toLocaleString('en')} populated places in the city challenge dataset.`,
+    `- ${dataCoverage.majorCityCount.toLocaleString('en')} places with population at least 50,000 in the compact comparison dataset.`,
+    `- ${dataCoverage.riverFeatureCount} named Natural Earth river centerlines eligible for Riverways.`,
     '',
     '## ADM1 package coverage',
     '',

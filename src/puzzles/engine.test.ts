@@ -8,6 +8,7 @@ import {
   dailyPuzzleId,
   dailyPuzzleSeed,
   generateRoutePuzzle,
+  findRouteOrdering,
   greatCircleKm,
   GAME_IDS,
   gridAnswerScore,
@@ -135,6 +136,51 @@ describe('border routes', () => {
     expect(puzzle.shortest.length).toBeGreaterThanOrEqual(3)
     const adjacency = buildAdjacency(countries)
     expect(shortestPath(puzzle.start, puzzle.end, adjacency)).toEqual(puzzle.shortest)
+  })
+
+  it('orders an unordered border-country set into a valid path deterministically', () => {
+    const countries = [
+      country('PRT', { borders: ['ESP'] }),
+      country('ESP', { borders: ['FRA'] }),
+      country('FRA', { borders: ['BEL', 'DEU'] }),
+      country('BEL', { borders: ['DEU'] }),
+      country('DEU', { borders: ['POL'] }),
+      country('POL'),
+      country('ITA', { borders: ['CHE'] }),
+      country('CHE'),
+    ]
+    const adjacency = buildAdjacency(countries)
+    const entered = ['DEU', 'ESP', 'BEL', 'FRA']
+    const ordering = ['PRT', 'ESP', 'FRA', 'BEL', 'DEU', 'POL']
+
+    expect(findRouteOrdering('PRT', 'POL', entered, adjacency)).toEqual(ordering)
+    expect(findRouteOrdering('PRT', 'POL', [...entered].reverse(), adjacency)).toEqual(ordering)
+  })
+
+  it('chooses one stable ordering when several valid orderings use the full set', () => {
+    const adjacency = buildAdjacency([
+      country('AAA', { borders: ['BBB', 'CCC'] }),
+      country('BBB', { borders: ['CCC', 'DDD'] }),
+      country('CCC', { borders: ['DDD'] }),
+      country('DDD', { borders: ['EEE'] }),
+      country('EEE'),
+    ])
+    expect(findRouteOrdering('AAA', 'EEE', ['DDD', 'CCC', 'BBB'], adjacency)).toEqual(['AAA', 'BBB', 'CCC', 'DDD', 'EEE'])
+  })
+
+  it('rejects disconnected, duplicated and endpoint selections without changing adjacency rules', () => {
+    const adjacency = buildAdjacency([
+      country('AAA', { borders: ['BBB'] }),
+      country('BBB', { borders: ['CCC'] }),
+      country('CCC', { borders: ['DDD'] }),
+      country('DDD'),
+      country('ISL'),
+    ])
+    expect(findRouteOrdering('AAA', 'DDD', ['BBB', 'ISL', 'CCC'], adjacency)).toBeNull()
+    expect(findRouteOrdering('AAA', 'DDD', ['BBB', 'BBB', 'CCC'], adjacency)).toBeNull()
+    expect(findRouteOrdering('AAA', 'DDD', ['AAA', 'BBB', 'CCC'], adjacency)).toBeNull()
+    expect(findRouteOrdering('AAA', 'DDD', ['BBB', 'CCC', 'DDD'], adjacency)).toBeNull()
+    expect(findRouteOrdering('AAA', 'DDD', ['BBB', 'CCC'], adjacency)).toEqual(['AAA', 'BBB', 'CCC', 'DDD'])
   })
 })
 

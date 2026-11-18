@@ -1,8 +1,13 @@
 import { mkdirSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
 import type { Country, GeoFeature } from '../src/geography/types'
+import { eligibleCountries } from '../src/geography/eligibility'
+import { loadTopologyFeatures } from './topology'
+import { isCurrentWholeSettlement } from '../src/geography/cityRecords'
 import { buildOutlineCandidateGroups, EMPTY_OUTLINE_PROGRESS, outlineQuestionAt } from '../src/games/outlines/questionPool'
 import { flagCountryPool } from '../src/games/flags/questionPool'
+import { gridCandidates, shortestPath, validGridPresets } from '../src/puzzles/engine'
+import { exploreExperienceCount, freePlayCardCount } from './gameCatalogCounts'
 
 test.beforeAll(() => mkdirSync('artifacts/qa/product-consistency', { recursive: true }))
 
@@ -29,6 +34,7 @@ interface CityRecord {
   population: number
   lat: number
   lon: number
+  featureCode: string
   capital?: boolean
 }
 
@@ -38,7 +44,14 @@ async function openGame(page: Page, id: string, mode: 'daily' | 'freeplay' = 'fr
   await page.goto(`/games/${id}?${query}`)
   await expect(page.locator('.game-context-bar')).toBeVisible()
   await expect(page.locator('.game-context-title')).toHaveCount(1)
-  if (mode !== 'daily') await page.getByRole('button', { name: 'Start Free play' }).click()
+  if (mode !== 'daily') {
+    await page.getByRole('button', { name: 'Start free play' }).click()
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect.poll(() => page.evaluate(() => {
+      const playfield = document.querySelector('.game-playfield')
+      return Boolean(playfield && playfield.contains(document.activeElement))
+    })).toBe(true)
+  }
   await expect(page.locator('.game-body')).toBeVisible({ timeout: 30_000 })
 }
 
@@ -50,6 +63,14 @@ async function submitText(page: Page, selector: string, answer: string) {
     await expect(page.locator('.suggestion-option')).toHaveCount(0)
   }
   await input.press('Enter')
+}
+
+async function chooseSuggestion(page: Page, selector: string, answer: string) {
+  const input = page.locator(selector)
+  await input.fill(answer)
+  const option = page.locator('.suggestion-option').filter({ has: page.getByText(answer, { exact: true }) }).first()
+  await expect(option).toBeVisible()
+  await option.click()
 }
 
 async function setGameSetting(page: Page, label: string, value: string | { label: string }) {
@@ -64,6 +85,10 @@ async function answerOnMapByKeyboard(page: Page, answer: string) {
   expect(index, `map country ${answer}`).toBeGreaterThanOrEqual(0)
   await mapCountries.nth(index).evaluate((element) => (element as SVGElement).focus())
   await page.keyboard.press('Enter')
+}
+
+async function waitForRoundProgress(page: Page, label: string, value: number) {
+  await expect(page.getByRole('progressbar', { name: `${label} progress` })).toHaveAttribute('aria-valuenow', String(value), { timeout: 5_000 })
 }
 
 async function countryData(page: Page): Promise<CountryRecord[]> {
@@ -102,10 +127,8 @@ async function mapPathPoint(page: Page, selector: string, index: number): Promis
 }
 
 async function mapFeatureIndex(page: Page, iso3: string, eligibleCodes: Set<string>): Promise<number> {
-  const response = await page.request.get(new URL('/data/countries.geojson', page.url()).toString())
-  expect(response.ok()).toBe(true)
-  const collection = await response.json() as { features: Array<{ geometry: unknown; properties: { iso3?: string } | null }> }
-  const features = collection.features.filter((feature) => feature.geometry && feature.properties?.iso3 && eligibleCodes.has(feature.properties.iso3))
+  const collection = await loadTopologyFeatures(page, '/data/countries.topo.json')
+  const features = collection.filter((feature) => feature.geometry && feature.properties?.iso3 && eligibleCodes.has(feature.properties.iso3))
   return features.findIndex((feature) => feature.properties?.iso3 === iso3)
 }
 
@@ -313,9 +336,12 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
 
   await page.goto('/')
   await expect(page.locator('.welcome-hero h1')).toBeVisible()
+  const homeFavoriteNames = await page.locator('.daily-grid .favorite-button, .other-games-carousel .favorite-button')
+    .evaluateAll((buttons) => buttons.map((button) => button.getAttribute('aria-label') ?? ''))
+  expect(new Set(homeFavoriteNames).size).toBe(homeFavoriteNames.length)
   await expect(page.locator('.daily-section-heading h2')).toHaveText('Today’s puzzles')
   await expect(page.locator('.daily-grid .game-card')).toHaveCount(6)
-  await expect(page.locator('.other-games-carousel .game-card')).toHaveCount(10)
+  await expect(page.locator('.other-games-carousel .game-card')).toHaveCount(freePlayCardCount)
   await expect(page.locator('.other-games-carousel .game-card-link').first()).toHaveAttribute('href', /mode=freeplay/)
   await expect(page.getByRole('link', { name: 'Explore all games' })).toBeVisible()
   const practiceCarousel = page.locator('.other-games-carousel')
@@ -334,7 +360,8 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await page.locator('.other-games-carousel .game-card-link').first().click()
   await expect(page).toHaveURL(/mode=freeplay$/)
   await expect(page.getByRole('group', { name: 'Free play setup' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start Free play' }).click()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.locator('.game-body')).toBeVisible()
   await page.goto('/')
   await expect(page.locator('.game-card-action span')).toHaveCount(0)
@@ -382,11 +409,19 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await keyboardPage.close()
 
   await page.goto('/explore')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(14)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreExperienceCount)
+  const formatFavorites = page.locator('.explore-grid .game-format-card .favorite-button')
+  const formatFavoriteNames = await formatFavorites.evaluateAll((buttons) => buttons.map((button) => button.getAttribute('aria-label') ?? ''))
+  expect(new Set(formatFavoriteNames).size).toBe(formatFavoriteNames.length)
+  expect(formatFavoriteNames).toContain('Add Flag study (Identify the country) to favorites')
+  expect(formatFavoriteNames).toContain('Add Capitals & cities (Country to capital) to favorites')
   const flagCard = page.locator('.game-card-flags').first()
   const favorite = flagCard.locator('.favorite-button')
   await favorite.click()
   await expect(favorite).toHaveAttribute('aria-pressed', 'true')
+  await expect(favorite).toHaveAttribute('aria-label', 'Remove Flag study (Identify the country) from favorites')
+  const favoriteFlagNames = await page.locator('.game-card-flags .favorite-button').evaluateAll((buttons) => buttons.map((button) => button.getAttribute('aria-label') ?? ''))
+  expect(new Set(favoriteFlagNames).size).toBe(favoriteFlagNames.length)
   await expect(favorite.locator('svg')).toHaveCSS('animation-name', 'favorite-pop')
   await expect(favorite).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   await favorite.click()
@@ -444,7 +479,7 @@ test('daily completion appears as a green check on the puzzle tile', async ({ pa
     const answer = await page.locator('.question-toolbar h2 em').innerText()
     await answerOnMapByKeyboard(page, answer)
     await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-    await page.getByRole('button', { name: index === 7 ? 'See result' : 'Next place' }).click()
+    if (index < 7) await waitForRoundProgress(page, 'countries', index + 2)
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
   await page.goto('/')
@@ -502,7 +537,7 @@ test('daily puzzle version changes discard stale unfinished sessions', async ({ 
 
   await page.reload()
   await openGame(page, 'flags', 'daily')
-  await expect(page.locator('.flag-progress')).toHaveText('01 / 08')
+  await waitForRoundProgress(page, 'flags', 1)
   await expect(page.locator('.answer-feedback')).toHaveCount(0)
   const migrated = await waitForDailySession(page, 'flags')
   expect(migrated?.puzzleId).toBe(`flags:${date}:v2`)
@@ -555,13 +590,16 @@ test('older completed daily results remain intact while their stale saves are di
 test('all six daily families restore their saved question and in-progress state', async ({ page, context, browser }) => {
   await openGame(page, 'countries', 'daily')
   const countryQuestion = await page.locator('.question-toolbar h2 em').innerText()
+  await page.clock.pauseAt(new Date('2026-11-18T12:00:00Z'))
   await answerOnMapByKeyboard(page, countryQuestion)
   await expect(page.locator('.answer-feedback')).toBeVisible()
   const countrySession = await waitForDailySession(page, 'countries')
   expect(countrySession?.payload?.answerLocked).toBe(true)
+  await page.clock.resume()
   await page.reload()
   await expect(page.locator('.question-toolbar h2 em')).toHaveText(countryQuestion)
   await expect(page.locator('.answer-feedback')).toBeVisible()
+  await waitForRoundProgress(page, 'countries', 2)
 
   await openGame(page, 'outlines', 'daily')
   await page.locator('#outline-answer').fill('Can')
@@ -571,15 +609,15 @@ test('all six daily families restore their saved question and in-progress state'
 
   await openGame(page, 'routes', 'daily')
   await page.getByRole('button', { name: 'Hint' }).click()
-  const routeStep = (await page.locator('.route-hint').innerText()).match(/through (.+)\.$/)?.[1]
+  const routeStep = (await page.locator('.route-hint').innerText()).match(/includes (.+)\.$/)?.[1]
   expect(routeStep).toBeTruthy()
   await submitText(page, '#route-country', routeStep!)
   const routeSession = await waitForDailySession(page, 'routes')
   expect(routeSession?.payload?.route).toHaveLength(2)
   await page.goto('/')
   await openGame(page, 'routes', 'daily')
-  await expect(page.locator('.route-stops li')).toHaveCount(3)
-  await expect(page.locator('.route-stops')).toContainText(routeStep!)
+  await expect(page.locator('.route-selected-set button')).toHaveCount(1)
+  await expect(page.locator('.route-selected-set')).toContainText(routeStep!)
 
   await openGame(page, 'flags', 'daily')
   const flagAnswer = await displayedFlagCountry(page)
@@ -592,13 +630,17 @@ test('all six daily families restore their saved question and in-progress state'
     }
   }
   expect(wrongFlagChoice).toBeGreaterThanOrEqual(0)
+  await page.clock.pauseAt(new Date())
   await flagChoices.nth(wrongFlagChoice).click()
-  await expect(page.locator('.answer-feedback.is-incorrect')).toBeVisible()
+  await expect(page.locator('.flag-choice.is-wrong')).toBeVisible()
+  await expect(page.locator('.flag-choice.is-right')).toBeVisible()
   const flagSession = await waitForDailySession(page, 'flags')
   expect(flagSession?.payload?.locked).toBe(true)
+  await page.clock.resume()
   await page.reload()
-  await expect(page.locator('.answer-feedback.is-incorrect')).toBeVisible()
-  await expect(page.locator('.flag-progress')).toHaveText('01 / 08')
+  await expect(page.locator('.flag-choice.is-wrong')).toBeVisible()
+  await expect(page.locator('.flag-choice.is-right')).toBeVisible()
+  await waitForRoundProgress(page, 'flags', 1)
 
   await openGame(page, 'grid', 'daily')
   const originalGridTitle = await page.locator('.question-toolbar h2').innerText()
@@ -629,10 +671,12 @@ test('all six daily families restore their saved question and in-progress state'
     await expect(page.locator('.question-toolbar h2')).toHaveText(cityQuestion)
     await expect(page.locator('#city-identify-answer')).toHaveValue('Part')
   } else {
+    await page.getByText('Enter coordinates', { exact: true }).click()
     await page.getByLabel('Latitude').fill('12.34')
     await waitForDailySession(page, 'cities')
     await page.reload()
     await expect(page.locator('.question-toolbar h2')).toHaveText(cityQuestion)
+    await page.getByText('Enter coordinates', { exact: true }).click()
     await expect(page.getByLabel('Latitude')).toHaveValue('12.34')
   }
 
@@ -645,7 +689,10 @@ test('all six daily families restore their saved question and in-progress state'
     if (await resumedFeedback.count()) await expect(resumedFeedback).toBeVisible()
     else if (await reopenedBrowserPage.locator('#city-identify-answer').count()) {
       await expect(reopenedBrowserPage.locator('#city-identify-answer')).toHaveValue('Part')
-    } else await expect(reopenedBrowserPage.getByLabel('Latitude')).toHaveValue('12.34')
+    } else {
+      await reopenedBrowserPage.getByText('Enter coordinates', { exact: true }).click()
+      await expect(reopenedBrowserPage.getByLabel('Latitude')).toHaveValue('12.34')
+    }
   } finally {
     await reopenedContext.close()
   }
@@ -660,6 +707,10 @@ test('the application shell keeps identical navigation geometry across routes an
   let desktopGeometry: Awaited<ReturnType<typeof shellGeometry>> | undefined
   for (const route of routes) {
     await page.goto(route)
+    if (route.includes('mode=practice')) {
+      await page.getByRole('button', { name: 'Start free play' }).click()
+      await expect(page.getByRole('dialog')).toBeHidden()
+    }
     await expect(page.locator('.site-header')).toBeVisible()
     if (route.includes('/games/')) await expect(page.locator('.game-context-bar')).toBeVisible()
     else await expect(page.locator('main h1').first()).toBeVisible()
@@ -672,6 +723,10 @@ test('the application shell keeps identical navigation geometry across routes an
   let mobileGeometry: Awaited<ReturnType<typeof shellGeometry>> | undefined
   for (const route of ['/', '/explore', '/settings', '/games/countries?mode=practice', '/games/flags?mode=daily', '/games/grid?mode=practice']) {
     await page.goto(route)
+    if (route.includes('mode=practice')) {
+      await page.getByRole('button', { name: 'Start free play' }).click()
+      await expect(page.getByRole('dialog')).toBeHidden()
+    }
     const geometry = await shellGeometry(page)
     if (!mobileGeometry) mobileGeometry = geometry
     else expect(geometry, `${route} mobile navbar geometry`).toEqual(mobileGeometry)
@@ -711,7 +766,10 @@ test('country identification uses the map data, accepts an answer and saves a fu
     const answer = await page.locator('.question-toolbar h2 em').innerText()
     await answerOnMapByKeyboard(page, answer)
     await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-    await page.getByRole('button', { name: index === 9 ? 'See result' : 'Next place' }).click()
+    if (index < 9) {
+      await waitForRoundProgress(page, 'countries', index + 2)
+      await expect(page.locator('.question-toolbar h2')).toBeFocused()
+    }
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
   await expect(page.locator('.game-results-score')).toContainText('1,000')
@@ -723,6 +781,55 @@ test('country identification uses the map data, accepts an answer and saves a fu
   await expect(page.locator('.history-row')).toContainText('Free play')
   await page.reload()
   await expect(page.locator('.stat-cell').filter({ hasText: 'Games completed' })).toContainText('1')
+})
+
+test('country identification advances automatically and returns focus to the prompt on a narrow viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 })
+  await openGame(page, 'countries')
+  const answer = await page.locator('.question-toolbar h2 em').innerText()
+  await answerOnMapByKeyboard(page, answer)
+  await waitForRoundProgress(page, 'countries', 2)
+  const prompt = page.locator('.question-toolbar h2')
+  await expect(prompt).toBeFocused()
+  await expect.poll(() => prompt.evaluate((element) => {
+    const rect = element.getBoundingClientRect()
+    return rect.top >= 0 && rect.bottom <= window.innerHeight && rect.left >= 0 && rect.right <= window.innerWidth
+  })).toBe(true)
+})
+
+test('country catalogue games avoid map boundaries while map games load them', async ({ page }) => {
+  const geometryRequests: string[] = []
+  page.on('request', (request) => {
+    if (new URL(request.url()).pathname === '/data/countries.topo.json') geometryRequests.push(request.url())
+  })
+
+  for (const gameId of ['flags', 'grid', 'connections', 'higher-lower', 'distance']) {
+    await openGame(page, gameId)
+    expect(geometryRequests, `${gameId} does not need country geometry`).toHaveLength(0)
+  }
+
+  await openGame(page, 'countries')
+  expect(geometryRequests, 'Find the country loads its map geometry').toHaveLength(1)
+})
+
+test('city comparison games load the compact pool while Capitals & Cities keeps the full gazetteer', async ({ page }) => {
+  const cityRequests: string[] = []
+  page.on('request', (request) => {
+    const pathname = new URL(request.url()).pathname
+    if (pathname === '/data/cities.json' || pathname === '/data/cities-major.json') cityRequests.push(pathname)
+  })
+
+  await openGame(page, 'distance')
+  await expect(page.locator('.distance-city-choice')).toHaveCount(2)
+  expect(cityRequests).toEqual(['/data/cities-major.json'])
+
+  await openGame(page, 'latitude-ladder')
+  await expect(page.locator('.latitude-order-list > li')).toHaveCount(5)
+  expect(cityRequests).toEqual(['/data/cities-major.json', '/data/cities-major.json'])
+
+  await openGame(page, 'cities')
+  await expect(page.locator('.question-toolbar')).toBeVisible()
+  expect(cityRequests.at(-1)).toBe('/data/cities.json')
 })
 
 test('map controls and favorites remain touch-sized on mobile', async ({ browser }) => {
@@ -782,20 +889,21 @@ test('country outlines reveal the answer after six valid guesses and save the re
   }, { dateValue: date, seedValue: seed })
 
   await page.goto('/games/outlines?mode=freeplay')
-  await expect(page.getByRole('button', { name: 'Start Free play' })).toBeVisible()
-  const config = page.locator('.practice-config select')
-  await config.nth(0).selectOption('standard')
-  await config.nth(1).selectOption('World')
-  await config.nth(2).selectOption('medium')
-  await page.getByRole('button', { name: 'Start Free play' }).click()
+  await expect(page.getByRole('button', { name: 'Start free play' })).toBeVisible()
+  const setup = page.getByRole('dialog')
+  await setup.getByRole('button', { name: /Medium/ }).click()
+  await setup.getByRole('combobox', { name: 'Geographic scope' }).selectOption('World')
+  const advanced = setup.locator('.game-setup-advanced')
+  if (!await advanced.evaluate((element) => (element as HTMLDetailsElement).open)) await advanced.locator('summary').click()
+  await setup.getByRole('group', { name: 'Outline pool' }).getByRole('button', { name: 'Standard · eligible countries' }).click()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.locator('.game-body')).toBeVisible()
 
   const countriesResponse = await page.request.get(new URL('/data/countries.json', page.url()).toString())
-  const outlinesResponse = await page.request.get(new URL('/data/countries-outline.geojson', page.url()).toString())
   expect(countriesResponse.ok()).toBe(true)
-  expect(outlinesResponse.ok()).toBe(true)
   const countries = (await countriesResponse.json()).countries as Country[]
-  const features = (await outlinesResponse.json()).features as GeoFeature[]
+  const features = await loadTopologyFeatures(page, '/data/countries-outline.topo.json')
   const featuresByCode = new Map<string, GeoFeature[]>()
   for (const feature of features) {
     const code = feature.properties.iso3
@@ -825,7 +933,7 @@ test('country outlines reveal the answer after six valid guesses and save the re
 
 test('country outlines load first-level regional silhouettes on demand', async ({ page }) => {
   await openGame(page, 'outlines')
-  await setGameSetting(page, 'Free play scope', 'Subdivisions')
+  await setGameSetting(page, 'Geographic scope', 'Subdivisions')
   await expect(page.locator('.outline-map-stage')).toBeVisible({ timeout: 30_000 })
 
   await setGameSetting(page, 'Country', 'SWE')
@@ -846,26 +954,21 @@ test('border route accepts an actual shortest path and scores it', async ({ page
   await openGame(page, 'routes')
   await expect(page.locator('.route-map-legend')).toContainText('Start')
   await expect(page.locator('.route-map-legend')).toContainText('Finish')
-  await expect(page.locator('.route-map-legend')).toContainText('Route')
-  const pathLabels = await page.locator('.route-map-stage .geo-map path[role="button"]').evaluateAll((paths) => paths.map((path) => path.getAttribute('aria-label') ?? ''))
-  expect(pathLabels.length).toBeGreaterThan(0)
-  expect(pathLabels.every((label) => /^Unlabelled map region \d+/.test(label))).toBe(true)
-  const activeBounds = await page.locator('.route-map-stage .geo-map .map-country.is-active').evaluate((element) => {
-    const bounds = (element as SVGPathElement).getBBox()
-    return { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }
-  })
-  expect(activeBounds.width).toBeGreaterThan(0)
-  expect(activeBounds.height).toBeGreaterThan(0)
+  await expect(page.locator('.route-map-legend')).toContainText('Selected')
   const routeMap = page.locator('.route-map-stage .geo-map')
+  await expect(routeMap).toHaveAttribute('aria-label', /fixed start, destination and selected intermediate countries/)
+  await expect(routeMap.locator('.map-country.is-map-start')).toHaveCount(1)
+  await expect(routeMap.locator('.map-country.is-map-destination')).toHaveCount(1)
+  await expect(routeMap.locator('path[role="button"]')).toHaveCount(0)
   const routeMapBounds = await routeMap.boundingBox()
   expect(routeMapBounds).not.toBeNull()
-  const markerCenters = await routeMap.locator('.map-marker').evaluateAll((markers) => markers.map((marker) => {
-    const bounds = marker.getBoundingClientRect()
+  const endpointCenters = await routeMap.locator('.map-country.is-map-start, .map-country.is-map-destination').evaluateAll((countries) => countries.map((country) => {
+    const bounds = country.getBoundingClientRect()
     return { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 }
   }))
-  expect(markerCenters).toHaveLength(2)
-  const markerDistance = Math.hypot(markerCenters[0]!.x - markerCenters[1]!.x, markerCenters[0]!.y - markerCenters[1]!.y)
-  expect(markerDistance / Math.hypot(routeMapBounds!.width, routeMapBounds!.height)).toBeGreaterThan(0.12)
+  expect(endpointCenters).toHaveLength(2)
+  const endpointDistance = Math.hypot(endpointCenters[0]!.x - endpointCenters[1]!.x, endpointCenters[0]!.y - endpointCenters[1]!.y)
+  expect(endpointDistance / Math.hypot(routeMapBounds!.width, routeMapBounds!.height)).toBeGreaterThan(0.12)
   const mapLayer = routeMap.locator(':scope > g')
   const initialTransform = await mapLayer.getAttribute('transform')
   await page.getByRole('button', { name: 'Zoom in' }).click()
@@ -881,28 +984,64 @@ test('border route accepts an actual shortest path and scores it', async ({ page
   await expect(mapLayer).not.toHaveAttribute('transform', initialTransform ?? '')
   await page.getByRole('button', { name: 'Reset map view' }).click()
   await expect(mapLayer).toHaveAttribute('transform', initialTransform ?? '')
-  const routePathPoint = await mapPathPoint(page, '.route-map-stage .geo-map path[role="button"]', 0)
-  expect(routePathPoint).not.toBeNull()
-  await page.mouse.move(routePathPoint!.x, routePathPoint!.y)
   await expect(page.locator('.route-map-stage .map-caption')).toHaveCount(0)
+
+  const graphCountries = eligibleCountries(await countryData(page) as unknown as Country[], 'standard').filter((country) => country.hasGeometry)
+  const countriesByCode = new Map(graphCountries.map((country) => [country.iso3, country]))
+  const countriesByName = new Map(graphCountries.map((country) => [country.name, country]))
+  const startName = await page.locator('.route-pair > div').nth(0).locator('strong').innerText()
+  const endName = await page.locator('.route-pair > div').nth(2).locator('strong').innerText()
+  const start = countriesByName.get(startName)
+  const end = countriesByName.get(endName)
+  expect(start).toBeDefined()
+  expect(end).toBeDefined()
+  const eligibleCodes = new Set(graphCountries.map((country) => country.iso3))
+  const adjacency = new Map<string, string[]>()
+  for (const country of graphCountries) {
+    adjacency.set(country.iso3, country.borders.filter((code) => eligibleCodes.has(code)
+      && Boolean(countriesByCode.get(code)?.borders.includes(country.iso3))).sort())
+  }
+  const shortest = shortestPath(start!.iso3, end!.iso3, adjacency)
+  expect(shortest).not.toBeNull()
+  const intermediate = shortest!.slice(1, -1)
+  expect(intermediate.length).toBeGreaterThanOrEqual(2)
+  const disconnected = graphCountries.find((country) => country.iso3 !== start!.iso3
+    && country.iso3 !== end!.iso3
+    && !intermediate.includes(country.iso3)
+    && (adjacency.get(country.iso3)?.length ?? 0) === 0)
+  expect(disconnected, 'the Standard country graph has an isolated place to check a disconnected selection').toBeDefined()
+  await chooseSuggestion(page, '#route-country', disconnected!.name)
+  await expect(page.locator('.route-selected-set button')).toHaveCount(1)
+  await expect(page.locator('.route-set-status')).toContainText('do not connect')
+  await page.getByRole('button', { name: `Remove ${disconnected!.name}` }).click()
+  await expect(page.locator('.route-set-hint')).toBeVisible()
+
   await page.getByRole('button', { name: 'Hint' }).click()
-  await expect(page.locator('.route-hint')).toContainText('A shortest continuation goes through')
-  const hintedNames: string[] = []
-  for (let step = 0; step < 8 && await page.locator('.game-results-dialog').isHidden(); step += 1) {
-    if (step > 0) await page.getByRole('button', { name: 'Hint' }).click()
-    const hint = await page.locator('.route-hint').innerText()
-    const nextName = hint.match(/through (.+)\.$/)?.[1]
-    expect(nextName, 'hint names the next step only').toBeTruthy()
-    hintedNames.push(nextName!)
-    await submitText(page, '#route-country', nextName!)
-    if (await page.locator('.game-results-dialog').isHidden()) {
-      await expect(page.locator('.route-stops li')).toHaveCount(step + 3)
+  await expect(page.locator('.route-hint')).toContainText('One shortest route includes')
+  const hintedName = (await page.locator('.route-hint').innerText()).match(/includes (.+)\.$/)?.[1]
+  expect(intermediate.map((code) => countriesByCode.get(code)?.name)).toContain(hintedName)
+
+  const entryOrder = [...intermediate].reverse()
+  for (const [index, code] of entryOrder.entries()) {
+    const country = countriesByCode.get(code)!
+    await chooseSuggestion(page, '#route-country', country.name)
+    if (index < entryOrder.length - 1) {
+      await expect(page.locator('.route-set-status')).toContainText('do not connect')
+      await expect(page.locator('.route-selected-set button')).toHaveCount(index + 1)
     }
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
   await expect(page.locator('.game-results-dialog h2')).toContainText('shortest')
-  expect(hintedNames.length).toBeGreaterThanOrEqual(2)
-  await expect(page.locator('.game-results-score')).not.toContainText('1,000')
+  const displayedNames = await page.locator('.route-stops li > span').allTextContents()
+  const displayedCodes = displayedNames.map((name) => countriesByName.get(name)?.iso3)
+  expect(displayedCodes).toHaveLength(shortest!.length)
+  expect(displayedCodes[0]).toBe(start!.iso3)
+  expect(displayedCodes.at(-1)).toBe(end!.iso3)
+  expect(displayedCodes.slice(1, -1).sort()).toEqual([...intermediate].sort())
+  for (let index = 1; index < displayedCodes.length; index += 1) {
+    expect(adjacency.get(displayedCodes[index - 1]!)?.includes(displayedCodes[index]!)).toBe(true)
+  }
+  await expect(page.locator('.game-results-score')).toContainText('900')
 })
 
 test('flag identification answers each locally bundled flag and completes Free play', async ({ page }) => {
@@ -915,17 +1054,32 @@ test('flag identification answers each locally bundled flag and completes Free p
     expect(answer.length).toBeGreaterThan(0)
     const buttons = page.locator('.flag-choice')
     let matched = false
+    let selectedChoiceIndex = -1
     for (let choiceIndex = 0; choiceIndex < await buttons.count(); choiceIndex += 1) {
       const button = buttons.nth(choiceIndex)
       if ((await button.locator('.flag-choice-name').innerText()) === answer) {
-        await button.click()
+        if (index === 0) await button.press('Enter')
+        else await button.click()
+        selectedChoiceIndex = choiceIndex
         matched = true
         break
       }
     }
     expect(matched).toBe(true)
-    await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-    if (index < 9) await expect(page.locator('.flag-progress')).toHaveText(`${String(index + 2).padStart(2, '0')} / 10`, { timeout: 5_000 })
+    await expect(page.locator('.flag-choice.is-right')).toBeVisible()
+    if (index === 0) {
+      const answeredButton = buttons.nth(selectedChoiceIndex)
+      await expect(answeredButton).toHaveAttribute('aria-disabled', 'true')
+      await expect(answeredButton).toBeFocused()
+    }
+    if (index < 9) {
+      await waitForRoundProgress(page, 'flags', index + 2)
+      if (index === 0) {
+        const answeredButton = buttons.nth(selectedChoiceIndex)
+        await expect(answeredButton).toHaveAttribute('aria-disabled', 'false')
+        await expect(answeredButton).toBeFocused()
+      }
+    }
   }
   const results = page.getByRole('dialog', { name: 'Free play round complete.' })
   await expect(results).toBeVisible()
@@ -952,7 +1106,7 @@ test('flag identification answers each locally bundled flag and completes Free p
   await page.getByRole('button', { name: 'View results' }).click()
   await expect(results).toBeVisible()
   await page.getByRole('button', { name: 'Play again' }).click()
-  await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
+  await waitForRoundProgress(page, 'flags', 1)
   await expect(page.locator('.game-results-dialog')).toBeHidden()
 })
 
@@ -961,7 +1115,7 @@ test('infinite flag Free play cycles fairly, stays open and saves the chosen ses
   await page.getByRole('button', { name: 'Game settings' }).click()
   await page.getByLabel('Questions').selectOption('infinite')
   await page.keyboard.press('Escape')
-  await expect(page.locator('.flag-progress')).toHaveText('Question 1')
+  await expect(page.locator('.flag-round-utility [role="status"]')).toHaveText('Flag 1')
 
   const seen = new Set<string>()
   for (let index = 0; index < 12; index += 1) {
@@ -976,8 +1130,8 @@ test('infinite flag Free play cycles fairly, stays open and saves the chosen ses
     }
     expect(correctChoice).toBeGreaterThanOrEqual(0)
     await choices.nth(correctChoice).click()
-    await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-    await expect(page.locator('.flag-progress')).toHaveText(`Question ${index + 2}`, { timeout: 5_000 })
+    await expect(page.locator('.flag-choice.is-right')).toBeVisible()
+    await expect(page.locator('.flag-round-utility [role="status"]')).toHaveText(`Flag ${index + 2}`, { timeout: 5_000 })
   }
 
   await expect(page.locator('.game-results-dialog')).toHaveCount(0)
@@ -1004,7 +1158,7 @@ test('daily play has no mode switch and keeps its seeded puzzle when returning',
   await expect(page.locator('.mode-switch')).toHaveCount(0)
   await expect(page.locator('.flag-settings-button')).toHaveCount(0)
   await expect(page.locator('.game-page-heading')).toHaveCount(0)
-  await page.getByRole('link', { name: 'All games' }).click()
+  await page.getByRole('link', { name: 'Back to Explore' }).click()
   await expect(page).toHaveURL(/\/explore$/)
   await expect(page.getByRole('link', { name: /Flag study: Find the flag, Free play/ })).toBeVisible()
   await page.goto('/games/flags?mode=daily')
@@ -1022,10 +1176,10 @@ test('daily play has no mode switch and keeps its seeded puzzle when returning',
   expect(correctIndex).toBeGreaterThanOrEqual(0)
   await choices.nth(correctIndex).focus()
   await page.keyboard.press('Enter')
-  await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
+  await expect(page.locator('.flag-choice.is-right')).toBeVisible()
   await expect(page.locator('.flag-choice.is-right')).toHaveCSS('background-color', 'rgb(229, 239, 229)')
   await page.screenshot({ path: 'artifacts/qa/product-consistency/flags-correct-desktop.png' })
-  await expect(page.locator('.flag-progress')).toHaveText('02 / 08', { timeout: 5_000 })
+  await waitForRoundProgress(page, 'flags', 2)
   await expect(page.getByRole('button', { name: 'Next flag' })).toHaveCount(0)
 })
 
@@ -1039,16 +1193,16 @@ test('changing Free play settings cancels a pending automatic advance', async ({
   }
   expect(correctIndex).toBeGreaterThanOrEqual(0)
   await choices.nth(correctIndex).click()
-  await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
+  await expect(page.locator('.flag-choice.is-right')).toBeVisible()
   await page.waitForTimeout(250)
   await page.getByRole('button', { name: 'Game settings' }).click()
   await page.getByLabel('Region').selectOption({ label: 'Europe' })
-  await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
+  await waitForRoundProgress(page, 'flags', 1)
   const refreshedFlag = await displayedFlagCountry(page)
   const countries = await countryData(page)
   expect(countries.find((country) => country.name === refreshedFlag)?.continent).toBe('Europe')
   await page.waitForTimeout(850)
-  await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
+  await waitForRoundProgress(page, 'flags', 1)
 })
 
 test('Explore exposes distinct flag formats and game options stay in Free play setup', async ({ page }) => {
@@ -1064,20 +1218,23 @@ test('Explore exposes distinct flag formats and game options stay in Free play s
   await expect(setup.getByRole('button', { name: /Identify the country/ })).toHaveAttribute('aria-pressed', 'false')
   await expect(setup.getByRole('button', { name: /Find the flag/ })).toHaveAttribute('aria-pressed', 'true')
   await expect(setup.getByLabel('Direction')).toHaveCount(0)
-  await setup.getByRole('button', { name: 'Start Free play' }).click()
+  await setup.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.locator('.image-choice-grid .flag-choice')).toHaveCount(4)
   const countryPrompt = await page.locator('.flag-question-row h1').innerText()
   const answerCountry = countryPrompt.replace(/^Which flag belongs to /, '').replace(/\?$/, '')
   const correctFlag = await flagChoiceForCountry(page, answerCountry)
   await correctFlag.click()
-  await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
+  await expect(page.locator('.flag-choice.is-right')).toBeVisible()
 })
 
 test('flag free play settings cover regions, answer style and progressive reveal', async ({ page }) => {
   await openGame(page, 'flags')
+  await expect(page.locator('.game-playfield')).toBeFocused()
   const settingsButton = page.getByRole('button', { name: 'Game settings' })
   await expect(settingsButton).toHaveAttribute('aria-expanded', 'false')
   await settingsButton.focus()
+  await expect(settingsButton).toBeFocused()
   await page.keyboard.press('Enter')
   const settings = page.getByRole('group', { name: 'Game settings' })
   await expect(settings).toBeVisible()
@@ -1086,9 +1243,9 @@ test('flag free play settings cover regions, answer style and progressive reveal
 
   await settingsButton.click()
   await setGameSetting(page, 'Questions', '20')
-  await expect(page.locator('.flag-progress')).toHaveText('01 / 20')
+  await waitForRoundProgress(page, 'flags', 1)
   await setGameSetting(page, 'Questions', '10')
-  await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
+  await waitForRoundProgress(page, 'flags', 1)
   await setGameSetting(page, 'Region', { label: 'Europe' })
   await expect(page.getByLabel('Region')).toHaveValue('Europe')
   await setGameSetting(page, 'Answer style', 'typed')
@@ -1101,20 +1258,27 @@ test('flag free play settings cover regions, answer style and progressive reveal
   const countries = await countryData(page)
   const wrongCountry = flagCountryPool(countries as unknown as Country[], 'Europe', 'standard').find((country) => country.name !== typedAnswer)?.name
   expect(wrongCountry).toBeTruthy()
-  const input = page.getByLabel('Country name for the flag')
+  const input = page.locator('#flag-answer')
   await input.fill(wrongCountry!)
   const wrongSuggestion = page.getByRole('option', { name: wrongCountry!, exact: true })
   await expect(wrongSuggestion).toBeVisible()
   await wrongSuggestion.click()
   await expect(page.locator('.flag-display')).toHaveClass(/has-reveal/)
-  await expect(page.locator('.answer-feedback')).toContainText('try once more')
+  await expect(page.locator('.flag-round [role="status"]')).toContainText('try once more')
   await expect(input).toBeEnabled()
   await page.waitForTimeout(1_000)
-  await expect(page.locator('.flag-progress')).toHaveText('01 / 10')
+  await waitForRoundProgress(page, 'flags', 1)
   await input.fill(typedAnswer)
-  await page.getByRole('option', { name: typedAnswer, exact: true }).click()
-  await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-  await expect(page.locator('.flag-progress')).toHaveText('02 / 10', { timeout: 5_000 })
+  await input.press('Enter')
+  await page.getByRole('button', { name: 'Answer' }).press('Enter')
+  await expect(page.locator('.flag-typed-feedback.is-right')).toBeVisible()
+  await expect(input).toHaveAttribute('aria-disabled', 'true')
+  await expect(input).toHaveAttribute('readonly', '')
+  await expect(input).toBeFocused()
+  await waitForRoundProgress(page, 'flags', 2)
+  await expect(input).not.toHaveAttribute('aria-disabled', 'true')
+  await expect(input).not.toHaveAttribute('readonly', '')
+  await expect(input).toBeFocused()
 })
 
 test('flag compositions stay centered and bounded at desktop, laptop and mobile sizes', async ({ page }) => {
@@ -1139,7 +1303,7 @@ test('flag compositions stay centered and bounded at desktop, laptop and mobile 
         return [...range.getClientRects()].map(({ x, y, right, bottom }) => ({ x, y, right, bottom }))
       })
       const utility = await page.locator('.flag-round-utility').boundingBox()
-      const progress = await page.locator('.flag-progress').boundingBox()
+      const progress = await page.locator('.round-progress').boundingBox()
       const settings = await page.locator('.game-settings-button').boundingBox()
       expect(utility).not.toBeNull()
       expect(textRects.some((rect) => rect.x < utility!.x + utility!.width && rect.right > utility!.x && rect.y < utility!.y + utility!.height && rect.bottom > utility!.y)).toBe(false)
@@ -1180,8 +1344,8 @@ test('flag Free play settings stay within the mobile viewport and remain tappabl
     const prompt = await page.locator('.flag-question-row h1').innerText()
     const answer = prompt.replace(/^Which flag belongs to /, '').replace(/\?$/, '')
     await (await flagChoiceForCountry(page, answer)).tap()
-    await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-    await expect(page.locator('.flag-progress')).toHaveText('Question 2', { timeout: 5_000 })
+    await expect(page.locator('.flag-choice.is-right')).toBeVisible()
+    await expect(page.locator('.flag-round-utility [role="status"]')).toHaveText('Flag 2', { timeout: 5_000 })
     await page.getByRole('button', { name: 'End session' }).tap()
     const results = page.getByRole('dialog', { name: 'Free play session complete.' })
     await expect(results).toBeVisible()
@@ -1198,44 +1362,46 @@ test('flag Free play settings stay within the mobile viewport and remain tappabl
 
 test('geography grid accepts nine distinct countries from real category intersections', async ({ page }) => {
   await openGame(page, 'grid')
-  const countries = (await countryData(page)).filter((country) => country.independent || country.iso3 === 'PSE')
+  const progressStatus = page.locator('.question-count')
+  const progressAnnouncement = progressStatus.locator('.sr-only')
+  await expect(progressStatus).toBeVisible()
+  await expect(progressStatus).toHaveAttribute('role', 'status')
+  await expect(progressStatus).toHaveAttribute('aria-live', 'polite')
+  await expect(progressAnnouncement).toHaveText('0 of 9 squares filled')
+  const board = page.getByRole('table', { name: 'Geography category intersection table' })
+  await expect(board.getByRole('row')).toHaveCount(4)
+  await expect(board.getByRole('columnheader')).toHaveCount(4)
+  await expect(board.getByRole('rowheader')).toHaveCount(3)
+  await expect(board.getByRole('cell')).toHaveCount(9)
+  const countries = eligibleCountries(await countryData(page) as unknown as Country[], 'standard')
   const rows = await page.locator('.grid-row-label').allTextContents()
   const columns = await page.locator('.grid-column-label').allTextContents()
   expect(rows).toHaveLength(3)
   expect(columns).toHaveLength(3)
+  const preset = validGridPresets(countries, { expanded: true }).find((candidate) =>
+    candidate.rows.every((category, index) => category.label === rows[index])
+    && candidate.columns.every((category, index) => category.label === columns[index]),
+  )
+  expect(preset, 'displayed clues belong to the expanded Free Play preset pool').toBeDefined()
+  const firstCandidates = new Set(gridCandidates(countries, preset!.rows[0]!, preset!.columns[0]!)
+    .filter((country) => country.hasGeometry).map((country) => country.iso3))
+  const invalidCountry = countries.find((country) => country.hasGeometry && !firstCandidates.has(country.iso3))
+  expect(invalidCountry, 'first Grid crossing has an eligible invalid answer').toBeDefined()
+  await page.locator('.grid-cell[data-cell-key="0:0"] .grid-cell-trigger').click()
+  await chooseSuggestion(page, '#grid-answer-input', invalidCountry!.name)
+  await expect(page.getByRole('alert')).toHaveCount(1)
+  await expect(page.getByRole('alert')).toHaveText(`${invalidCountry!.name} doesn’t meet both clues.`)
+  const criteriaFeedback = page.locator('.grid-criteria-feedback')
+  await expect(criteriaFeedback).toBeVisible()
+  await expect(criteriaFeedback.locator(':scope > span')).toHaveCount(2)
+  await expect(criteriaFeedback).toContainText('Does not fit')
+  await expect(progressAnnouncement).toHaveText('0 of 9 squares filled')
+  await page.getByRole('button', { name: 'Close answer input' }).click()
 
-  function matches(category: string, country: CountryRecord): boolean {
-    if (category.endsWith(' · continent')) return country.continent === category.slice(0, -' · continent'.length)
-    if (category.endsWith(' · subregion')) return country.subregion === category.slice(0, -' · subregion'.length)
-    if (category === 'Landlocked') return country.landlocked
-    if (category === 'Has a coastline') return !country.landlocked
-    if (category === 'Has a land neighbour') return country.borders.length > 0
-    if (category === 'No land neighbours') return country.borders.length === 0
-    if (category === 'Capital coordinates recorded') return country.capitalCoordinates !== null
-    if (category === 'Population density over 100/km²') return country.population !== null && Boolean(country.areaKm2) && country.population / country.areaKm2! >= 100
-    if (category === 'Population density under 20/km²') return country.population !== null && Boolean(country.areaKm2) && country.population / country.areaKm2! < 20
-    if (category.startsWith('Population over ')) {
-      const millions = Number(category.match(/[\d.]+/)?.[0])
-      return (country.population ?? 0) >= millions * 1_000_000
-    }
-    if (category.startsWith('Population under ')) {
-      const millions = Number(category.match(/[\d.]+/)?.[0])
-      return country.population !== null && country.population < millions * 1_000_000
-    }
-    if (category.startsWith('Area over ')) {
-      const area = Number(category.match(/[\d,]+/)?.[0].replaceAll(',', ''))
-      return (country.areaKm2 ?? 0) >= area
-    }
-    if (category.startsWith('Area under ')) {
-      const area = Number(category.match(/[\d,]+/)?.[0].replaceAll(',', ''))
-      return country.areaKm2 !== null && country.areaKm2 < area
-    }
-    return country.continent === category || country.subregion === category
-  }
-
-  const cells = rows.flatMap((row, rowIndex) => columns.map((column, columnIndex) => ({
+  const cells = rows.flatMap((_, rowIndex) => columns.map((__, columnIndex) => ({
     key: `${rowIndex}:${columnIndex}`,
-    candidates: countries.filter((country) => country.hasGeometry && matches(row, country) && matches(column, country)).sort((left, right) => left.name.localeCompare(right.name)),
+    candidates: gridCandidates(countries, preset!.rows[rowIndex]!, preset!.columns[columnIndex]!)
+      .filter((country) => country.hasGeometry).sort((left, right) => left.name.localeCompare(right.name)),
   }))).sort((left, right) => left.candidates.length - right.candidates.length)
   const assigned = new Map<string, typeof countries[number]>()
 
@@ -1256,9 +1422,10 @@ test('geography grid accepts nine distinct countries from real category intersec
   let filled = 0
   for (const [key, country] of assigned) {
     await page.locator(`.grid-cell[data-cell-key="${key}"] .grid-cell-trigger`).click()
-    await submitText(page, '#grid-answer-input', country.name)
+    await chooseSuggestion(page, '#grid-answer-input', country.name)
     filled += 1
     await expect(page.locator('.grid-answer strong')).toHaveCount(filled)
+    await expect(progressAnnouncement).toHaveText(`${filled} of 9 squares filled`)
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
   await expect(page.locator('.game-results-dialog')).toContainText('All nine squares filled')
@@ -1268,9 +1435,9 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   await page.setViewportSize({ width: 1440, height: 960 })
   await page.goto('/')
   await expect(page.locator('.daily-grid .game-card')).toHaveCount(6)
-  await expect(page.locator('.other-games-carousel .game-card')).toHaveCount(10)
+  await expect(page.locator('.other-games-carousel .game-card')).toHaveCount(freePlayCardCount)
   await page.goto('/explore')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(14)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreExperienceCount)
   await page.screenshot({ path: 'artifacts/qa/product-consistency/explore-desktop.png', fullPage: true })
 
   for (const [route, name] of [['/statistics', 'statistics'], ['/settings', 'settings'], ['/data', 'data'], ['/about', 'about'], ['/privacy', 'privacy']] as const) {
@@ -1395,16 +1562,28 @@ test('Geography Connections accepts four valid attribute groups and replays', as
 test('Higher or Lower supports fixed and infinite Free play with keyboard controls', async ({ page }) => {
   await openGame(page, 'higher-lower')
   await page.clock.pauseAt(new Date('2026-11-17T12:00:00Z'))
-  for (let index = 0; index < 10; index += 1) {
+  const firstChoice = page.locator('.higher-lower-country').first()
+  await firstChoice.focus()
+  await page.keyboard.press('Enter')
+  await expect(firstChoice).toHaveAttribute('aria-disabled', 'true')
+  await expect(firstChoice).toBeFocused()
+  await expect(page.locator('.higher-lower-response')).toBeVisible()
+  await page.clock.runFor(1_800)
+  await waitForRoundProgress(page, 'comparisons', 2)
+  await expect(firstChoice).toHaveAttribute('aria-disabled', 'false')
+  await expect(page.locator('.higher-lower-prompt')).toBeFocused()
+
+  for (let index = 1; index < 10; index += 1) {
     await page.keyboard.press(index % 2 ? 'ArrowRight' : 'ArrowLeft')
     if (index < 9) await expect(page.locator('.higher-lower-response')).toBeVisible()
     await expect(page.locator('.higher-lower-country.is-revealed .higher-lower-value')).toHaveCount(2)
     await expect(page.locator('.answer-feedback')).toHaveCount(0)
     if (index < 9) {
-      await page.clock.runFor(1_250)
-      await expect(page.locator('.question-count strong')).toHaveText(String(index + 2))
+      await page.clock.runFor(1_800)
+      await waitForRoundProgress(page, 'comparisons', index + 2)
     }
   }
+  await page.clock.runFor(1_800)
   await expect(page.locator('.game-results-dialog')).toBeVisible()
   await expect(page.locator('.game-results-summary')).toContainText('/ 10 correct')
   await page.screenshot({ path: 'artifacts/qa/product-consistency/higher-lower-results-desktop.png' })
@@ -1415,8 +1594,8 @@ test('Higher or Lower supports fixed and infinite Free play with keyboard contro
   await page.keyboard.press('Escape')
   await page.keyboard.press('ArrowLeft')
   await expect(page.locator('.higher-lower-response')).toBeVisible()
-  await page.clock.runFor(1_250)
-  await expect(page.locator('.question-count strong')).toHaveText('2')
+  await page.clock.runFor(1_800)
+  await expect(page.locator('.question-toolbar .sr-only[role="status"]')).toHaveText('Comparison 2')
   await page.keyboard.press('ArrowRight')
   await expect(page.locator('.higher-lower-response')).toBeVisible()
   await page.getByRole('button', { name: 'End session' }).click()
@@ -1460,14 +1639,14 @@ test('Neighbour Challenge evaluates the complete neighbor set without answer lea
   await expect(incorrectOption).toBeVisible()
   await incorrectOption.click()
   await page.getByRole('button', { name: `Remove ${nonNeighbour!.name}` }).click()
-  await submitText(page, '#neighbour-answer', firstNeighbor.name)
-  await submitText(page, '#neighbour-answer', firstNeighbor.name)
+  await chooseSuggestion(page, '#neighbour-answer', firstNeighbor.name)
   await expect(page.locator('.neighbour-selected button')).toHaveCount(1)
-  await expect(page.locator('.answer-feedback')).toContainText('already selected')
+  await chooseSuggestion(page, '#neighbour-answer', firstNeighbor.name)
+  await expect(page.locator('.neighbour-selection-feedback')).toContainText('already selected')
   await page.getByRole('button', { name: `Remove ${firstNeighbor.name}` }).click()
 
-  await submitText(page, '#neighbour-answer', target!.name)
-  await expect(page.locator('.answer-feedback')).toContainText('target, so it cannot be')
+  await chooseSuggestion(page, '#neighbour-answer', target!.name)
+  await expect(page.locator('.neighbour-selection-feedback')).toContainText('target, so it cannot be')
 
   for (let index = 0; index < 5; index += 1) {
     const currentName = await page.locator('.neighbour-target strong').innerText()
@@ -1483,7 +1662,10 @@ test('Neighbour Challenge evaluates the complete neighbor set without answer lea
     }
     await page.getByRole('button', { name: 'Check neighbors' }).click()
     await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-    if (index < 4) await page.getByRole('button', { name: 'Next country' }).click()
+    if (index < 4) {
+      await waitForRoundProgress(page, 'countries', index + 2)
+      await expect(page.getByRole('heading', { name: 'Complete the land borders' })).toBeFocused()
+    }
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
   await expect(page.locator('.game-results-summary')).toHaveText('5 / 5 correct · 100% accuracy')
@@ -1516,12 +1698,16 @@ test('Distance & Direction uses coordinate comparisons, keyboard controls and lo
     await page.keyboard.press('1')
     await expect(page.locator('.distance-city-coordinates')).toHaveCount(2)
     await expect(page.locator('.distance-reveal')).toBeVisible()
-    await page.getByRole('button', { name: 'Next comparison' }).click()
+    await waitForRoundProgress(page, 'comparisons', 2)
+    await expect(page.locator('.distance-prompt')).toBeFocused()
   }
   for (let index = 1; index < 10; index += 1) {
     await page.keyboard.press(index % 2 ? '2' : '1')
     await expect(page.locator('.answer-feedback')).not.toContainText('Use the coordinates and scale')
-    if (index < 9) await page.getByRole('button', { name: 'Next comparison' }).click()
+    if (index < 9) {
+      await waitForRoundProgress(page, 'comparisons', index + 2)
+      await expect(page.locator('.distance-prompt')).toBeFocused()
+    }
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
   await expect(page.locator('.game-results-summary')).toContainText('/ 10 correct')
@@ -1529,6 +1715,24 @@ test('Distance & Direction uses coordinate comparisons, keyboard controls and lo
   await page.screenshot({ path: 'artifacts/qa/product-consistency/distance-results-desktop.png' })
   await page.locator('.game-results-dialog').getByRole('link', { name: 'Statistics' }).click()
   await expect(page.locator('.history-result').first()).toContainText('/ 10 correct')
+})
+
+test('timed Neighbor and Distance rounds keep the countdown outside polite live regions', async ({ page }) => {
+  for (const [game, summary] of [['neighbours', '.neighbour-live'], ['distance', '.distance-live']] as const) {
+    await openGame(page, game)
+    await page.getByRole('button', { name: 'Game settings' }).click()
+    await page.getByLabel('60-second round').click()
+    await page.keyboard.press('Escape')
+
+    const liveSummary = page.locator(summary)
+    const timer = page.getByRole('timer')
+    await expect(timer).toHaveCount(1)
+    await expect(timer).toHaveAccessibleName(/^Time remaining: \d+ seconds$/)
+    await expect(timer).toHaveText(/^\d+s left$/)
+    await expect(liveSummary).not.toHaveAttribute('aria-live', 'polite')
+    await expect(liveSummary.locator('[aria-live="polite"]')).toHaveCount(2)
+    expect(await timer.evaluate((element) => element.closest('[aria-live]')?.getAttribute('aria-live') ?? null)).toBeNull()
+  }
 })
 
 test('all four new games accept touch input in the mobile layout', async ({ browser }) => {
@@ -1579,12 +1783,16 @@ test('capitals and cities include typed capitals, coordinate placement and city 
   const countries = await countryData(page)
   for (let index = 0; index < 10; index += 1) {
     const prompt = await page.locator('.question-toolbar h2').innerText()
+    await expect(page.locator('.question-toolbar p')).toHaveCount(0)
     const name = prompt.replace(/^What is the capital of /, '').replace(/\?$/, '')
     const country = countries.find((item) => item.name === name)
     expect(country?.capital).toBeTruthy()
     await submitText(page, '#capital-answer', country!.capital!)
     await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-    await page.getByRole('button', { name: index === 9 ? 'See result' : 'Next place' }).click()
+    if (index < 9) {
+      await waitForRoundProgress(page, 'questions', index + 2)
+      await expect(page.locator('.question-toolbar h2')).toBeFocused()
+    }
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
 
@@ -1598,29 +1806,46 @@ test('capitals and cities include typed capitals, coordinate placement and city 
   let cityName = placeText.slice(0, separator)
   let countryName = placeText.slice(separator + 2)
   let cityCountry = countries.find((item) => item.name === countryName)
-  let population = (await page.locator('.question-toolbar p').innerText()).match(/population ([\d,]+)/)?.[1]
-  let city = cities.find((item) => item.name === cityName && item.countryIso3 === cityCountry?.iso3 && (!population || item.population === Number(population.replaceAll(',', ''))))
+  let city = cities.find((item) => item.name === cityName && item.countryIso3 === cityCountry?.iso3 && isCurrentWholeSettlement(item) && item.population >= 50_000)
   expect(city).toBeTruthy()
+  const map = page.locator('.city-map-stage .geo-map')
+  const bounds = await map.boundingBox()
+  expect(bounds).toBeTruthy()
+  await page.mouse.click(bounds!.x + bounds!.width * 0.36, bounds!.y + bounds!.height * 0.48)
+  await expect(page.locator('.map-marker-guess')).toHaveCount(1)
+  await expect(page.locator('.map-marker-answer')).toHaveCount(0)
+  const firstMarker = await page.locator('.map-marker-guess').getAttribute('transform')
+  await page.mouse.click(bounds!.x + bounds!.width * 0.62, bounds!.y + bounds!.height * 0.52)
+  await expect(page.locator('.map-marker-guess')).toHaveCount(1)
+  await expect.poll(() => page.locator('.map-marker-guess').getAttribute('transform')).not.toBe(firstMarker)
+  await page.getByText('Enter coordinates', { exact: true }).click()
   await page.getByLabel('Latitude').fill(city!.lat.toFixed(2))
   await page.getByLabel('Longitude').fill(city!.lon.toFixed(2))
   await page.getByRole('button', { name: 'Place marker' }).click()
   await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
-  await page.getByRole('button', { name: 'Next place' }).click()
+  await expect(page.locator('.map-marker-answer')).toHaveCount(1)
+  await waitForRoundProgress(page, 'questions', 2)
+  await expect(page.locator('.question-toolbar h2')).toBeFocused()
 
   await openGame(page, 'cities', 'freeplay', 'identify-city')
   prompt = await page.locator('.question-toolbar h2').innerText()
   countryName = prompt.replace(/^Which city is marked in /, '').replace(/\?$/, '')
   cityCountry = countries.find((item) => item.name === countryName)
   expect(cityCountry).toBeTruthy()
-  const candidate = cities.find((item) => item.countryIso3 === cityCountry?.iso3 && (item.population >= 50_000 || item.capital))
+  const identificationCities = cities.filter((item) => isCurrentWholeSettlement(item) && item.countryIso3 === cityCountry?.iso3)
+  const candidate = identificationCities.find((item) => (item.population >= 50_000 || item.capital) && identificationCities.filter((other) => other.name === item.name).length === 1)
   expect(candidate).toBeTruthy()
   const cityInput = page.locator('#city-identify-answer')
   await cityInput.fill(candidate!.name)
-  await expect(page.getByRole('option', { name: new RegExp(candidate!.name) }).first()).toBeVisible()
-  await page.getByRole('option', { name: new RegExp(candidate!.name) }).first().click()
+  const citySuggestion = page.locator('#city-identify-answer-suggestions .suggestion-option')
+    .filter({ has: page.getByText(candidate!.name, { exact: true }) })
+  await expect(citySuggestion).toHaveCount(1)
+  await expect(citySuggestion).toBeVisible()
+  await citySuggestion.click()
   await page.getByRole('button', { name: 'Identify' }).click()
   await expect(page.locator('.answer-feedback')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Next place' })).toBeVisible()
+  await waitForRoundProgress(page, 'questions', 2)
+  await expect(page.locator('.question-toolbar h2')).toBeFocused()
 })
 
 test('settings exports and imports progress, confirms reset, and the data page shows coverage', async ({ page }) => {
@@ -1674,11 +1899,37 @@ test('settings exports and imports progress, confirms reset, and the data page s
 
   await page.goto('/data')
   await expect(page.getByRole('heading', { name: 'Data sources' })).toBeVisible()
+  await expect(page.locator('.source-license-link').first()).toBeVisible()
+  const sourceLinkNames = await page.locator('.source-license-link').evaluateAll((links) => links.map((link) => link.textContent?.trim() ?? ''))
+  expect(sourceLinkNames.length).toBeGreaterThan(1)
+  expect(new Set(sourceLinkNames).size).toBe(sourceLinkNames.length)
   await expect(page.locator('.coverage-summary')).toContainText('198')
   await expect(page.getByRole('heading', { name: 'First-level divisions by country' })).toBeVisible()
   await expect(page.locator('.coverage-row')).toHaveCount(198)
   await page.getByLabel('Search country boundary coverage').fill('Sweden')
   await expect(page.locator('.coverage-row')).toHaveCount(1)
+})
+
+test('data source loading and errors are announced', async ({ page }) => {
+  await page.addInitScript(() => {
+    const nativeFetch = window.fetch.bind(window)
+    window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      const resource = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+      if (new URL(resource, location.href).pathname === '/data/data-manifest.json') {
+        await new Promise((resolve) => window.setTimeout(resolve, 1600))
+        throw new TypeError('Network failure')
+      }
+      return nativeFetch(input, init)
+    }
+  })
+
+  await page.goto('/data')
+  await expect(page.getByRole('status').filter({ hasText: 'Reading source manifest' })).toHaveText('Reading source manifest…')
+  const error = page.getByRole('alert')
+  await expect(error).toContainText('Data sources and coverage are temporarily unavailable.')
+  await expect(error).toContainText('Try refreshing this page.')
+  await expect(page.getByRole('status').filter({ hasText: 'Country coverage could not be loaded' })).toHaveText('Country coverage could not be loaded. Try refreshing this page.')
+  await expect(page.locator('.region-coverage .loading-state')).toContainText('Country coverage could not be loaded.')
 })
 
 test('the production service worker reopens cached routes when offline', async ({ page }) => {
@@ -1690,8 +1941,48 @@ test('the production service worker reopens cached routes when offline', async (
     if (navigator.serviceWorker.controller) return
     await new Promise<void>((resolve) => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }))
   })
+
+  // Warm the lazy data files while online so the offline check covers actual play assets,
+  // not only the app shell and Explore route.
+  await page.goto('/games/countries?mode=daily')
+  await expect(page.locator('.geo-map path')).not.toHaveCount(0, { timeout: 30_000 })
+  await page.goto('/games/outlines?mode=daily')
+  await expect(page.locator('.outline-map-stage .geo-map path')).not.toHaveCount(0, { timeout: 30_000 })
+  await page.goto('/games/distance?mode=freeplay')
+  await expect(page.getByRole('button', { name: 'Start free play' })).toBeVisible()
+  await expect(page.locator('.distance-city-choice').first()).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.locator('.distance-city-choice').first()).toBeVisible()
+  await page.goto('/games/rivers?mode=freeplay')
+  await expect(page.getByRole('button', { name: 'Start free play' })).toBeVisible()
+  await expect(page.locator('.riverways-map-stage .geo-map path')).not.toHaveCount(0, { timeout: 30_000 })
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByLabel('Name the highlighted river')).toBeVisible()
+
+  const openedDataWasCached = await page.evaluate(async () => {
+    const files = [
+      '/data/countries.topo.json',
+      '/data/countries-outline.topo.json',
+      '/data/cities-major.json',
+      '/data/rivers.json',
+    ]
+    return Promise.all(files.map(async (file) => Boolean(await caches.match(file))))
+  })
+  expect(openedDataWasCached).toEqual([true, true, true, true])
+
   await page.context().setOffline(true)
+
+  await page.goto('/games/countries?mode=daily')
+  await expect(page.locator('.geo-map path')).not.toHaveCount(0, { timeout: 30_000 })
+  await page.goto('/games/outlines?mode=daily')
+  await expect(page.locator('.outline-map-stage .geo-map path')).not.toHaveCount(0, { timeout: 30_000 })
+  await page.goto('/games/distance?mode=freeplay')
+  await expect(page.locator('.distance-city-choice').first()).toBeVisible({ timeout: 30_000 })
+  await page.goto('/games/rivers?mode=freeplay')
+  await expect(page.locator('.riverways-map-stage .geo-map path')).not.toHaveCount(0, { timeout: 30_000 })
+  await expect(page.getByLabel('Name the highlighted river')).toBeVisible()
+
   await page.goto('/explore')
   await expect(page.getByRole('heading', { name: 'Explore' })).toBeVisible()
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(14)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreExperienceCount)
 })

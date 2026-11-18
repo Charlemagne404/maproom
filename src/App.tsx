@@ -4,7 +4,6 @@ import { Shell } from './components/Shell'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { DailyPage } from './pages/DailyPage'
 import { ExplorePage } from './pages/ExplorePage'
-import { GamePage } from './pages/GamePage'
 import { StatisticsPage } from './pages/StatisticsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { InformationPage } from './pages/InformationPage'
@@ -19,7 +18,7 @@ export default function App() {
             <Route element={<Shell />}>
               <Route index element={<DailyPage />} />
               <Route path="explore" element={<ExplorePage />} />
-              <Route path="games/:gameId" element={<GamePage />} />
+              <Route path="games/:gameId" element={null} />
               <Route path="statistics" element={<StatisticsPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="about" element={<InformationPage page="about" />} />

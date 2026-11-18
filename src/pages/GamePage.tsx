@@ -1,71 +1,61 @@
-import { lazy, Suspense, useEffect, useState, type ComponentType, type LazyExoticComponent } from 'react'
-import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { Suspense, useCallback, useContext, useEffect, useState } from 'react'
+import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useAppData } from '../app/useAppData'
 import { InlineNotice, LoadingState } from '../components/Kit'
 import { CompletedPuzzle } from '../components/GameResults'
-import type { GameId, GameMode } from '../geography/types'
+import type { GameMode, GeographyData } from '../geography/types'
 import { loadGeography } from '../geography/data'
 import { dailyPuzzleId, dailyPuzzleSeed } from '../puzzles/engine'
 import { usePuzzleDate } from '../hooks/usePuzzleDate'
 import { formatsForGame, getGame, isDailyGame } from '../games/catalog'
+import { getGameComponent, type GeographyGameComponent } from '../games/components'
 import { FreePlaySetupContext } from '../components/FreePlaySetupContext'
 import { isCompatibleGameSession } from '../games/sessionCompatibility'
+import { getReturnDestination } from '../navigation/returnLocation'
 
-const CountryIdentificationGame = lazy(() => import('../games/country-map/CountryIdentificationGame').then((module) => ({ default: module.CountryIdentificationGame })))
-const OutlineGame = lazy(() => import('../games/outlines/OutlineGame').then((module) => ({ default: module.OutlineGame })))
-const BorderRouteGame = lazy(() => import('../games/border-route/BorderRouteGame').then((module) => ({ default: module.BorderRouteGame })))
-const FlagGame = lazy(() => import('../games/flags/FlagGame').then((module) => ({ default: module.FlagGame })))
-const GeographyGridGame = lazy(() => import('../games/connections-grid/GeographyGridGame').then((module) => ({ default: module.GeographyGridGame })))
-const CitiesGame = lazy(() => import('../games/cities/CitiesGame').then((module) => ({ default: module.CitiesGame })))
-const ConnectionsGame = lazy(() => import('../games/connections/ConnectionsGame').then((module) => ({ default: module.ConnectionsGame })))
-const HigherLowerGame = lazy(() => import('../games/higher-lower/HigherLowerGame').then((module) => ({ default: module.HigherLowerGame })))
-const NeighbourGame = lazy(() => import('../games/neighbours/NeighbourGame').then((module) => ({ default: module.NeighbourGame })))
-const DistanceGame = lazy(() => import('../games/distance/DistanceGame').then((module) => ({ default: module.DistanceGame })))
-
-type GeographyGameProps = { data: Awaited<ReturnType<typeof loadGeography>>; mode: GameMode; date: string; seed: string }
-type GeographyGameComponent = LazyExoticComponent<ComponentType<GeographyGameProps>>
-const gameComponents: Partial<Record<GameId, GeographyGameComponent>> = {
-  countries: CountryIdentificationGame,
-  outlines: OutlineGame,
-  routes: BorderRouteGame,
-  flags: FlagGame,
-  grid: GeographyGridGame,
-  cities: CitiesGame,
-  connections: ConnectionsGame,
-  'higher-lower': HigherLowerGame,
-  neighbours: NeighbourGame,
-  distance: DistanceGame,
-}
-
-export function GamePage() {
-  const { gameId: rawGameId } = useParams()
+export function GamePage({ gameId, preparing = false, launchFormat = null }: { gameId: string; preparing?: boolean; launchFormat?: string | null }) {
+  const rawGameId = gameId
   const game = getGame(rawGameId)
+  const requiresCountryGeometry = game?.requiresCountryGeometry ?? false
   const location = useLocation()
-  const [params, setParams] = useSearchParams()
-  const mode: GameMode = params.get('mode') === 'daily' ? 'daily' : 'freeplay'
+  const [params] = useSearchParams()
+  const mode: GameMode = preparing ? 'freeplay' : params.get('mode') === 'daily' ? 'daily' : 'freeplay'
+  const { setup: setupInProgress, format: setupFormat, settingsTarget, onExperienceReady } = useContext(FreePlaySetupContext)
   const { state, ready, deleteSession } = useAppData()
   const date = usePuzzleDate(state.settings.timeZone)
-  const [data, setData] = useState<Awaited<ReturnType<typeof loadGeography>> | null>(null)
-  const [error, setError] = useState('')
+  const [loadedData, setLoadedData] = useState<{ requiresCountryGeometry: boolean; data: GeographyData } | null>(null)
+  const [loadFailure, setLoadFailure] = useState<{ requiresCountryGeometry: boolean; message: string } | null>(null)
+  const data = loadedData?.requiresCountryGeometry === requiresCountryGeometry ? loadedData.data : null
+  const error = loadFailure?.requiresCountryGeometry === requiresCountryGeometry ? loadFailure.message : ''
   const [startedRouteKey, setStartedRouteKey] = useState('')
   const routeKey = `${game?.id ?? rawGameId}:${mode}:${date ?? ''}:${location.key}`
   const formats = game ? formatsForGame(game.id) : []
   const requestedFormat = params.get('format')
-  const format = mode === 'daily'
+  const routeFormat = mode === 'daily'
     ? formats[0]?.id ?? null
     : formats.some((item) => item.id === requestedFormat) ? requestedFormat : formats[0]?.id ?? null
-  const [startedLaunchKey, setStartedLaunchKey] = useState('')
-  const launchKey = `${game?.id ?? rawGameId}:${date ?? ''}:${location.key}:${format ?? ''}`
-  const setup = mode === 'freeplay' && startedLaunchKey !== launchKey
-
+  const format = preparing && formats.some((item) => item.id === launchFormat) ? launchFormat : setupFormat ?? routeFormat
+  const setup = mode === 'freeplay' && setupInProgress
+  const [mountedExperienceKey, setMountedExperienceKey] = useState('')
+  const experienceKey = `${game?.id ?? rawGameId}:${mode}:${date ?? ''}:${format ?? ''}`
+  const markExperienceMounted = useCallback(() => setMountedExperienceKey(experienceKey), [experienceKey])
   useEffect(() => {
+    if (!game) return
     let active = true
-    loadGeography().then((loaded) => { if (active) setData(loaded) }).catch((issue) => {
-      if (active) setError(issue instanceof Error ? issue.message : 'Geographic data could not be loaded.')
+    loadGeography(requiresCountryGeometry).then((loaded) => {
+      if (active) {
+        setLoadedData({ requiresCountryGeometry, data: loaded })
+        setLoadFailure((current) => current?.requiresCountryGeometry === requiresCountryGeometry ? null : current)
+      }
+    }).catch((issue) => {
+      if (active) setLoadFailure({
+        requiresCountryGeometry,
+        message: issue instanceof Error ? issue.message : 'Geographic data could not be loaded.',
+      })
     })
     return () => { active = false }
-  }, [])
+  }, [game, requiresCountryGeometry])
 
   useEffect(() => {
     let inputTimer: number | undefined
@@ -100,6 +90,10 @@ export function GamePage() {
     if (hasStaleSession) void deleteSession(game.id, 'daily', date, puzzleId)
   }, [state.sessions, deleteSession, date, game, mode])
 
+  useEffect(() => {
+    if (setup && settingsTarget && mountedExperienceKey === experienceKey) onExperienceReady?.()
+  }, [experienceKey, mountedExperienceKey, onExperienceReady, setup, settingsTarget])
+
   if (!game) return <div className="page"><InlineNotice title="Game not found">Choose a game from the <Link to="/explore">library</Link>.</InlineNotice></div>
   if (mode === 'daily' && !isDailyGame(game.id)) return <Navigate to={`${game.path}?mode=freeplay`} replace />
   if (!date) return <div className="page game-page"><LoadingState label="Setting this puzzle’s date…" /></div>
@@ -114,42 +108,38 @@ export function GamePage() {
   return (
     <div className={`page game-page game-page-${game.id}${setup ? ' is-setup' : ''}`}>
       <h1 className="visually-hidden">{game.title}</h1>
-      <GameContextToolbar game={game} mode={mode} />
+      <GameContextToolbar game={game} mode={mode} returnState={location.state} />
       {showCompleted && existing
         ? <CompletedPuzzle gameTitle={game.title} result={existing} />
         : <FreePlaySetupContext.Provider value={{
           setup,
           format,
-          formats,
-          onFormatChange: (nextFormat) => {
-            const next = new URLSearchParams(params)
-            next.set('mode', 'freeplay')
-            next.set('format', nextFormat)
-            setParams(next, { replace: true })
-          },
-          onStart: () => setStartedLaunchKey(launchKey),
+          settingsTarget,
+          onExperienceReady,
         }}>
-          <GameExperience key={`${game.id}:${mode}:${date}:${format ?? ''}`} gameId={game.id} mode={mode} date={date} data={data} />
+          <GameExperience key={experienceKey} gameId={game.id} mode={mode} date={date} data={data} onMounted={markExperienceMounted} />
         </FreePlaySetupContext.Provider>}
     </div>
   )
 }
 
-function GameContextToolbar({ game, mode }: { game: NonNullable<ReturnType<typeof getGame>>; mode: GameMode }) {
+function GameContextToolbar({ game, mode, returnState }: { game: NonNullable<ReturnType<typeof getGame>>; mode: GameMode; returnState: unknown }) {
+  const destination = getReturnDestination(returnState)
   return (
     <div className="game-context-bar">
-      <Link className="game-context-back" to="/explore"><ArrowLeft size={15} aria-hidden="true" /><span>All games</span></Link>
+      <Link className="game-context-back" to={destination.path} replace><ArrowLeft size={15} aria-hidden="true" /><span>{destination.label}</span></Link>
       <span className="game-context-title">{game.title}</span>
       {mode === 'daily' && <span className="game-context-daily">Today’s puzzle</span>}
     </div>
   )
 }
 
-function GameExperience({ gameId, mode, date, data }: {
+function GameExperience({ gameId, mode, date, data, onMounted }: {
   gameId: NonNullable<ReturnType<typeof getGame>>['id']
   mode: GameMode
   date: string
   data: Awaited<ReturnType<typeof loadGeography>>
+  onMounted: () => void
 }) {
   const { state } = useAppData()
   const saved = state.sessions.find((session) => session.gameId === gameId
@@ -161,8 +151,21 @@ function GameExperience({ gameId, mode, date, data }: {
   const [seed] = useState(() => mode === 'daily'
     ? saved?.seed ?? dailyPuzzleSeed(gameId, date)
     : saved?.seed ?? `${gameId}:practice:${crypto.randomUUID?.() ?? Math.random()}`)
-  const Game = gameComponents[gameId]
-  if (!Game) return null
+  const game = getGame(gameId)
+  if (!game) return null
+  const Game = getGameComponent(gameId)
   const gameSeed = mode === 'daily' ? saved?.seed ?? dailyPuzzleSeed(gameId, date) : seed
-  return <div className={`game-playfield game-playfield-${gameId}`}><Suspense fallback={<LoadingState label="Opening this game…" />}><Game key={gameSeed} data={data} mode={mode} date={date} seed={gameSeed} /></Suspense></div>
+  return <div className={`game-playfield game-playfield-${gameId}`} tabIndex={-1}><Suspense fallback={<LoadingState label="Opening this game…" />}><MountedGame game={Game} gameSeed={gameSeed} data={data} mode={mode} date={date} onMounted={onMounted} /></Suspense></div>
+}
+
+function MountedGame({ game: Game, gameSeed, data, mode, date, onMounted }: {
+  game: GeographyGameComponent
+  gameSeed: string
+  data: Awaited<ReturnType<typeof loadGeography>>
+  mode: GameMode
+  date: string
+  onMounted: () => void
+}) {
+  useEffect(() => { onMounted() }, [onMounted])
+  return <Game key={gameSeed} data={data} mode={mode} date={date} seed={gameSeed} />
 }

@@ -1,0 +1,65 @@
+import { describe, expect, it } from 'vitest'
+import type { RiverFeature } from '../geography/types'
+import { buildRiverQuestionPool, pickRiverQuestion, riverRankLimit } from './rivers'
+
+function river(id: string, name: string, nameAlt: string | null, scaleRank = 2, nameEnglish: string | null = null): RiverFeature {
+  return {
+    type: 'Feature',
+    id,
+    properties: { id, name, nameAlt, nameEnglish, scaleRank, iso3: null, nameLong: null, continent: null, mapUnit: null, naturalEarthId: null },
+    geometry: { type: 'LineString', coordinates: [[10, 20], [11, 21]] },
+  }
+}
+
+describe('river question data', () => {
+  it('combines Natural Earth segments that share an English alternate name', () => {
+    const pool = buildRiverQuestionPool([
+      river('one', 'Donau', 'Danube', 2, 'Danube'),
+      river('two', 'Danube', null, 3, 'Danube'),
+      river('three', 'Rhein', 'Rhine', 2, 'Rhine'),
+    ])
+    const danube = pool.find((question) => question.name === 'Danube')
+    expect(danube).toBeDefined()
+    expect(danube?.aliases).toContain('Donau')
+    expect(danube?.feature.geometry.type).toBe('MultiLineString')
+    expect(danube?.feature.geometry.type === 'MultiLineString' ? danube.feature.geometry.coordinates : []).toHaveLength(2)
+    expect(pool.map((question) => question.name)).toEqual(['Danube', 'Rhine'])
+  })
+
+  it('does not let a shared short alias select the wrong river', () => {
+    const pool = buildRiverQuestionPool([
+      river('yellow-river', 'Huang', 'Yellow River; Yellow', 2, 'Yellow River'),
+      river('yellow-creek', 'Yellow', null, 4, 'Yellow'),
+    ])
+    const main = pool.find((question) => question.name === 'Yellow River')
+    const other = pool.find((question) => question.name === 'Yellow')
+    expect(main?.aliases).not.toContain('Yellow')
+    expect(other?.aliases).toContain('Yellow')
+    expect(main?.aliases).toContain('Huang')
+  })
+
+  it('keeps each canonical question name answerable when another river shares it as an alias', () => {
+    const pool = buildRiverQuestionPool([
+      river('river-a', 'River A', null, 2, 'River A'),
+      river('river-b', 'River B', 'River A', 3, 'River B'),
+    ])
+    expect(pool.find((question) => question.name === 'River A')?.aliases).toContain('River A')
+    expect(pool.find((question) => question.name === 'River B')?.aliases).not.toContain('River A')
+  })
+
+  it('picks reproducible, distinct questions and applies the intended rank bands', () => {
+    const pool = buildRiverQuestionPool([
+      river('one', 'Amazonas', 'Amazon', 1),
+      river('two', 'Ganges', null, 3),
+      river('three', 'Yukon', null, 4),
+    ])
+    expect(pickRiverQuestion(pool, 'river-seed')?.id).toBe(pickRiverQuestion(pool, 'river-seed')?.id)
+    const first = pickRiverQuestion(pool, 'river-seed')
+    expect(first).toBeDefined()
+    expect(pickRiverQuestion(pool, 'river-seed', [first!.id])?.id).not.toBe(first!.id)
+    expect(pickRiverQuestion(pool, 'river-seed', pool.map((item) => item.id))).toBeUndefined()
+    expect(riverRankLimit('easy')).toBe(2)
+    expect(riverRankLimit('medium')).toBe(3)
+    expect(riverRankLimit('hard')).toBe(4)
+  })
+})

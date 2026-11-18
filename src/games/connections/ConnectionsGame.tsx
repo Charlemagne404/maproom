@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { GameResultsDialog } from '../../components/GameResults'
-import { GameSettingsMenu } from '../../components/GameControls'
+import { RoundProgress } from '../../components/RoundProgress'
+import { AdvancedGameSettings, GameSettingSelect, GameSettingsMenu } from '../../components/GameControls'
 import { InlineNotice } from '../../components/Kit'
 import type { GameMode, GeographyData } from '../../geography/types'
 import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
@@ -75,10 +76,10 @@ function ConnectionsRound({ data, puzzle, mode, date, seed, difficulty, eligibil
       <div><h2>Find four groups of four</h2><p>Choose four countries with a shared geographic connection.</p></div>
       <div className="question-toolbar-tools">
         {mode === 'freeplay' && <GameSettingsMenu><div className="practice-config">
-          <label><span>Difficulty</span><select value={difficulty} onChange={(event) => onDifficulty(event.target.value as ConnectionsDifficulty)}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></label>
-          <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
+          <GameSettingSelect label="Difficulty" value={difficulty} options={[{ value: 'easy', label: 'Easy' }, { value: 'medium', label: 'Medium' }, { value: 'hard', label: 'Hard' }]} onChange={(value) => onDifficulty(value as ConnectionsDifficulty)} />
+          <AdvancedGameSettings><GameSettingSelect label="Country pool" value={eligibility} options={[{ value: 'standard', label: 'Standard · 195 states' }, { value: 'extended', label: 'Extended · territories included' }]} onChange={(value) => onEligibility(value as GeographyEligibility)} /></AdvancedGameSettings>
         </div></GameSettingsMenu>}
-        <div className="question-count"><strong>{solved.length}</strong><span>of 4 groups</span></div>
+        <RoundProgress current={solved.length} total={4} label="groups" />
       </div>
     </div>
     <div className="connections-status" aria-live="polite"><span>{message}</span><span className="connections-mistakes" aria-label={`${mistakes} of 4 mistakes used`}>{Array.from({ length: 4 }, (_, index) => <i key={index} className={index < mistakes ? 'is-used' : ''} />)}</span></div>
@@ -98,7 +99,7 @@ function ConnectionsRound({ data, puzzle, mode, date, seed, difficulty, eligibil
       })}
     </div>
     <div className="connections-actions">
-      <span>{selected.length} of 4 selected</span>
+      <span role="status" aria-live="polite" aria-atomic="true">{selected.length} of 4 countries selected</span>
       {!finished && <button className="button button-dark" type="button" disabled={selected.length !== 4} onClick={() => void submit()}>Check group</button>}
       {!finished && <button className="button button-outline" type="button" disabled={!selected.length} onClick={() => { setSelected([]); setMessage('Selection cleared. Look for another shared connection.') }}><RotateCcw size={15} /> Clear</button>}
     </div>

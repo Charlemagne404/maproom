@@ -73,23 +73,42 @@ function DataPage() {
   const [coverage, setCoverage] = useState<Coverage | null>(null)
   const [query, setQuery] = useState('')
   const [failure, setFailure] = useState(false)
+  const [manifestStatus, setManifestStatus] = useState('')
+  const [coverageStatus, setCoverageStatus] = useState('')
 
   useEffect(() => {
+    const loadingAnnouncement = window.setTimeout(() => {
+      setManifestStatus('Reading source manifest…')
+      setCoverageStatus('Loading country coverage…')
+    }, 1000)
+
     Promise.all([
       fetch('/data/data-manifest.json').then((response) => { if (!response.ok) throw new Error(); return response.json() as Promise<SourceManifest> }),
       fetch('/data/region-index.json').then((response) => { if (!response.ok) throw new Error(); return response.json() as Promise<RegionRecord[]> }),
       fetch('/data/coverage.json').then((response) => { if (!response.ok) throw new Error(); return response.json() as Promise<Coverage> }),
     ]).then(([sourceData, regionData, coverageData]) => {
+      window.clearTimeout(loadingAnnouncement)
       setManifest(sourceData)
       setRegions(regionData.filter((item) => item.status === 'included').sort((a, b) => a.name.localeCompare(b.name)))
       setCoverage(coverageData)
-    }).catch(() => setFailure(true))
+      setManifestStatus('')
+      setCoverageStatus('')
+    }).catch(() => {
+      window.clearTimeout(loadingAnnouncement)
+      setFailure(true)
+      setManifestStatus('')
+      setCoverageStatus('Country coverage could not be loaded. Try refreshing this page.')
+    })
+
+    return () => window.clearTimeout(loadingAnnouncement)
   }, [])
 
   const filteredRegions = useMemo(() => regions.filter((region) => `${region.name} ${region.iso3}`.toLowerCase().includes(query.trim().toLowerCase())), [regions, query])
 
   return (
     <div className="page information-page data-page">
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{manifestStatus}</div>
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{coverageStatus}</div>
       <PageHeading eyebrow="Open data, local files" title="Data sources" description="Maproom’s essential geographic datasets are packaged with the site. Boundaries are loaded by country when you open them." />
       {coverage && <section className="coverage-summary">
         <CoverageNumber value={coverage.countryCatalogCount.toLocaleString()} label="country & territory records" />
@@ -97,20 +116,20 @@ function DataPage() {
         <CoverageNumber value={coverage.admin1CountriesIncluded.toLocaleString()} label={`countries with ADM1 · ${coverage.admin1UnitsIncluded.toLocaleString()} divisions`} />
         <CoverageNumber value={coverage.cityCount.toLocaleString()} label="cities and towns" />
       </section>}
-      {failure ? <div className="inline-notice notice-warning"><strong>Credits are temporarily unavailable.</strong><div>The packaged source manifest could not be read. Try refreshing this page.</div></div> : (
-        <>
+      {failure ? <div className="inline-notice notice-warning" role="alert"><strong>Data sources and coverage are temporarily unavailable.</strong><div>One or more packaged data files could not be read. Try refreshing this page.</div></div> : (
           <section className="source-list">
             <div className="section-heading"><div><span className="eyebrow">Sources & licenses</span><h2>What the map is made of</h2></div></div>
             {manifest?.sources.map((source) => <article className="source-card" key={source.name}>
               <div className="source-card-heading"><div><h3>{source.name}</h3><span>{source.license}</span></div><a href={source.source} target="_blank" rel="noreferrer" aria-label={`Open ${source.name} source`}><ExternalLink size={16} /></a></div>
               <p>{source.attribution}</p>
               <div className="source-meta"><span>Retrieved {source.retrievedAt.slice(0, 10)}</span><span>{source.version}</span></div>
-              <a className="source-license-link" href={source.licenseUrl} target="_blank" rel="noreferrer">License and source details <ExternalLink size={13} /></a>
+              <a className="source-license-link" href={source.licenseUrl} target="_blank" rel="noreferrer">License and source details for {source.name} <ExternalLink size={13} aria-hidden="true" /></a>
               {source.name.startsWith('geoBoundaries') && <p className="source-detail">The license and source are recorded for each included country below. Some boundary providers require additional attribution or share-alike terms.</p>}
             </article>)}
-            {!manifest && !failure && <div className="loading-state">Reading source manifest…</div>}
+            {!manifest && !failure && <div className="loading-state" aria-hidden="true">Reading source manifest…</div>}
           </section>
-          <section className="region-coverage">
+      )}
+      <section className="region-coverage">
             <div className="section-heading"><div><span className="eyebrow">Administrative boundaries</span><h2>First-level divisions by country</h2></div><span className="muted-note">{regions.length} country packages</span></div>
             <p className="coverage-intro">Each package has its own release date, primary source and license. Maproom keeps the provider’s simplified geometry and lists its attribution below.</p>
             <label className="search-field coverage-search"><Search size={17} aria-hidden="true" /><span className="sr-only">Search country boundary coverage</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a country" /></label>
@@ -124,13 +143,11 @@ function DataPage() {
                   {region.licenseSource && <a href={region.licenseSource} target="_blank" rel="noreferrer">License evidence <ExternalLink size={12} /></a>}
                 </div>
               </details>)}
-              {regions.length === 0 && <div className="loading-state">Loading country coverage…</div>}
+              {regions.length === 0 && <div className="loading-state" aria-hidden="true">{failure ? 'Country coverage could not be loaded. Try refreshing this page.' : 'Loading country coverage…'}</div>}
               {regions.length > 0 && filteredRegions.length === 0 && <p className="coverage-limit">No country matches that search.</p>}
             </div>
-          </section>
-          {coverage && <section className="limitations-list"><div className="section-heading"><div><span className="eyebrow">Read with care</span><h2>Coverage notes</h2></div></div><ul>{coverage.limitations.map((item) => <li key={item}>{item}</li>)}</ul></section>}
-        </>
-      )}
+      </section>
+      {coverage && <section className="limitations-list"><div className="section-heading"><div><span className="eyebrow">Read with care</span><h2>Coverage notes</h2></div></div><ul>{coverage.limitations.map((item) => <li key={item}>{item}</li>)}</ul></section>}
     </div>
   )
 }

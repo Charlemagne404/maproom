@@ -6,7 +6,8 @@ Geometry refreshed 2026-11-17 from the bundled Natural Earth sources.
 - 243 identities enter ordinary Extended country pools; 12 special geographic records stay catalogued but are withheld from ordinary questions.
 - 255 identity geometries across 260 world-map features and 271 detailed outline features. The outline layer has all 255 catalogue codes and 11 additional Natural Earth records without an ISO3 identity; those 11 records are audited but never enter country question pools. Outline eligibility is separately curated by difficulty; see [GEOGRAPHY_ELIGIBILITY.md](GEOGRAPHY_ELIGIBILITY.md).
 - 198 ADM1 country packages with 3,236 divisions.
-- 34,456 populated places in the city challenge dataset.
+- 34,456 populated places in the full city challenge dataset; Distance & Direction and Latitude Ladder use a derived 12,405-place subset (population at least 50,000).
+- 148 named Natural Earth river centerlines eligible for Riverways.
 
 ## ADM1 package coverage
 

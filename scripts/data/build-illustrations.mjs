@@ -1,11 +1,13 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { geoEqualEarth, geoPath } from 'd3-geo'
+import { feature } from 'topojson-client'
 
 const root = new URL('../../', import.meta.url)
-const source = new URL('public/data/countries.geojson', root)
+const source = new URL('public/data/countries.topo.json', root)
 const output = new URL('public/illustrations/', root)
 const data = JSON.parse(await readFile(source, 'utf8'))
-const features = data.features.filter((feature) => feature.geometry && feature.properties?.iso3)
+const collection = feature(data, data.objects.countries)
+const features = collection.features.filter((item) => item.geometry && item.properties?.iso3)
 
 await mkdir(output, { recursive: true })
 
@@ -25,7 +27,7 @@ const worldShapes = features.map((feature) => {
   return `<path d="${d}" fill="${active ? '#E57937' : '#E5D6C4'}" stroke="#292622" stroke-width="1.25" stroke-linejoin="round"/>`
 }).join('\n')
 
-await writeFile(new URL('world-map.svg', output), `<!-- Generated from the bundled Natural Earth country GeoJSON. -->\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${worldWidth} ${worldHeight}" role="img" aria-label="World map illustration"><g>${worldShapes}</g></svg>\n`)
+await writeFile(new URL('world-map.svg', output), `<!-- Generated from the bundled Natural Earth country topology. -->\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${worldWidth} ${worldHeight}" role="img" aria-label="World map illustration"><g>${worldShapes}</g></svg>\n`)
 
 const madagascar = features.filter((feature) => feature.properties.iso3 === 'MDG')
 if (madagascar.length === 0) throw new Error('Natural Earth data does not include Madagascar.')
@@ -41,14 +43,14 @@ const outlineShapes = madagascar.map((feature) => {
   return d ? `<path d="${d}" fill="#292622" stroke="#292622" stroke-width="2" stroke-linejoin="round"/>` : ''
 }).join('\n')
 
-await writeFile(new URL('outline-madagascar.svg', output), `<!-- Generated from the bundled Natural Earth country GeoJSON. -->\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${outlineWidth} ${outlineHeight}" role="img" aria-label="Country outline illustration"><g>${outlineShapes}</g></svg>\n`)
+await writeFile(new URL('outline-madagascar.svg', output), `<!-- Generated from the bundled Natural Earth country topology. -->\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${outlineWidth} ${outlineHeight}" role="img" aria-label="Country outline illustration"><g>${outlineShapes}</g></svg>\n`)
 
 const darkOutlineShapes = madagascar.map((feature) => {
   const d = outlinePath(feature)
   return d ? `<path d="${d}" fill="#c6b49e" stroke="#f2e7d9" stroke-width="2" stroke-linejoin="round"/>` : ''
 }).join('\n')
 
-await writeFile(new URL('outline-madagascar-dark.svg', output), `<!-- Generated from the bundled Natural Earth country GeoJSON. -->\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${outlineWidth} ${outlineHeight}" role="img" aria-label="Country outline illustration"><g>${darkOutlineShapes}</g></svg>\n`)
+await writeFile(new URL('outline-madagascar-dark.svg', output), `<!-- Generated from the bundled Natural Earth country topology. -->\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${outlineWidth} ${outlineHeight}" role="img" aria-label="Country outline illustration"><g>${darkOutlineShapes}</g></svg>\n`)
 
 function simplifyGeometry(geometry, projection, tolerance) {
   const line = (coordinates, closed = false) => {

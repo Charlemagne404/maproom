@@ -1,6 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
 import type { Country, GeoFeature } from '../src/geography/types'
+import { loadTopologyFeatures } from './topology'
 import { directionFromTo } from '../src/puzzles/engine'
 import {
   advanceOutlineSequence,
@@ -35,11 +36,9 @@ interface OutlineFixture {
 
 async function loadFixture(page: Page): Promise<OutlineFixture> {
   const countryResponse = await page.request.get(new URL('/data/countries.json', page.url()).toString())
-  const outlineResponse = await page.request.get(new URL('/data/countries-outline.geojson', page.url()).toString())
   expect(countryResponse.ok()).toBe(true)
-  expect(outlineResponse.ok()).toBe(true)
   const countries = (await countryResponse.json()).countries as Country[]
-  const features = (await outlineResponse.json()).features as GeoFeature[]
+  const features = await loadTopologyFeatures(page, '/data/countries-outline.topo.json')
   const featuresByCode = new Map<string, GeoFeature[]>()
   for (const feature of features) {
     const code = feature.properties.iso3
@@ -103,14 +102,17 @@ async function startFreeplay(page: Page, fixture: OutlineFixture, options: {
   const seed = options.seed ?? (options.code ? seedForTarget(fixture, options.code, options.pool, options.difficulty, scope) : `browser-outline-seed:${options.pool}:${options.difficulty}:${scope}`)
   await installFreeplaySeed(page, seed)
   await page.goto('/games/outlines?mode=freeplay')
-  await expect(page.getByRole('button', { name: 'Start Free play' })).toBeVisible({ timeout: 30_000 })
-  const config = page.locator('.practice-config select')
-  // Keep the intermediate pool non-empty while changing the other options.
-  // Territory Focus has no Medium silhouettes, so apply Hard before selecting it.
-  await config.nth(2).selectOption(options.difficulty)
-  await config.nth(1).selectOption(scope)
-  await config.nth(0).selectOption(options.pool)
-  await page.getByRole('button', { name: 'Start Free play' }).click()
+  await expect(page.getByRole('button', { name: 'Start free play' })).toBeVisible({ timeout: 30_000 })
+  const setup = page.getByRole('dialog')
+  // Apply difficulty before switching pools: Territory Focus has no Medium silhouettes.
+  await setup.getByRole('group', { name: 'Difficulty' }).getByRole('button', { name: new RegExp(options.difficulty, 'i') }).click()
+  await setup.getByRole('combobox', { name: 'Geographic scope' }).selectOption(scope)
+  const advanced = setup.locator('.game-setup-advanced')
+  if (!await advanced.evaluate((element) => (element as HTMLDetailsElement).open)) await advanced.locator('summary').click()
+  const poolLabel = options.pool === 'standard' ? 'Standard · eligible countries' : options.pool === 'extended' ? 'Extended · balanced territories' : 'Territory focus'
+  await setup.getByRole('group', { name: 'Outline pool' }).getByRole('button', { name: poolLabel }).click()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.locator('.outline-map-stage .geo-map path')).not.toHaveCount(0, { timeout: 30_000 })
   return { seed, scope, groups: groupsFor(fixture, options.pool, options.difficulty, scope) }
 }
@@ -140,9 +142,13 @@ function contrastRatio(first: string, second: string): number {
 async function answerCorrectly(page: Page, country: Country) {
   const input = page.locator('#outline-answer')
   await input.fill(country.name)
-  await expect(page.getByRole('option')).toHaveCount(1)
+  const exactSuggestion = page.locator('#outline-answer-suggestions .suggestion-option')
+    .filter({ has: page.getByText(country.name, { exact: true }) })
+  await expect(exactSuggestion).toHaveCount(1)
+  await expect(exactSuggestion).toBeVisible()
   await input.press('Enter')
   await expect(input).toHaveValue(country.name)
+  await expect(input).toHaveAttribute('aria-expanded', 'false')
   await input.press('Enter')
   await expect(page.locator('.answer-feedback')).toContainText(`That’s ${country.name}.`)
 }
@@ -183,6 +189,8 @@ test('plays curated silhouettes across difficulties, territories, islands, and t
     expect(geometry.filter((item) => item.path.match(/M/g)?.length ?? 0).reduce((sum, item) => sum + (item.path.match(/M/g)?.length ?? 0), 0)).toBeGreaterThanOrEqual(scenario.minimumMoves)
     expect(geometry.every((item) => item.x >= 0 && item.y >= 0 && item.x + item.width <= 960 && item.y + item.height <= 480)).toBe(true)
 
+    await page.mouse.move(0, 0)
+    await expect.poll(() => page.locator('.outline-map-stage .map-country').first().evaluate((shape) => getComputedStyle(shape).fill)).toBe(themeColors.light)
     const colors = await page.locator('.outline-map-stage').evaluate((stage) => ({
       water: getComputedStyle(stage.querySelector('.map-water')!).fill,
       shape: getComputedStyle(stage.querySelector('.map-country')!).fill,
@@ -194,7 +202,8 @@ test('plays curated silhouettes across difficulties, territories, islands, and t
 
     if (['NLD', 'USA'].includes(scenario.code)) {
       await setTheme(page, 'dark')
-      await page.waitForTimeout(200)
+      await expect.poll(() => page.locator('.outline-map-stage .map-country').first().evaluate((shape) => getComputedStyle(shape).fill))
+        .toMatch(/^rgb\(242, 15[0-9], 9[0-9]\)$/)
       const darkColors = await page.locator('.outline-map-stage').evaluate((stage) => ({
         water: getComputedStyle(stage.querySelector('.map-water')!).fill,
         shape: getComputedStyle(stage.querySelector('.map-country')!).fill,
@@ -279,19 +288,22 @@ test('balances ten Extended Hard rounds and exposes a path out of empty regional
 
   await page.goto('/settings')
   await page.goto('/games/outlines?mode=freeplay')
-  await expect(page.getByRole('button', { name: 'Start Free play' })).toBeVisible({ timeout: 30_000 })
-  let config = page.locator('.practice-config select')
-  await config.nth(0).selectOption('standard')
-  await config.nth(1).selectOption('Europe')
-  await config.nth(2).selectOption('hard')
-  await expect(page.getByRole('status')).toContainText('This selection has no fair silhouettes')
-  await expect(page.getByLabel('Difficulty')).toBeVisible()
-  await page.getByLabel('Difficulty').selectOption('medium')
-  config = page.locator('.practice-config select')
-  await config.nth(0).selectOption('extended')
-  await config.nth(2).selectOption('hard')
+  await expect(page.getByRole('button', { name: 'Start free play' })).toBeVisible({ timeout: 30_000 })
+  const setup = page.getByRole('dialog')
+  await setup.getByRole('combobox', { name: 'Geographic scope' }).selectOption('Europe')
+  await setup.getByRole('group', { name: 'Difficulty' }).getByRole('button', { name: /Hard/ }).click()
+  let advanced = setup.locator('.game-setup-advanced')
+  if (!await advanced.evaluate((element) => (element as HTMLDetailsElement).open)) await advanced.locator('summary').click()
+  await setup.getByRole('group', { name: 'Outline pool' }).getByRole('button', { name: 'Standard · eligible countries' }).click()
+  await expect(setup.locator('[role="status"]')).toContainText('This selection has no fair silhouettes')
+  await setup.getByRole('group', { name: 'Difficulty' }).getByRole('button', { name: /Medium/ }).click()
+  advanced = setup.locator('.game-setup-advanced')
+  if (!await advanced.evaluate((element) => (element as HTMLDetailsElement).open)) await advanced.locator('summary').click()
+  await setup.getByRole('group', { name: 'Outline pool' }).getByRole('button', { name: 'Extended · balanced territories' }).click()
+  await setup.getByRole('group', { name: 'Difficulty' }).getByRole('button', { name: /Hard/ }).click()
   await expect(page.locator('.practice-config-note').first()).toContainText('3 suitable silhouettes')
-  await page.getByRole('button', { name: 'Start Free play' }).click()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.locator('.outline-map-stage .geo-map path')).not.toHaveCount(0)
 
   for (const microstate of ['Guernsey', 'San Marino', 'Monaco', 'Vatican City']) {

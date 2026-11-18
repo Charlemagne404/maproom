@@ -2,6 +2,8 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { geoCentroid, geoEqualEarth, geoPath } from 'd3-geo'
+import { feature } from 'topojson-client'
+import type { Topology } from 'topojson-specification'
 import type { Country, GeoFeature } from '../src/geography/types'
 import { classifyGeography } from '../src/geography/eligibility'
 import { SPECIAL_GEOGRAPHIC_CODES, STANDARD_CODES } from '../src/geography/catalogue-rules.mjs'
@@ -25,7 +27,9 @@ import {
 
 const dataDir = join(process.cwd(), 'public', 'data')
 const countries = (JSON.parse(readFileSync(join(dataDir, 'countries.json'), 'utf8')) as { countries: Country[] }).countries
-const outlineFeatures = (JSON.parse(readFileSync(join(dataDir, 'countries-outline.geojson'), 'utf8')) as { features: GeoFeature[] }).features
+const outlineTopology = JSON.parse(readFileSync(join(dataDir, 'countries-outline.topo.json'), 'utf8')) as Topology
+const outlineCollection = feature(outlineTopology, outlineTopology.objects.countries) as GeoJSON.FeatureCollection
+const outlineFeatures = outlineCollection.features as unknown as GeoFeature[]
 const countriesByCode = new Map(countries.map((country) => [country.iso3, country]))
 const featuresByCode = new Map<string, GeoFeature[]>()
 for (const feature of outlineFeatures) {

@@ -1,11 +1,13 @@
-import type { CityData, Country, GeoFeature, GeographyData, RegionCollection } from './types'
-import { geoArea } from 'd3-geo'
-import { feature } from 'topojson-client'
+import type { City, CityData, Country, GeoFeature, GeographyData, RegionCollection, RiverFeature } from './types'
 import type { Topology } from 'topojson-specification'
 
 let geographyPromise: Promise<GeographyData> | undefined
+let countryCatalogPromise: Promise<Pick<GeographyData, 'countries' | 'countriesByCode'>> | undefined
+let countryFeaturesPromise: Promise<GeoFeature[]> | undefined
 let outlineFeaturesPromise: Promise<GeoFeature[]> | undefined
 let cityPromise: Promise<CityData> | undefined
+let majorCityPromise: Promise<CityData> | undefined
+let riversPromise: Promise<RiverFeature[]> | undefined
 const regionPromises = new Map<string, Promise<RegionCollection>>()
 
 async function getJson<T>(url: string): Promise<T> {
@@ -14,40 +16,71 @@ async function getJson<T>(url: string): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export function loadGeography(): Promise<GeographyData> {
-  geographyPromise ??= Promise.all([
-    getJson<{ schemaVersion: number; countries: Country[] }>('/data/countries.json'),
-    getJson<{ type: 'FeatureCollection'; features: GeoFeature[] }>('/data/countries.geojson'),
-  ]).then(([catalog, collection]) => {
-    if (catalog.schemaVersion !== 1 || collection.type !== 'FeatureCollection') {
-      throw new Error('The bundled geography data has an unsupported schema version.')
-    }
-    const countries = catalog.countries.filter((country) => country.iso3 && country.name)
-    const countriesByCode = new Map(countries.map((country) => [country.iso3, country]))
-    const features = collection.features.filter((feature) => feature.geometry && feature.properties)
-    const featuresByCode = new Map<string, GeoFeature[]>()
-    for (const feature of features) {
-      const code = feature.properties.iso3
-      if (!code) continue
-      const existing = featuresByCode.get(code) ?? []
-      existing.push(feature)
-      featuresByCode.set(code, existing)
-    }
-    return { countries, features, countriesByCode, featuresByCode }
-  }).catch((error) => {
+export function loadGeography(includeCountryGeometry = true): Promise<GeographyData> {
+  if (!includeCountryGeometry) {
+    return loadCountryCatalog().then((catalog) => ({ ...catalog, features: [], featuresByCode: new Map() }))
+  }
+  geographyPromise ??= Promise.all([loadCountryCatalog(), loadCountryFeatures()]).then(([catalog, features]) => ({
+    ...catalog,
+    features,
+    featuresByCode: indexFeaturesByCode(features),
+  })).catch((error) => {
     geographyPromise = undefined
     throw error
   })
   return geographyPromise
 }
 
-export function loadOutlineFeatures(): Promise<GeoFeature[]> {
-  outlineFeaturesPromise ??= getJson<{ type: 'FeatureCollection'; features: GeoFeature[] }>('/data/countries-outline.geojson').then((collection) => {
-    if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features)) {
-      throw new Error('The detailed country outline data is malformed.')
+function loadCountryCatalog(): Promise<Pick<GeographyData, 'countries' | 'countriesByCode'>> {
+  countryCatalogPromise ??= getJson<{ schemaVersion: number; countries: Country[] }>('/data/countries.json').then((catalog) => {
+    if (catalog.schemaVersion !== 1 || !Array.isArray(catalog.countries)) {
+      throw new Error('The bundled geography data has an unsupported schema version.')
     }
-    return collection.features.filter((feature) => feature.geometry && feature.properties)
+    const countries = catalog.countries.filter((country) => country.iso3 && country.name)
+    const countriesByCode = new Map(countries.map((country) => [country.iso3, country]))
+    return { countries, countriesByCode }
   }).catch((error) => {
+    countryCatalogPromise = undefined
+    throw error
+  })
+  return countryCatalogPromise
+}
+
+function loadCountryFeatures(): Promise<GeoFeature[]> {
+  countryFeaturesPromise ??= loadTopologicalFeatures('/data/countries.topo.json', 'The bundled country geometry is malformed.').catch((error) => {
+    countryFeaturesPromise = undefined
+    throw error
+  })
+  return countryFeaturesPromise
+}
+
+async function loadTopologicalFeatures(url: string, malformedMessage: string): Promise<GeoFeature[]> {
+  const [data, topojson] = await Promise.all([getJson<Topology>(url), import('topojson-client')])
+  const object = data?.objects?.countries
+  if (!data || data.type !== 'Topology' || !object || object.type !== 'GeometryCollection' || !Array.isArray(object.geometries)) {
+    throw new Error(malformedMessage)
+  }
+  const collection = topojson.feature(data, object)
+  if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features)) {
+    throw new Error(malformedMessage)
+  }
+  return collection.features.filter((feature) => feature.geometry && feature.properties) as GeoFeature[]
+}
+
+function indexFeaturesByCode(features: GeoFeature[]): Map<string, GeoFeature[]> {
+  const featuresByCode = new Map<string, GeoFeature[]>()
+  for (const feature of features) {
+    const code = feature.properties.iso3
+    if (!code) continue
+    const existing = featuresByCode.get(code) ?? []
+    existing.push(feature)
+    featuresByCode.set(code, existing)
+  }
+  return featuresByCode
+}
+
+export function loadOutlineFeatures(): Promise<GeoFeature[]> {
+  outlineFeaturesPromise ??= loadTopologicalFeatures('/data/countries-outline.topo.json', 'The detailed country outline data is malformed.').catch((error) => {
     outlineFeaturesPromise = undefined
     throw error
   })
@@ -65,23 +98,60 @@ export function loadCities(): Promise<CityData> {
   return cityPromise
 }
 
+export function loadMajorCities(): Promise<CityData> {
+  majorCityPromise ??= getJson<{ schemaVersion: number; cities: City[] }>('/data/cities-major.json').then((data) => {
+    if (data.schemaVersion !== 1 || !Array.isArray(data.cities) || data.cities.some((city) => city.population < 50_000)) {
+      throw new Error('The compact city comparison dataset is malformed.')
+    }
+    return data
+  }).catch((error) => {
+    majorCityPromise = undefined
+    throw error
+  })
+  return majorCityPromise
+}
+
+export function loadRivers(): Promise<RiverFeature[]> {
+  riversPromise ??= getJson<{ schemaVersion: number; features: RiverFeature[] }>('/data/rivers.json').then((data) => {
+    if (data.schemaVersion !== 1 || !Array.isArray(data.features)) throw new Error('The river atlas has an unsupported data format.')
+    const features = data.features.filter((item) => item.type === 'Feature'
+      && typeof item.id === 'string'
+      && typeof item.properties?.name === 'string'
+      && Number.isInteger(item.properties?.scaleRank)
+      && item.properties.scaleRank >= 1
+      && item.properties.scaleRank <= 4
+      && item.geometry
+      && (item.geometry.type === 'LineString' || item.geometry.type === 'MultiLineString'))
+    if (features.length < 50) throw new Error('The river atlas does not have enough valid river lines.')
+    return features
+  }).catch((error) => {
+    riversPromise = undefined
+    throw error
+  })
+  return riversPromise
+}
+
 export function loadRegions(iso3: string): Promise<RegionCollection> {
   const code = iso3.toUpperCase()
   if (!/^[A-Z]{3}$/.test(code)) return Promise.reject(new Error('Choose a valid country before loading subdivisions.'))
   let request = regionPromises.get(code)
   if (!request) {
-    const pending: Promise<RegionCollection> = getJson<Topology & { countryIso3: string; boundaryId: string; year: string }>(`/data/regions/${code}.topo.json`).then((data) => {
+    const pending: Promise<RegionCollection> = Promise.all([
+      getJson<Topology & { countryIso3: string; boundaryId: string; year: string }>(`/data/regions/${code}.topo.json`),
+      import('topojson-client'),
+      import('./regionGeometry'),
+    ]).then(([data, topojson, regionGeometry]) => {
       if (data.countryIso3 !== code || !data.objects.regions) {
         throw new Error('The subdivision dataset is malformed.')
       }
-      const collection = feature(data, data.objects.regions) as GeoJSON.FeatureCollection
+      const collection = topojson.feature(data, data.objects.regions) as GeoJSON.FeatureCollection
       if (!Array.isArray(collection.features)) throw new Error('The subdivision geometries could not be read.')
       return {
         type: 'FeatureCollection' as const,
         countryIso3: code,
         boundaryId: data.boundaryId,
         year: data.year,
-        features: collection.features.map(normalizeRegionFeature) as unknown as GeoFeature[],
+        features: collection.features.map(regionGeometry.normalizeRegionFeature) as unknown as GeoFeature[],
       }
     }).catch((error) => {
       regionPromises.delete(code)
@@ -93,50 +163,13 @@ export function loadRegions(iso3: string): Promise<RegionCollection> {
   return request!
 }
 
-export function normalizeRegionFeature(region: GeoJSON.Feature): GeoJSON.Feature {
-  const name = region.properties?.name
-  const correctedName = typeof name === 'string' ? repairMojibake(name) : name
-  const normalized = correctedName && correctedName !== name
-    ? { ...region, properties: { ...region.properties, name: correctedName } }
-    : region
-  const geometry = normalized.geometry
-  // geoBoundaries rings can use RFC 7946 winding, which d3-geo reads as the globe's complement.
-  if (geometry.type === 'Polygon') {
-    const polygon = geometry.coordinates
-    if (geoArea({ type: 'Polygon', coordinates: polygon }) <= Math.PI * 2) return normalized
-    return { ...normalized, geometry: { ...geometry, coordinates: reverseRings(polygon) } }
-  }
-  if (geometry.type === 'MultiPolygon') {
-    let changed = false
-    const polygons = geometry.coordinates.map((polygon) => {
-      if (geoArea({ type: 'Polygon', coordinates: polygon }) <= Math.PI * 2) return polygon
-      changed = true
-      return reverseRings(polygon)
-    })
-    return changed ? { ...normalized, geometry: { ...geometry, coordinates: polygons } } : normalized
-  }
-  return normalized
-}
-
-function reverseRings(rings: GeoJSON.Position[][]): GeoJSON.Position[][] {
-  return rings.map((ring) => [...ring].reverse())
-}
-
-function repairMojibake(value: string): string {
-  if (!/[ÃÂ]/u.test(value)) return value
-  const codePoints = [...value].map((character) => character.codePointAt(0)!)
-  if (codePoints.some((codePoint) => codePoint > 0xff)) return value
-  try {
-    const decoded = new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(codePoints))
-    return /[ÃÂ�]/u.test(decoded) ? value : decoded
-  } catch {
-    return value
-  }
-}
-
 export function resetGeographyCacheForTests(): void {
   geographyPromise = undefined
+  countryCatalogPromise = undefined
+  countryFeaturesPromise = undefined
   outlineFeaturesPromise = undefined
   cityPromise = undefined
+  majorCityPromise = undefined
+  riversPromise = undefined
   regionPromises.clear()
 }

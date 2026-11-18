@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, Check, MapPin, MoveUpRight } from 'lucide-react'
 import { AutocompleteInput, type Suggestion } from '../../components/AutocompleteInput'
 import { GameResultsDialog } from '../../components/GameResults'
-import { GameSettingsMenu } from '../../components/GameControls'
+import { RoundProgress } from '../../components/RoundProgress'
+import { AdvancedGameSettings, GameSettingSelect, GameSettingToggle, GameSettingsMenu } from '../../components/GameControls'
 import { GeoMap } from '../../components/GeoMap'
 import { InlineNotice, LoadingState } from '../../components/Kit'
 import { loadCities } from '../../geography/data'
+import { isCurrentWholeSettlement } from '../../geography/cityRecords'
+import { uniqueCitySuggestions } from './citySuggestions'
 import type { City, Coordinates, GeographyData, GameMode } from '../../geography/types'
 import { distanceScore, directionFromTo, greatCircleKm, normalizeAnswer, resolveCountryAnswer, seededShuffle } from '../../puzzles/engine'
 import { useAppData } from '../../app/useAppData'
@@ -126,15 +129,25 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
   const [guess, setGuess] = useState<Coordinates | null>(() => progress?.guess && typeof progress.guess === 'object' && typeof (progress.guess as Coordinates).lat === 'number' && typeof (progress.guess as Coordinates).lon === 'number' ? progress.guess as Coordinates : null)
   const [latitude, setLatitude] = useState(() => readString('latitude', ''))
   const [longitude, setLongitude] = useState(() => readString('longitude', ''))
+  const questionHeading = useRef<HTMLHeadingElement>(null)
+  const focusPromptOnAdvance = useRef(false)
+  const advanceQuestion = useRef<() => void>(() => {})
   const infinitePractice = mode === 'freeplay' && questionCount === 'infinite'
   const requestedCount = mode === 'daily' ? 6 : questionCount === 'infinite' ? 40 : Number(questionCount)
   const { save, saveError, saveProgress } = session
+
+  useLayoutEffect(() => {
+    if (!locked && focusPromptOnAdvance.current) {
+      focusPromptOnAdvance.current = false
+      questionHeading.current?.focus({ preventScroll: true })
+    }
+  }, [locked, finished, index])
   const eligible = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
   const eligibleCodes = useMemo(() => new Set(eligible.map((country) => country.iso3)), [eligible])
 
   const filteredCities = useMemo(() => cities.filter((city) => {
     const country = data.countriesByCode.get(city.countryIso3)
-    return country && eligibleCodes.has(country.iso3) && (continent === 'All regions' || country.continent === continent)
+    return isCurrentWholeSettlement(city) && country && eligibleCodes.has(country.iso3) && (continent === 'All regions' || country.continent === continent)
   }), [cities, continent, data.countriesByCode, eligibleCodes])
   const capitals = useMemo(() => eligible.filter((country) => country.capital && country.capitalCoordinates && (continent === 'All regions' || country.continent === continent)), [eligible, continent])
   const questions = useMemo<Question[]>(() => {
@@ -158,8 +171,8 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
   const countrySuggestions: Suggestion[] = useMemo(() => eligible.map((country) => ({ value: country.iso3, label: country.name, detail: country.continent ?? undefined, aliases: country.aliases })), [eligible])
   const capitalSuggestions: Suggestion[] = useMemo(() => capitals.map((country) => ({ value: country.iso3, label: country.capital ?? '', detail: country.name, aliases: country.capitals })), [capitals])
   const identifySuggestions: Suggestion[] = useMemo(() => question?.city
-    ? cities.filter((city) => city.countryIso3 === question.city?.countryIso3).map((city) => ({ value: city.id, label: city.name, detail: data.countriesByCode.get(city.countryIso3)?.name, aliases: city.aliases }))
-    : [], [question, cities, data.countriesByCode])
+    ? uniqueCitySuggestions(cities.filter((city) => (mode === 'daily' || isCurrentWholeSettlement(city)) && city.countryIso3 === question.city?.countryIso3)).map((city) => ({ value: city.id, label: city.name, detail: data.countriesByCode.get(city.countryIso3)?.name, aliases: city.aliases }))
+    : [], [mode, question, cities, data.countriesByCode])
   const capitalChoices = useMemo(() => {
     if (!question?.country) return []
     const pool = capitals.filter((country) => country.iso3 !== question.country?.iso3)
@@ -243,13 +256,17 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
 
   function submitLocation() {
     if (!question.city || locked) return
-    const lat = Number(latitude)
-    const lon = Number(longitude)
-    if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    const hasLatitude = latitude.trim() !== ''
+    const hasLongitude = longitude.trim() !== ''
+    if (hasLatitude !== hasLongitude || (!guess && (!hasLatitude || !hasLongitude))) {
+      setMessage('Add both coordinates or place a marker on the map.')
+      return
+    }
+    const point = hasLatitude && hasLongitude ? { lat: Number(latitude), lon: Number(longitude) } : guess
+    if (!point || !Number.isFinite(point.lat) || !Number.isFinite(point.lon) || point.lat < -90 || point.lat > 90 || point.lon < -180 || point.lon > 180) {
       setMessage('Enter a latitude from −90 to 90 and a longitude from −180 to 180.')
       return
     }
-    const point = { lat, lon }
     const km = greatCircleKm(point, question.city)
     const points = distanceScore(km)
     setGuess(point)
@@ -263,6 +280,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
 
   async function nextQuestion() {
     if (index < questions.length - 1) {
+      focusPromptOnAdvance.current = true
       setIndex((value) => value + 1)
       setLocked(false)
       setMessage('')
@@ -275,6 +293,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
       return
     }
     if (infinitePractice) {
+      focusPromptOnAdvance.current = true
       setCycle((value) => value + 1)
       setIndex(0)
       setLocked(false)
@@ -290,6 +309,16 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
     setFinished(true)
     await save(score, correct, resolved, { task, continent, direction, answerStyle, minimumPopulation, questionCount, questions: questions.map((item) => ({ kind: item.kind, country: item.country?.iso3, city: item.city?.id })) })
   }
+
+  useLayoutEffect(() => {
+    advanceQuestion.current = () => { void nextQuestion() }
+  })
+
+  useEffect(() => {
+    if (!locked || finished) return
+    const timer = window.setTimeout(() => advanceQuestion.current(), 1_850)
+    return () => window.clearTimeout(timer)
+  }, [locked, finished, index, cycle])
 
   useEffect(() => {
     if (mode !== 'freeplay' || !timed || finished) return
@@ -315,17 +344,20 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
   return (
     <div className="game-body cities-game-body">
       <div className="question-toolbar">
-        <div><span className="eyebrow">{modeLabel}</span><h2>{prompt}</h2><p>{infinitePractice ? `Question ${resolved + 1}` : `Question ${index + 1} of ${questions.length}`}{question.city?.population ? ` · population ${question.city.population.toLocaleString()}` : ''}</p></div>
+        <div><span className="eyebrow">{modeLabel}</span><h2 ref={questionHeading} tabIndex={-1}>{prompt}</h2></div>
         <div className="question-toolbar-tools">
           {mode === 'freeplay' && <GameSettingsMenu><div className="practice-config cities-config">
-            <label><span>Country pool</span><select value={eligibility} onChange={(event) => onEligibility(event.target.value as GeographyEligibility)}><option value="standard">Standard · 195 states</option><option value="extended">Extended · territories included</option></select></label>
-            <label><span>Region</span><select value={continent} onChange={(event) => onContinent(event.target.value)}><option>All regions</option>{continents.map((item) => <option key={item}>{item}</option>)}</select></label>
-            {task === 'capitals' && <label><span>Answer style</span><select value={answerStyle} onChange={(event) => onAnswerStyle(event.target.value as AnswerStyle)}><option value="typed">Type a name</option><option value="choices">Multiple choice</option></select></label>}
-            {task !== 'capitals' && <label><span>City population from</span><select value={minimumPopulation} onChange={(event) => onMinimumPopulation(Number(event.target.value))}><option value={50000}>50,000</option><option value={100000}>100,000</option><option value={250000}>250,000</option><option value={1000000}>1 million</option></select></label>}
-            <label><span>Questions</span><select value={questionCount} onChange={(event) => onQuestionCount(event.target.value as PracticeCount)}><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="infinite">Infinite</option></select></label>
-            <label className="flag-reveal-setting"><input type="checkbox" checked={timed} onChange={(event) => onTimed(event.target.checked)} /><span>60-second round</span></label>
+            <GameSettingSelect label="Region" value={continent} control="select" options={['All regions', ...continents].map((item) => ({ value: item, label: item }))} onChange={onContinent} />
+            {task === 'capitals' && <GameSettingSelect label="Answer style" value={answerStyle} options={[{ value: 'typed', label: 'Type a name' }, { value: 'choices', label: 'Multiple choice' }]} onChange={(value) => onAnswerStyle(value as AnswerStyle)} />}
+            <GameSettingSelect label="Questions" value={questionCount} options={[{ value: '10', label: '10' }, { value: '20', label: '20' }, { value: '50', label: '50' }, { value: 'infinite', label: 'Infinite' }]} onChange={(value) => onQuestionCount(value as PracticeCount)} />
+            <AdvancedGameSettings>
+              <GameSettingSelect label="Country pool" value={eligibility} options={[{ value: 'standard', label: 'Standard · 195 states' }, { value: 'extended', label: 'Extended · territories included' }]} onChange={(value) => onEligibility(value as GeographyEligibility)} />
+              {task !== 'capitals' && <GameSettingSelect label="City population from" value={minimumPopulation} options={[{ value: '50000', label: '50,000' }, { value: '100000', label: '100,000' }, { value: '250000', label: '250,000' }, { value: '1000000', label: '1 million' }]} onChange={(value) => onMinimumPopulation(Number(value))} />}
+              <GameSettingToggle label="60-second round" checked={timed} onChange={onTimed} />
+            </AdvancedGameSettings>
           </div></GameSettingsMenu>}
-          <div className="question-count"><strong>{infinitePractice ? resolved + 1 : index + 1}</strong><span>{infinitePractice ? 'question' : `of ${questions.length}`}</span></div>
+          {!infinitePractice && <RoundProgress current={index + 1} total={questions.length} label="questions" />}
+          {infinitePractice && <span className="sr-only" role="status" aria-live="polite">Question {resolved + 1}</span>}
         </div>
       </div>
       {mode === 'freeplay' && <div className="city-practice-status"><span><strong>{score.toLocaleString()}</strong> points · <strong>{correct}</strong> accurate answers</span><span>{timed ? `${seconds}s left` : task === 'locate' ? 'Closer markers earn more points' : '100 points per correct answer'}</span>{infinitePractice && resolved > 0 && <button className="button button-outline" type="button" disabled={locked} onClick={() => { setFinished(true); void save(score, correct, resolved, { task, continent, direction, answerStyle, minimumPopulation, questionCount, timed }) }}>End session</button>}</div>}
@@ -334,14 +366,21 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
       </div> : null}
       {question.kind === 'capitals' && mode !== 'daily' && answerStyle === 'typed' && <AutocompleteInput id="capital-answer" label={question.direction === 'country-to-capital' ? 'Type the capital city' : 'Type the country'} placeholder={question.direction === 'country-to-capital' ? 'Capital city' : 'Country name'} value={input} onChange={setInput} suggestions={question.direction === 'country-to-capital' ? capitalSuggestions : countrySuggestions} onPick={(item) => { setInput(item.label) }} onSubmit={submitCapitalText} submitLabel="Answer" disabled={locked} />}
       {question.kind === 'identify' && question.city && <>
-        <div className="game-map-stage city-map-stage"><GeoMap features={data.features} markers={[{ point: question.city, kind: 'answer', label: 'City location' }]} ariaLabel="Map with a marked city location" showHoverLabels={state.settings.mapLabels} /></div>
-        <AutocompleteInput id="city-identify-answer" label="Name the marked city" placeholder="Type a city name" value={input} onChange={setInput} suggestions={identifySuggestions} onPick={(item) => setInput(item.label)} onSubmit={submitCityText} submitLabel="Identify" disabled={locked} />
+        <div className="map-playfield city-map-playfield">
+          <div className="game-map-stage city-map-stage"><GeoMap features={data.features} markers={[{ point: question.city, kind: 'answer', label: 'City location' }]} ariaLabel="Map with a marked city location" showHoverLabels={state.settings.mapLabels} /></div>
+          <div className="map-answer-dock city-answer-dock"><AutocompleteInput id="city-identify-answer" label="Name the marked city" placeholder="Type a city name" value={input} onChange={setInput} suggestions={identifySuggestions} onPick={(item) => setInput(item.label)} onSubmit={submitCityText} submitLabel="Identify" disabled={locked} /></div>
+        </div>
       </>}
       {question.kind === 'locate' && question.city && <>
-        <div className="game-map-stage city-map-stage"><GeoMap features={data.features} onPointSelect={recordLocation} markers={guess ? [{ point: guess, kind: 'guess', label: 'Your marker' }, { point: question.city, kind: 'answer', label: 'City location' }] : []} ariaLabel="World map. Click or tap to place a city marker." showHoverLabels={state.settings.mapLabels} /></div>
-        <div className="coordinate-tools"><div className="coordinate-fields"><label>Latitude<input type="number" min="-90" max="90" step="0.01" value={latitude} onChange={(event) => setLatitude(event.target.value)} placeholder="e.g. 59.33" /></label><label>Longitude<input type="number" min="-180" max="180" step="0.01" value={longitude} onChange={(event) => setLongitude(event.target.value)} placeholder="e.g. 18.07" /></label></div><button className="button button-dark" type="button" disabled={locked || (!latitude && !longitude)} onClick={submitLocation}><MapPin size={15} /> Place marker</button><span className="coordinate-help">Click the map, or enter coordinates for a keyboard-accessible answer.</span></div>
+        <div className="map-playfield city-map-playfield">
+          <div className="game-map-stage city-map-stage"><GeoMap features={data.features} onPointSelect={recordLocation} markers={guess ? [{ point: guess, kind: 'guess', label: 'Your marker' }, ...(locked ? [{ point: question.city, kind: 'answer' as const, label: 'City location' }] : [])] : []} ariaLabel="World map. Click or tap to place or move your marker." showHoverLabels={state.settings.mapLabels} /></div>
+          <div className="map-answer-dock city-marker-dock">
+            <button className="button button-dark city-place-button" type="button" disabled={locked || (!guess && (!latitude.trim() || !longitude.trim()))} onClick={submitLocation}><MapPin size={16} /> Place marker</button>
+            <details className="coordinate-tools"><summary>Enter coordinates</summary><div className="coordinate-fields"><label>Latitude<input type="number" min="-90" max="90" step="0.01" value={latitude} onChange={(event) => setLatitude(event.target.value)} placeholder="e.g. 59.33" /></label><label>Longitude<input type="number" min="-180" max="180" step="0.01" value={longitude} onChange={(event) => setLongitude(event.target.value)} placeholder="e.g. 18.07" /></label></div><p className="coordinate-help">Enter latitude and longitude for a keyboard-accessible guess.</p></details>
+          </div>
+        </div>
       </>}
-      {message && <div className={`answer-feedback${locked ? (questionCorrect ? ' is-correct' : ' is-incorrect') : ''}`} role="status"><span className="feedback-icon">{questionCorrect ? <Check size={17} /> : <MoveUpRight size={16} />}</span><span>{message}</span>{locked && !finished && <button className="button button-dark" type="button" onClick={() => void nextQuestion()}>{index === questions.length - 1 ? 'See result' : 'Next place'}</button>}</div>}
+      {message && <div className={`answer-feedback${locked ? (questionCorrect ? ' is-correct' : ' is-incorrect') : ''}`} role="status"><span className="feedback-icon">{questionCorrect ? <Check size={17} /> : <MoveUpRight size={16} />}</span><span>{message}</span></div>}
       {mode === 'daily' && !finished && <div className="daily-mix-note"><ArrowRight size={14} /> Today includes capitals, city names and map placement.</div>}
       <GameResultsDialog complete={finished} gameId="cities" mode={mode} score={score} correct={correct} total={infinitePractice ? resolved : questions.length} title={timed && seconds === 0 ? 'Time is up.' : 'City round complete.'} message="Places have a way of sticking." saveError={saveError} onReplay={mode === 'freeplay' ? onNextRound : undefined} replayLabel="New city round" />
     </div>

@@ -23,9 +23,19 @@ export function GameArtwork({ gameId }: { gameId: GameId }) {
       return <div className="art-neighbours" aria-hidden="true"><img src="/illustrations/world-map.svg" alt="" /><svg viewBox="0 0 320 140"><path d="M58 79 107 40 152 69 213 39 266 83" /><circle cx="58" cy="79" r="7" /><circle cx="107" cy="40" r="5" /><circle cx="152" cy="69" r="5" /><circle cx="213" cy="39" r="5" /><circle cx="266" cy="83" r="5" /></svg></div>
     case 'distance':
       return <div className="art-distance" aria-hidden="true"><span className="distance-orbit distance-orbit-outer" /><span className="distance-orbit distance-orbit-inner" /><MapPin size={26} /><i /><b>km</b></div>
+    case 'rivers':
+      return <div className="art-riverways"><img src="/illustrations/world-map.svg" alt="" /><svg viewBox="0 0 320 140" aria-hidden="true"><path className="river-course-shadow" d="M27 101 C53 78 63 83 79 62 S110 48 123 67 147 100 163 78 181 38 198 49 218 92 240 71 271 38 294 48" /><path className="river-course" d="M27 101 C53 78 63 83 79 62 S110 48 123 67 147 100 163 78 181 38 198 49 218 92 240 71 271 38 294 48" /><circle className="river-source" cx="27" cy="101" r="6" /><circle className="river-mouth" cx="294" cy="48" r="7" /></svg></div>
+    case 'latitude-ladder':
+      return <div className="art-latitude-ladder"><svg viewBox="0 0 320 140" aria-hidden="true"><path className="ladder-graticule" d="M36 25H284M36 48H284M36 71H284M36 94H284M36 117H284M61 15V125M111 15V125M160 15V125M209 15V125M259 15V125" /><path className="ladder-order-line" d="M63 101 111 80 160 65 210 49 258 31" /><path className="ladder-direction" d="M293 108V31m-7 9 7-9 7 9" /><g><circle cx="63" cy="101" r="12" /><text x="63" y="105">1</text></g><g><circle cx="111" cy="80" r="12" /><text x="111" y="84">2</text></g><g><circle cx="160" cy="65" r="12" /><text x="160" y="69">3</text></g><g><circle cx="210" cy="49" r="12" /><text x="210" y="53">4</text></g><g><circle cx="258" cy="31" r="12" /><text x="258" y="35">5</text></g></svg></div>
+    default:
+      return assertNever(gameId)
   }
 }
 
 function ArrowMarks() {
   return <svg viewBox="0 0 50 56" aria-hidden="true"><path d="M25 43V13M14 24l11-11 11 11M14 32l11 11 11-11" /></svg>
+}
+
+function assertNever(value: never): never {
+  throw new Error('Missing artwork for ' + String(value) + '.')
 }

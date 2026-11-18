@@ -1,6 +1,6 @@
 import type { Country, GameId } from '../geography/types'
 
-export const GAME_IDS: GameId[] = ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']
+export { GAME_IDS } from '../geography/types'
 export const PUZZLE_VERSION = 2
 // Eligibility pools changed for the original daily games. Keep completed history
 // intact while assigning the new, standard-country puzzle identities.
@@ -108,6 +108,42 @@ export function validateRouteStep(route: string[], candidate: string, adjacency:
   const previous = route.at(-1)
   if (!previous || !adjacency.get(previous)?.includes(candidate)) return 'That country does not share a land border with the last stop.'
   return null
+}
+
+/** Finds a deterministic ordering that uses each selected intermediate country once. */
+export function findRouteOrdering(start: string, end: string, selected: string[], adjacency: Map<string, string[]>): string[] | null {
+  if (!start || !end || start === end || new Set(selected).size !== selected.length) return null
+  if (selected.includes(start) || selected.includes(end)) return null
+  const selectedSet = new Set(selected)
+  const orderedSelection = [...selectedSet].sort()
+  const visited = new Set<string>([start])
+  const route = [start]
+
+  function search(current: string): string[] | null {
+    if (route.length === selected.length + 2) return current === end ? [...route] : null
+    const candidates = (adjacency.get(current) ?? [])
+      .filter((code) => code === end ? selectedSet.size === route.length - 1 : selectedSet.has(code) && !visited.has(code))
+      .sort((left, right) => left.localeCompare(right))
+    for (const code of candidates) {
+      if (code === end) {
+        route.push(end)
+        return [...route]
+      }
+      visited.add(code)
+      route.push(code)
+      const found = search(code)
+      if (found) return found
+      route.pop()
+      visited.delete(code)
+    }
+    return null
+  }
+
+  // Sorting the selected codes makes the returned ordering independent of entry order.
+  for (const code of orderedSelection) {
+    if (!adjacency.has(code)) return null
+  }
+  return search(start)
 }
 
 export function buildAdjacency(countries: Country[]): Map<string, string[]> {
@@ -238,7 +274,10 @@ export interface GridPreset {
   rows: GridCategory[]
 }
 
-export function createGridPresets(countries: Country[] = []): GridPreset[] {
+const UN_M49_SOUTHERN_EUROPE = new Set(['ALB', 'AND', 'BIH', 'HRV', 'GIB', 'GRC', 'VAT', 'ITA', 'MLT', 'MNE', 'MKD', 'PRT', 'SMR', 'SRB', 'SVN', 'ESP'])
+const EU_MEMBER_STATES_2026 = new Set(['AUT', 'BEL', 'BGR', 'HRV', 'CYP', 'CZE', 'DNK', 'EST', 'FIN', 'FRA', 'DEU', 'GRC', 'HUN', 'IRL', 'ITA', 'LVA', 'LTU', 'LUX', 'MLT', 'NLD', 'POL', 'PRT', 'ROU', 'SVK', 'SVN', 'ESP', 'SWE'])
+
+export function createGridPresets(countries: Country[] = [], options: { expanded?: boolean } = {}): GridPreset[] {
   const eligible = countries.filter((country) => country.hasGeometry)
   const groups = (values: Array<string | null | undefined>, prefix: string): GridCategory[] => [...new Set(values.filter((value): value is string => Boolean(value)))].flatMap((value) => {
     if (prefix === 'continent' && value === 'Antarctic') return []
@@ -274,6 +313,29 @@ export function createGridPresets(countries: Country[] = []): GridPreset[] {
     return count >= 4 && count <= eligible.length - 4
   })
 
+  if (options.expanded) {
+    const southernEuropeCount = eligible.filter((country) => UN_M49_SOUTHERN_EUROPE.has(country.iso3)).length
+    if (southernEuropeCount >= 4) {
+      regions.push({
+        id: 'm49-southern-europe',
+        label: 'Southern Europe · UN M49',
+        matches: (country: Country) => UN_M49_SOUTHERN_EUROPE.has(country.iso3),
+      })
+    }
+    const expandedAttributes: GridCategory[] = [
+      { id: 'eu-member-2026', label: 'European Union member', matches: (country: Country) => EU_MEMBER_STATES_2026.has(country.iso3) },
+      { id: 'land-neighbours-five-plus', label: '5 or more recorded land neighbours', matches: (country: Country) => country.borders.length >= 5 },
+      { id: 'population-2023-10-to-50m', label: '2023 population: 10–50 million', matches: (country: Country) => country.populationYear === '2023' && country.population !== null && country.population >= 10_000_000 && country.population < 50_000_000 },
+      { id: 'area-2023-over-1m', label: 'Area over 1 million km²', matches: (country: Country) => country.areaKm2 !== null && country.areaKm2 >= 1_000_000 },
+      { id: 'capital-north-equator', label: 'Capital north of the equator', matches: (country: Country) => country.capitalCoordinates !== null && country.capitalCoordinates.lat >= 0 },
+      { id: 'capital-south-equator', label: 'Capital south of the equator', matches: (country: Country) => country.capitalCoordinates !== null && country.capitalCoordinates.lat < 0 },
+    ].filter((category) => {
+      const count = eligible.filter(category.matches).length
+      return count >= 4 && count <= eligible.length - 4
+    })
+    attributes.push(...expandedAttributes)
+  }
+
   if (regions.length < 3 || attributes.length < 3) return []
 
   const intersections = new Map<string, Country[]>()
@@ -285,18 +347,38 @@ export function createGridPresets(countries: Country[] = []): GridPreset[] {
 
   const candidates: GridPreset[] = []
   const ids = new Set<string>()
-  const random = seededRandom('maproom:grid-preset-pool:v2')
+  const addCandidate = (columns: GridCategory[], rows: GridCategory[], expanded: boolean) => {
+    const cells = rows.flatMap((row) => columns.map((column) => intersections.get(`${column.id}|${row.id}`) ?? []))
+    if (columns.length !== 3 || rows.length !== 3 || cells.some((cell) => cell.length < 2 || cell.length > 90) || !hasDistinctGridAnswers(cells)) return
+    const id = `grid-${[...columns.map((item) => item.id).sort(), ...rows.map((item) => item.id).sort()].join('-')}`
+    if (ids.has(id)) return
+    ids.add(id)
+    candidates.push({ id, title: expanded ? 'Regions & map facts' : 'Regions & geographic facts', columns, rows })
+  }
+  if (options.expanded) {
+    const southernEurope = regions.find((category) => category.id === 'm49-southern-europe')
+    const europe = regions.find((category) => category.id === 'continent-europe')
+    const asia = regions.find((category) => category.id === 'continent-asia')
+    const westernEurope = regions.find((category) => category.id === 'subregion-western-europe')
+    const landlocked = attributes.find((category) => category.id === 'landlocked')
+    const coastline = attributes.find((category) => category.id === 'coastline')
+    const populationOverTenMillion = attributes.find((category) => category.id === 'population-over-10m')
+    const euMember = attributes.find((category) => category.id === 'eu-member-2026')
+    if (southernEurope && europe && asia && landlocked && coastline && populationOverTenMillion) {
+      addCandidate([southernEurope, europe, asia], [landlocked, coastline, populationOverTenMillion], true)
+    }
+    if (southernEurope && europe && westernEurope && euMember && coastline && populationOverTenMillion) {
+      addCandidate([southernEurope, europe, westernEurope], [euMember, coastline, populationOverTenMillion], true)
+    }
+  }
+  const random = seededRandom(options.expanded ? 'maproom:grid-preset-pool:v3' : 'maproom:grid-preset-pool:v2')
   const maximumAttempts = 24_000
   for (let attempt = 0; attempt < maximumAttempts && candidates.length < 240; attempt += 1) {
     const columns = chooseThree(regions, random)
     const rows = chooseThree(attributes, random)
     if (!columns || !rows) continue
-    const cells = rows.flatMap((row) => columns.map((column) => intersections.get(`${column.id}|${row.id}`) ?? []))
-    if (cells.some((cell) => cell.length < 2 || cell.length > 90) || !hasDistinctGridAnswers(cells)) continue
-    const id = `grid-${[...columns.map((item) => item.id).sort(), ...rows.map((item) => item.id).sort()].join('-')}`
-    if (ids.has(id)) continue
-    ids.add(id)
-    candidates.push({ id, title: 'Regions & geographic facts', columns, rows })
+    addCandidate(columns, rows, Boolean(options.expanded))
+    if (candidates.length >= 240) break
   }
   return candidates
 }
@@ -305,8 +387,8 @@ export function gridCandidates(countries: Country[], row: GridCategory, column: 
   return countries.filter((country) => row.matches(country) && column.matches(country))
 }
 
-export function validGridPresets(countries: Country[]): GridPreset[] {
-  return createGridPresets(countries)
+export function validGridPresets(countries: Country[], options: { expanded?: boolean } = {}): GridPreset[] {
+  return createGridPresets(countries, options)
 }
 
 export function gridAnswerScore(candidateCount: number): number {

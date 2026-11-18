@@ -5,8 +5,8 @@ import { describe, expect, it } from 'vitest'
 import { geoArea, geoContains, geoEqualEarth, geoPath } from 'd3-geo'
 import { feature } from 'topojson-client'
 import type { Topology } from 'topojson-specification'
-import { normalizeRegionFeature } from '../src/geography/data'
-import type { City, Country, GeoFeature } from '../src/geography/types'
+import { normalizeRegionFeature } from '../src/geography/regionGeometry'
+import type { City, Country, GeoFeature, RiverFeature } from '../src/geography/types'
 import { generateRoutePuzzle, gridCandidates, validGridPresets, buildAdjacency, directionFromTo, normalizeAnswer } from '../src/puzzles/engine'
 import { classifyGeography, eligibleCountries, eligibleFeatures, isStandardCountry, standardCountryCount } from '../src/geography/eligibility'
 import { validatePolygonFeature } from '../scripts/data/country-geometry.mjs'
@@ -14,16 +14,20 @@ import { territoryRelations, excludedParentRelations } from '../scripts/data/ter
 
 const dataDir = join(process.cwd(), 'public', 'data')
 const catalog = JSON.parse(readFileSync(join(dataDir, 'countries.json'), 'utf8')) as { schemaVersion: number; countries: Country[] }
-const collection = JSON.parse(readFileSync(join(dataDir, 'countries.geojson'), 'utf8')) as { type: string; features: GeoFeature[] }
+const countryTopology = JSON.parse(readFileSync(join(dataDir, 'countries.topo.json'), 'utf8')) as Topology
+const collection = feature(countryTopology, countryTopology.objects.countries) as unknown as { type: string; features: GeoFeature[] }
 const cityData = JSON.parse(readFileSync(join(dataDir, 'cities.json'), 'utf8')) as { schemaVersion: number; cities: City[] }
-const coverage = JSON.parse(readFileSync(join(dataDir, 'coverage.json'), 'utf8')) as { countryCatalogCount: number; countryCodesWithGeometry: number; countryGeometryFeatureCount?: number; outlineGeometryFeatureCount?: number; admin1CountriesIncluded: number; admin1UnitsIncluded: number; cityCount: number }
-const outlineCollection = JSON.parse(readFileSync(join(dataDir, 'countries-outline.geojson'), 'utf8')) as { type: string; features: GeoFeature[] }
+const majorCityData = JSON.parse(readFileSync(join(dataDir, 'cities-major.json'), 'utf8')) as { schemaVersion: number; cities: City[] }
+const riverData = JSON.parse(readFileSync(join(dataDir, 'rivers.json'), 'utf8')) as { schemaVersion: number; features: RiverFeature[] }
+const coverage = JSON.parse(readFileSync(join(dataDir, 'coverage.json'), 'utf8')) as { countryCatalogCount: number; countryCodesWithGeometry: number; countryGeometryFeatureCount?: number; outlineGeometryFeatureCount?: number; admin1CountriesIncluded: number; admin1UnitsIncluded: number; cityCount: number; majorCityCount: number; riverFeatureCount: number }
+const outlineTopology = JSON.parse(readFileSync(join(dataDir, 'countries-outline.topo.json'), 'utf8')) as Topology
+const outlineCollection = feature(outlineTopology, outlineTopology.objects.countries) as unknown as { type: string; features: GeoFeature[] }
 const regionIndex = JSON.parse(readFileSync(join(dataDir, 'region-index.json'), 'utf8')) as Array<{
   iso3: string; count: number; status: string; license: string; artifactSha256: string; artifactBytes: number
 }>
 const manifest = JSON.parse(readFileSync(join(dataDir, 'data-manifest.json'), 'utf8')) as {
-  sources: Array<{ name: string; sha256?: string; licenseSha256?: string; retrievedAt: string; license: string }>
-  artifacts: { countriesGeoJSONSha256: string; countriesOutlineGeoJSONSha256: string; countriesCatalogSha256: string; citiesSha256: string; coverageSha256: string; regionIndexSha256: string; regionPackages: Array<{ iso3: string; sha256: string; bytes: number }> }
+  sources: Array<{ name: string; source?: string; sha256?: string; licenseSha256?: string; retrievedAt: string; license: string; transformations?: string[] }>
+  artifacts: { countriesTopologySha256: string; countriesOutlineTopologySha256: string; countriesCatalogSha256: string; citiesSha256: string; majorCitiesSha256: string; riversSha256: string; coverageSha256: string; regionIndexSha256: string; regionPackages: Array<{ iso3: string; sha256: string; bytes: number }> }
 }
 
 function sha256(file: string): string {
@@ -41,6 +45,27 @@ function coordinatePairs(value: unknown, pairs: number[][] = []): number[][] {
 }
 
 describe('bundled geography data', () => {
+  it('bundles named, valid Natural Earth river centerlines with matching source metadata', () => {
+    expect(riverData.schemaVersion).toBe(1)
+    expect(riverData.features).toHaveLength(coverage.riverFeatureCount)
+    expect(riverData.features.length).toBeGreaterThan(100)
+    for (const river of riverData.features) {
+      expect(river.properties.name.trim()).not.toBe('')
+      expect(river.properties.scaleRank).toBeGreaterThanOrEqual(1)
+      expect(river.properties.scaleRank).toBeLessThanOrEqual(4)
+      expect(['LineString', 'MultiLineString']).toContain(river.geometry.type)
+      expect(coordinatePairs(river.geometry.coordinates).length).toBeGreaterThan(1)
+      for (const [lon, lat] of coordinatePairs(river.geometry.coordinates)) {
+        expect(Number.isFinite(lon) && lon >= -180 && lon <= 180).toBe(true)
+        expect(Number.isFinite(lat) && lat >= -90 && lat <= 90).toBe(true)
+      }
+    }
+    const riverSource = manifest.sources.find((source) => source.name === 'Natural Earth 1:50m Rivers and Lake Centerlines')
+    expect(riverSource).toMatchObject({ license: 'Public domain' })
+    expect(riverSource?.source).toContain('ca96624a56bd078437bca8184e78163e5039ad19')
+    expect(sha256(join(dataDir, 'rivers.json'))).toBe(manifest.artifacts.riversSha256)
+  })
+
   it('has unique country identities, valid flags, coordinates and neighbor references', () => {
     expect(catalog.schemaVersion).toBe(1)
     expect(catalog.countries.length).toBeGreaterThan(240)
@@ -76,8 +101,23 @@ describe('bundled geography data', () => {
     }
   })
 
+  it('keeps an order-preserving major-city subset for games with a 50,000 population floor', () => {
+    expect(cityData.schemaVersion).toBe(1)
+    expect(majorCityData.schemaVersion).toBe(1)
+    expect(majorCityData.cities).toHaveLength(coverage.majorCityCount)
+    expect(majorCityData.cities).toEqual(cityData.cities.filter((city) => city.population >= 50_000))
+  })
+
   it('contains valid world geometry and supports every advertised country code', () => {
     expect(collection.type).toBe('FeatureCollection')
+    expect(countryTopology.transform?.scale[0]).toBeLessThanOrEqual(0.000361)
+    expect(countryTopology.transform?.scale[1]).toBeLessThanOrEqual(0.000174)
+    expect(outlineTopology.transform?.scale[0]).toBeLessThanOrEqual(0.000361)
+    expect(outlineTopology.transform?.scale[1]).toBeLessThanOrEqual(0.000174)
+    expect(manifest.sources.find((source) => source.name === 'Natural Earth 1:50m Admin 0 Countries')?.transformations)
+      .toContain('Quantized and converted shared borders to TopoJSON at a 1e6 coordinate grid')
+    expect(manifest.sources.find((source) => source.name === 'Natural Earth 1:10m Admin 0 Countries')?.transformations)
+      .toContain('Quantized and converted shared borders to TopoJSON at a 1e6 coordinate grid')
     expect(collection.features.length).toBeGreaterThan(230)
     const codes = new Set(catalog.countries.filter((country) => country.hasGeometry).map((country) => country.iso3))
     expect(codes.size).toBe(coverage.countryCodesWithGeometry)
@@ -215,11 +255,14 @@ describe('bundled geography data', () => {
       const contains = (iso3: string, lat: number, lon: number) => features
         .filter((feature) => feature.properties.iso3 === iso3)
         .some((feature) => geoContains(feature as unknown as GeoJSON.Feature, [lon, lat]))
+      if (cyprus.geometry.type !== 'Polygon' && cyprus.geometry.type !== 'MultiPolygon') {
+        throw new Error(`${layer} Cyprus geometry must be polygonal`)
+      }
       const coordinates = coordinatePairs(cyprus.geometry.coordinates)
       expect(Math.max(...coordinates.map(([, latitude]) => latitude)), `${layer} reaches the northern coast`).toBeGreaterThan(35.6)
       expect(Math.max(...coordinates.map(([longitude]) => longitude)), `${layer} reaches the Karpas peninsula`).toBeGreaterThan(34.5)
-      expect(geoContains(cyprus as unknown as GeoJSON.Feature, [33.6, 35.3])).toBe(true)
-      expect(geoContains(cyprus as unknown as GeoJSON.Feature, [33.94, 35.12])).toBe(true)
+      expect(contains('CYP', 35.3, 33.6), `${layer} includes the northern part of Cyprus`).toBe(true)
+      expect(contains('CYP', 35.12, 33.94), `${layer} includes the northeastern part of Cyprus`).toBe(true)
     }
 
     const outlineContains = (iso3: string, lat: number, lon: number) => outlineCollection.features
@@ -259,9 +302,11 @@ describe('bundled geography data', () => {
     const outlineCodes = new Set(outlineCollection.features.map((feature) => feature.properties.iso3).filter(Boolean))
     expect(outlineCodes).toEqual(new Set(catalog.countries.map((country) => country.iso3)))
     const unassignedOutlineFeatures = outlineCollection.features.filter((feature) => !feature.properties.iso3)
-    expect(unassignedOutlineFeatures).toHaveLength(11)
+    // Natural Earth's Northern Cyprus (CYN) and Cyprus No Mans Area (CNM) shapes
+    // are assigned to CYP and dissolved into the geographic island outline.
+    expect(unassignedOutlineFeatures).toHaveLength(9)
     expect(new Set(unassignedOutlineFeatures.map((feature) => feature.properties.name))).toEqual(new Set([
-      'Somaliland', 'US Naval Base Guantanamo Bay', 'Northern Cyprus', 'Cyprus No Mans Area', 'Siachen Glacier',
+      'Somaliland', 'US Naval Base Guantanamo Bay', 'Siachen Glacier',
       'Southern Patagonian Ice Field', 'Bir Tawil', 'Spratly Islands', 'Bajo Nuevo Bank (Petrel Is.)', 'Serranilla Bank', 'Scarborough Reef',
     ]))
     expect(eligibleFeatures(unassignedOutlineFeatures, 'extended')).toHaveLength(0)
@@ -369,10 +414,11 @@ describe('bundled geography data', () => {
     for (const source of manifest.sources.filter((item) => item.sha256)) expect(source.sha256).toMatch(/^[a-f0-9]{64}$/)
     const countrySource = manifest.sources.find((source) => source.name === 'World country metadata')!
     expect(countrySource.licenseSha256).toMatch(/^[a-f0-9]{64}$/)
-    expect(sha256(join(dataDir, 'countries.geojson'))).toBe(manifest.artifacts.countriesGeoJSONSha256)
-    expect(sha256(join(dataDir, 'countries-outline.geojson'))).toBe(manifest.artifacts.countriesOutlineGeoJSONSha256)
+    expect(sha256(join(dataDir, 'countries.topo.json'))).toBe(manifest.artifacts.countriesTopologySha256)
+    expect(sha256(join(dataDir, 'countries-outline.topo.json'))).toBe(manifest.artifacts.countriesOutlineTopologySha256)
     expect(sha256(join(dataDir, 'countries.json'))).toBe(manifest.artifacts.countriesCatalogSha256)
     expect(sha256(join(dataDir, 'cities.json'))).toBe(manifest.artifacts.citiesSha256)
+    expect(sha256(join(dataDir, 'cities-major.json'))).toBe(manifest.artifacts.majorCitiesSha256)
     expect(sha256(join(dataDir, 'coverage.json'))).toBe(manifest.artifacts.coverageSha256)
     expect(sha256(join(dataDir, 'region-index.json'))).toBe(manifest.artifacts.regionIndexSha256)
   })

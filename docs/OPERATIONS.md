@@ -35,4 +35,4 @@ Dataset refreshes follow the current upstream snapshots. The builder stores its 
 
 ## Browser storage
 
-IndexedDB uses database `maproom-progress`, schema version 1, with `settings` and `history` stores. Browser storage fallback uses the `maproom-progress-v1` localStorage key. The in-app Settings page supports JSON export/import and a confirmed reset. Clearing browser/site data bypasses the app's export safeguard and can remove progress.
+IndexedDB uses database `maproom-progress`, schema version 2, with `settings`, `history` and `sessions` object stores. Favorites are kept in `settings`; resumable sessions are mirrored to the `maproom-sessions-v1` localStorage key. The broader fallback snapshot uses `maproom-progress-v1`. The in-app Settings page supports JSON export/import and a confirmed reset. Clearing browser/site data bypasses the app's export safeguard and can remove progress.

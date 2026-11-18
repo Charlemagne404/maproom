@@ -4,7 +4,7 @@
 
 The existing site is served from `/srv/maproom/current`. A read-only check on 2026-11-17 found it resolving to `/srv/maproom/releases/1.2.0-dac85cc7b547`; `/srv/maproom/releases/1.1.0-cb626ad2bedd` also remains present for rollback. No service or release files were changed during this refinement.
 
-The local refinement is package version 1.2.0 and is a candidate only. This work did not switch `/srv/maproom/current`, reload Caddy, or change the public application. Production remains on the already active `1.2.0-dac85cc7b547` release.
+The current workspace is package version 1.2.0 and remains a local candidate. The continuous-development finalization on 2026-11-18 did not switch `/srv/maproom/current`, reload Caddy, or change the public application. The last documented read-only production check, dated 2026-11-17, found `1.2.0-dac85cc7b547` active; production was not rechecked during this finalization, so that is the last known state rather than a current verification. The final candidate contains uncommitted work and must be reviewed and built from its final contents before any operator activation.
 
 ## Build and review
 
@@ -17,7 +17,7 @@ npm test
 npm run e2e
 ```
 
-`npm run e2e` builds the static application before running the single-worker browser suite. Captured review images are in `artifacts/qa/product-consistency/`. `dist/` is the candidate build; it is not an activation or a production backup.
+`npm run e2e` builds the static application before running the single-worker browser suite. Captured review images in `artifacts/qa/product-consistency/` are from an earlier product review. `dist/` is the current candidate build; it is not an activation or a production backup. The finalizer's artifact gate now requires the catalog, both TopoJSON boundary layers, both city files, the river data, source manifests and a nonempty ADM1 package directory. Finalization checked these local artifacts without running the deployment script.
 
 ## Operator handoff
 
