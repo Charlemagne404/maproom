@@ -12,6 +12,7 @@ import { pickCountries, seededShuffle } from '../../puzzles/engine'
 import { missedCountryCodes } from '../../statistics/mistakes'
 import { useGameSession } from '../session'
 import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
+import './CountryIdentificationGame.css'
 
 type Scope = 'world' | 'continent' | 'regions'
 type QuestionCount = '10' | '20' | '50' | 'infinite'
@@ -210,11 +211,11 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
   if (scope === 'regions' && !regions && !regionError) return <LoadingState label="Opening subdivision map…" />
   if (regionError) return <div className="game-body"><InlineNotice title="Subdivision data unavailable" tone="warning">{regionError}</InlineNotice></div>
   if (questions.length === 0) return <LoadingState label="Choosing a country…" />
-  const filteredFeatures = question.feature ? [question.feature] : countryFeatures
+  const filteredFeatures = countryFeatures
   const showOptions = mode === 'freeplay'
 
   return (
-    <div className="game-body map-game-body">
+    <div className="game-body map-game-body find-country-game-body">
       <div className="question-toolbar">
         <div><span className="eyebrow">{scope === 'regions' ? question.detail : 'Find the country'}</span><h2 ref={questionHeading} tabIndex={-1}><em>{question.name}</em></h2></div>
         <div className="question-toolbar-tools">
@@ -234,8 +235,8 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
         </div>
       </div>
       {showOptions && <div className="country-practice-status"><span><strong>{score.toLocaleString()}</strong> points · <strong>{correct}</strong> correct</span>{timed && <span>{seconds}s left</span>}{infinitePractice && resolved > 0 && <button className="button button-outline" type="button" disabled={answerLocked} onClick={() => { setFinished(true); void save(score, correct, resolved, { scope, continent, regionCountry, missedCountries: missedQuestions, questionCount, timed, reviewMissed }) }}>End session</button>}</div>}
-      <div className="map-playfield">
-        <div className="game-map-stage">
+      <div className="map-playfield find-country-playfield">
+        <div className="game-map-stage find-country-map-stage">
           <GeoMap
             features={filteredFeatures}
             onSelectCode={submit}

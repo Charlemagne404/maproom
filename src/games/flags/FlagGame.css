@@ -1,0 +1,140 @@
+.flag-study-game-body > .flag-round {
+  width: min(1160px, calc(100% - 40px));
+  min-height: clamp(650px, calc(100svh - 100px), 910px);
+  gap: clamp(20px, 3.2svh, 38px);
+  padding-block: clamp(22px, 4svh, 48px);
+}
+
+.flag-study-game-body .flag-question-row {
+  min-height: 58px;
+}
+
+.flag-study-game-body .flag-question-row h1 {
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  line-height: 1.18;
+}
+
+.flag-study-game-body .flag-live-status {
+  gap: 10px 22px;
+  font-size: .8rem;
+}
+
+.flag-study-game-body .flag-display {
+  height: clamp(250px, 39svh, 410px);
+}
+
+.flag-study-game-body .flag-frame-large,
+.flag-study-game-body .flag-display .flag-cover {
+  width: min(650px, 86vw, 50svh);
+}
+
+.flag-study-game-body .flag-choice-grid {
+  width: min(920px, 100%);
+  gap: 13px;
+  margin-top: 4px;
+}
+
+.flag-study-game-body .flag-choice {
+  min-height: 64px;
+  padding: 12px 18px;
+}
+
+.flag-study-game-body .image-choice-grid .flag-choice {
+  min-height: clamp(150px, 18svh, 190px);
+}
+
+.flag-study-game-body .image-choice-grid .flag-frame {
+  height: clamp(104px, 14svh, 148px);
+}
+
+.flag-study-game-body .flag-choice.is-right {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--success-text);
+  box-shadow: inset 4px 0 var(--success);
+  animation: flag-study-correct-in .28s cubic-bezier(.2, .7, .2, 1);
+}
+
+.flag-study-game-body .flag-choice.is-wrong {
+  border-color: var(--error);
+  background: var(--error-soft);
+  color: var(--error-text);
+  box-shadow: inset 4px 0 var(--error);
+  animation: flag-study-wrong-in .25s ease-out;
+}
+
+.flag-study-game-body .flag-choice.is-right .flag-answer-mark {
+  color: var(--success);
+}
+
+.flag-study-game-body .flag-choice.is-wrong .flag-answer-mark {
+  color: var(--error);
+}
+
+@keyframes flag-study-correct-in {
+  0% { transform: scale(.985); }
+  68% { transform: scale(1.01); }
+  100% { transform: scale(1); }
+}
+
+@keyframes flag-study-wrong-in {
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+@media (max-width: 760px) {
+  .flag-study-game-body > .flag-round {
+    width: min(640px, calc(100% - 28px));
+    min-height: calc(100svh - 54px);
+    gap: clamp(16px, 2.7svh, 25px);
+    padding-block: clamp(14px, 2.5svh, 24px);
+  }
+
+  .flag-study-game-body .flag-question-row {
+    min-height: 48px;
+  }
+
+  .flag-study-game-body .flag-question-row h1 {
+    padding-inline: 42px;
+    font-size: clamp(1.3rem, 5.5vw, 1.75rem);
+  }
+
+  .flag-study-game-body .flag-display {
+    height: clamp(210px, 34svh, 290px);
+  }
+
+  .flag-study-game-body .flag-frame-large,
+  .flag-study-game-body .flag-display .flag-cover {
+    width: min(480px, 86vw, 43svh);
+  }
+
+  .flag-study-game-body .flag-choice-grid:not(.image-choice-grid) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .flag-study-game-body .flag-choice {
+    min-height: 50px;
+    padding: 8px 12px;
+  }
+
+  .flag-study-game-body .image-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .flag-study-game-body .image-choice-grid .flag-choice {
+    min-height: clamp(112px, 15svh, 140px);
+  }
+
+  .flag-study-game-body .image-choice-grid .flag-frame {
+    height: clamp(72px, 10svh, 92px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flag-study-game-body .flag-choice.is-right,
+  .flag-study-game-body .flag-choice.is-wrong {
+    animation: none;
+  }
+}

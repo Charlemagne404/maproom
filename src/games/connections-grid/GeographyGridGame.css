@@ -1,0 +1,132 @@
+.map-grid-game-body {
+  width: min(100%, 1120px);
+  max-width: 1120px;
+  margin-inline: auto;
+}
+
+.map-grid-game-body > .question-toolbar {
+  margin-bottom: 10px;
+}
+
+.map-grid-game-body .geo-grid {
+  width: min(100%, 800px);
+  max-width: 800px;
+  margin-inline: auto;
+  gap: 7px;
+}
+
+.map-grid-game-body .grid-column-label,
+.map-grid-game-body .grid-corner,
+.map-grid-game-body .grid-row-label {
+  line-height: 1.22;
+}
+
+.map-grid-game-body .grid-cell {
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+  padding: 6px;
+}
+
+.map-grid-game-body .grid-cell-trigger {
+  min-height: 58px;
+  gap: 4px;
+}
+
+.map-grid-game-body .grid-answer {
+  min-height: 72px;
+  gap: 4px;
+}
+
+.map-grid-game-body .grid-criteria-feedback > span {
+  grid-template-columns: 20px minmax(0, 1fr);
+  font-size: .72rem;
+  font-weight: 650;
+}
+
+.map-grid-game-body .grid-criteria-feedback > span.is-met {
+  border-color: color-mix(in srgb, var(--success) 60%, var(--border));
+  background: var(--success-soft);
+  color: var(--success-text);
+}
+
+.map-grid-game-body .grid-criteria-feedback > span.is-missed {
+  border-color: color-mix(in srgb, var(--error) 60%, var(--border));
+  background: var(--error-soft);
+  color: var(--error-text);
+}
+
+.map-grid-game-body .grid-entry-scrim {
+  position: fixed;
+  z-index: 39;
+  inset: 0;
+  background: rgba(24, 21, 18, .3);
+  backdrop-filter: blur(1.5px);
+  animation: grid-overlay-in .16s ease-out;
+}
+
+.map-grid-game-body .grid-entry-panel {
+  z-index: 40;
+  max-height: min(78svh, 460px);
+  border-radius: 11px;
+  box-shadow: 0 12px 38px rgba(20, 18, 16, .3);
+}
+
+.map-grid-game-body .grid-entry-panel .grid-criteria-feedback {
+  gap: 6px;
+}
+
+.map-grid-game-body .grid-entry-panel .grid-criteria-feedback > span {
+  min-height: 32px;
+  gap: 8px;
+}
+
+.map-grid-game-body .grid-entry-close:focus-visible,
+.map-grid-game-body .grid-cell-trigger:focus-visible {
+  outline: 3px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+@keyframes grid-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (min-width: 761px) and (min-height: 820px) {
+  .map-grid-game-body .geo-grid {
+    width: min(100%, 760px);
+  }
+
+  .map-grid-game-body .grid-cell {
+    aspect-ratio: 1.04 / 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .map-grid-game-body .geo-grid {
+    grid-template-columns: 72px repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .map-grid-game-body .grid-cell {
+    padding: 3px;
+  }
+
+  .map-grid-game-body .grid-cell-trigger {
+    min-height: 48px;
+    font-size: .6rem;
+  }
+
+  .map-grid-game-body .grid-answer {
+    min-height: 55px;
+  }
+
+  .map-grid-game-body .grid-answer strong {
+    font-size: .66rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-grid-game-body .grid-entry-scrim {
+    animation: none;
+  }
+}

@@ -1,0 +1,159 @@
+.find-country-game-body {
+  display: block;
+  width: min(100%, 1440px);
+  max-width: 1440px;
+  margin-inline: auto;
+}
+
+.find-country-game-body > .question-toolbar {
+  width: 100%;
+  min-height: 118px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px 0 8px;
+  padding: 7px 110px;
+  text-align: center;
+}
+
+.find-country-game-body > .question-toolbar > div:first-child {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.find-country-game-body > .question-toolbar .eyebrow {
+  margin: 0;
+  font-size: .68rem;
+}
+
+.find-country-game-body > .question-toolbar h2 {
+  margin: 0;
+  font-size: clamp(2rem, 4.7vw, 3.6rem);
+  font-weight: 780;
+  letter-spacing: -.055em;
+  line-height: 1;
+}
+
+.find-country-game-body > .question-toolbar h2 em {
+  color: var(--ink);
+  font-style: normal;
+}
+
+.find-country-game-body > .question-toolbar > .question-toolbar-tools {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+}
+
+.find-country-game-body > .country-practice-status {
+  width: fit-content;
+  margin: 0 auto 8px;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.find-country-game-body .find-country-playfield,
+.find-country-game-body .find-country-map-stage {
+  width: 100%;
+}
+
+.find-country-game-body .find-country-map-stage {
+  height: clamp(560px, 74svh, 870px);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  border-radius: 12px;
+  background: var(--water);
+}
+
+.find-country-game-body .find-country-map-stage .map-shell,
+.find-country-game-body .find-country-map-stage .geo-map {
+  width: 100%;
+  height: 100%;
+}
+
+.find-country-game-body .find-country-map-stage .map-country.is-unavailable,
+.find-country-game-body .find-country-map-stage .map-country.is-unavailable:hover,
+.find-country-game-body .find-country-map-stage .map-country.is-unavailable.is-hovered {
+  fill: var(--map-unavailable, #b7b1a8);
+  stroke: color-mix(in srgb, var(--map-unavailable, #b7b1a8) 68%, var(--ink));
+  cursor: default;
+}
+
+.find-country-game-body .find-country-map-stage .map-country:focus:not(:focus-visible) {
+  outline: none;
+  stroke-width: .72px;
+}
+
+.find-country-game-body .country-answer-feedback {
+  width: fit-content;
+  max-width: min(860px, 100%);
+  margin: 10px auto 0;
+  padding: 10px 15px;
+  border-radius: 9px;
+  font-size: .85rem;
+}
+
+.find-country-game-body .country-answer-reveal {
+  font-size: 1.16rem;
+  font-weight: 780;
+}
+
+.find-country-game-body .country-answer-reveal .fi {
+  width: 36px;
+  height: 25px;
+}
+
+@media (max-width: 760px) {
+  .find-country-game-body > .question-toolbar {
+    min-height: 104px;
+    padding: 8px 56px 8px 4px;
+  }
+
+  .find-country-game-body > .question-toolbar h2 {
+    font-size: clamp(1.8rem, 8.5vw, 2.7rem);
+  }
+
+  .find-country-game-body > .question-toolbar .eyebrow {
+    font-size: .6rem;
+  }
+
+  .find-country-game-body > .question-toolbar > .question-toolbar-tools {
+    right: 0;
+  }
+
+  .find-country-game-body .find-country-map-stage {
+    height: clamp(470px, 69svh, 700px);
+    border-radius: 9px;
+  }
+
+  .find-country-game-body > .country-practice-status {
+    margin-bottom: 6px;
+    font-size: .66rem;
+  }
+
+  .find-country-game-body .country-answer-reveal {
+    font-size: 1.02rem;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 761px) {
+  .find-country-game-body > .question-toolbar {
+    min-height: 92px;
+  }
+
+  .find-country-game-body .find-country-map-stage {
+    height: min(70svh, 570px);
+    min-height: 420px;
+  }
+}
