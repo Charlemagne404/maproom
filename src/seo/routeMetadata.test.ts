@@ -6,10 +6,11 @@ describe('route metadata', () => {
   it('covers each stable game route exactly once', () => {
     const gamePaths = allMetadataPages.filter((page) => page.kind === 'game').map((page) => page.path).sort()
     expect(gamePaths).toEqual(games.map((game) => game.path).sort())
-    expect(allMetadataPages).toHaveLength(23)
+    expect(allMetadataPages).toHaveLength(24)
     expect(resolvePageMetadata('/games/historical-geography').title).toBe('Historical map year guessing game | Maproom')
     expect(resolvePageMetadata('/games/projection-match').title).toBe('Map projection quiz | Maproom')
     expect(resolvePageMetadata('/games/population-pyramid').title).toBe('Population Pyramid Sort | Maproom')
+    expect(resolvePageMetadata('/games/watershed-match').title).toBe('Watershed Match | Maproom')
   })
 
   it('keeps query variants out of the index and canonicalizes them to the base route', () => {

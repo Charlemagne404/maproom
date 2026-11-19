@@ -20,6 +20,7 @@ const components: Record<GameId, GeographyGameComponent> = {
   'historical-geography': lazy(() => import('./historical-geography/HistoricalGeographyGame').then((module) => ({ default: module.HistoricalGeographyGame }))),
   'projection-match': lazy(() => import('./projection-match/ProjectionMatchGame').then((module) => ({ default: module.ProjectionMatchGame }))),
   'population-pyramid': lazy(() => import('./population-pyramid/PopulationPyramidGame').then((module) => ({ default: module.PopulationPyramidGame }))),
+  'watershed-match': lazy(() => import('./watershed-match/WatershedMatchGame').then((module) => ({ default: module.WatershedMatchGame }))),
 }
 
 export function getGameComponent(gameId: GameId): GeographyGameComponent {

@@ -45,7 +45,7 @@ const requiredFiles = [
   'robots.txt', 'sitemap.xml', 'social/maproom-preview.png', 'icons/maproom.svg',
   'data/countries.json', 'data/countries.topo.json', 'data/countries-outline.topo.json',
   'data/cities.json', 'data/cities-major.json', 'data/rivers.json', 'data/data-manifest.json',
-  'data/population-age-profiles.json', 'data/coverage.json', 'data/region-index.json', 'data/historical/manifest.json',
+  'data/population-age-profiles.json', 'data/watershed-match.json', 'data/coverage.json', 'data/region-index.json', 'data/historical/manifest.json',
 ]
 for (const relative of requiredFiles) await requiredFile(relative)
 
@@ -56,7 +56,7 @@ const snapshotPaths = [
   'games/flags/index.html', 'games/grid/index.html', 'games/cities/index.html',
   'games/connections/index.html', 'games/higher-lower/index.html', 'games/neighbours/index.html',
   'games/distance/index.html', 'games/rivers/index.html', 'games/latitude-ladder/index.html',
-  'games/historical-geography/index.html', 'games/projection-match/index.html', 'games/population-pyramid/index.html',
+  'games/historical-geography/index.html', 'games/projection-match/index.html', 'games/population-pyramid/index.html', 'games/watershed-match/index.html',
 ]
 for (const relative of snapshotPaths) {
   const html = await readFile(await requiredFile(relative), 'utf8')
@@ -70,7 +70,7 @@ if (allHtml.length !== snapshotPaths.length) fail(`expected ${snapshotPaths.leng
 
 const sitemap = await readFile(await requiredFile('sitemap.xml'), 'utf8')
 const sitemapUrls = sitemap.match(/<loc>/g) ?? []
-if (sitemapUrls.length !== 20) fail(`expected 20 indexable sitemap URLs, found ${sitemapUrls.length}`)
+if (sitemapUrls.length !== 21) fail(`expected 21 indexable sitemap URLs, found ${sitemapUrls.length}`)
 const deployment = await readFile(path.join(root, 'scripts/finalize-deployment.sh'), 'utf8')
 const domain = deployment.match(/^readonly DOMAIN='([^']+)'$/m)?.[1]
 if (!domain || !sitemap.includes(`<loc>https://${domain}/`)) fail('sitemap origin does not match the deployment hostname')
@@ -86,7 +86,7 @@ for (const asset of precache.assets) {
   await requiredFile(asset.slice(1))
 }
 const compiledFiles = await readdir(path.join(dist, 'assets'))
-for (const chunk of ['CountryIdentificationGame', 'OutlineGame', 'BorderRouteGame', 'FlagGame', 'GeographyGridGame', 'CitiesGame', 'ConnectionsGame', 'HigherLowerGame', 'NeighbourGame', 'DistanceGame', 'RiverwaysGame', 'LatitudeLadderGame', 'HistoricalGeographyGame', 'ProjectionMatchGame']) {
+for (const chunk of ['CountryIdentificationGame', 'OutlineGame', 'BorderRouteGame', 'FlagGame', 'GeographyGridGame', 'CitiesGame', 'ConnectionsGame', 'HigherLowerGame', 'NeighbourGame', 'DistanceGame', 'RiverwaysGame', 'LatitudeLadderGame', 'HistoricalGeographyGame', 'ProjectionMatchGame', 'WatershedMatchGame']) {
   if (!compiledFiles.some((file) => file.startsWith(`${chunk}-`) && file.endsWith('.js'))) fail(`lazy game chunk is missing for ${chunk}`)
 }
 const worker = await readFile(await requiredFile('sw.js'), 'utf8')
@@ -155,6 +155,7 @@ const checksums = new Map([
   ['data/cities-major.json', artifacts.majorCitiesSha256],
   ['data/rivers.json', artifacts.riversSha256],
   ['data/population-age-profiles.json', artifacts.populationAgeProfilesSha256],
+  ['data/watershed-match.json', artifacts.watershedMatchSha256],
   ['data/coverage.json', artifacts.coverageSha256],
   ['data/region-index.json', artifacts.regionIndexSha256],
 ])
@@ -162,6 +163,16 @@ for (const [relative, expected] of checksums) {
   if (typeof expected !== 'string' || !/^[a-f0-9]{64}$/.test(expected)) fail(`manifest checksum is invalid for dist/${relative}`)
   const actual = sha256(await readFile(await requiredFile(relative)))
   if (actual !== expected) fail(`checksum mismatch for dist/${relative}`)
+}
+
+const watersheds = await json('data/watershed-match.json')
+const watershedSource = dataManifest.sources.find((source) => source.name === 'USGS Watershed Boundary Dataset 2025 HUC12 sample')
+if (watersheds.schemaVersion !== 1 || watersheds.collection !== 'wbd12_20250107'
+  || watersheds.regions?.join(',') !== 'Potomac,Columbia,Susquehanna'
+  || watersheds.questions?.length !== 60 || watersheds.topology?.objects?.units?.geometries?.length !== 118
+  || watershedSource?.license !== 'CC0 1.0 Universal (the API collection links CC0 terms)'
+  || !watershedSource?.attribution?.includes('U.S. Geological Survey')) {
+  fail('the 2025 USGS watershed sample has an unsupported format, coverage or attribution')
 }
 
 const regionPackages = artifacts.regionPackages

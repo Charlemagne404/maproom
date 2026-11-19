@@ -12,6 +12,7 @@ const APP_FILES = [
   '/data/coverage.json',
   '/data/data-manifest.json',
   '/data/population-age-profiles.json',
+  '/data/watershed-match.json',
   '/data/region-index.json',
 ]
 

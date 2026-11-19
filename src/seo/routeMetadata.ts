@@ -162,6 +162,11 @@ const gameCopy = {
     description: 'Compare sourced 2023 population pyramids and order countries by their share of people aged 65 and older.',
     summary: 'Read three anonymous age-and-sex population profiles, order them by the share aged 65+, and reveal the countries and data sources.',
   },
+  'watershed-match': {
+    title: 'Watershed Match',
+    description: 'Read a detailed map of U.S. subwatersheds and choose the neighboring area that receives most of the highlighted unit’s flow.',
+    summary: 'Follow the USGS Watershed Boundary Dataset’s downstream links across five map questions. Each reveal shows which neighboring subwatershed receives most of the mapped flow.',
+  },
 } satisfies Record<string, { title: string; description: string; summary: string }>
 
 export const gamePages: PageMetadata[] = games.map((game) => {

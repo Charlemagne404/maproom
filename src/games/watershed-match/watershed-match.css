@@ -1,0 +1,88 @@
+.watershed-match-game {
+  --watershed-source: #7592a2;
+  --watershed-option: #ddd1bd;
+  --watershed-outline: #837969;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.watershed-match-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.watershed-match-heading h2 { margin: 0 0 4px; font-size: clamp(1.45rem, 2.4vw, 1.9rem); font-weight: 700; letter-spacing: -.035em; }
+.watershed-match-heading p { max-width: 720px; color: var(--muted); font-size: .78rem; line-height: 1.45; }
+.watershed-match-heading .eyebrow { margin-bottom: 4px; }
+.watershed-match-score { min-width: 86px; padding: 9px 12px; border: 1px solid var(--border); color: var(--muted); text-align: center; font-size: .8rem; white-space: nowrap; }
+.watershed-match-score strong { color: var(--ink); font-size: 1.2rem; }
+.watershed-match-task { padding: 11px 15px; border-left: 3px solid var(--accent); background: var(--surface-raised); }
+.watershed-match-task .eyebrow { margin-bottom: 3px; }
+.watershed-match-task h3 { margin: 0; font-size: 1.04rem; line-height: 1.35; }
+.watershed-match-task p { margin: 3px 0 0; color: var(--muted); font-size: .7rem; }
+.watershed-map-figure { margin: 0; padding: 8px; border: 1px solid var(--border); background: var(--surface-raised); }
+.watershed-map { display: block; width: 100%; height: auto; aspect-ratio: 1.9; background: var(--water); }
+.watershed-map-water { fill: var(--water); }
+.watershed-shape { fill: var(--watershed-option); fill-rule: evenodd; stroke: var(--watershed-outline); stroke-width: 1.4; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.watershed-shape.is-source { fill: var(--watershed-source); stroke: #3d5f70; stroke-width: 2; }
+.watershed-shape.is-correct { fill: #93b797; stroke: #346d45; stroke-width: 2.3; }
+.watershed-shape.is-incorrect { fill: #d59a8a; stroke: #913f39; stroke-width: 2.3; }
+.watershed-flow-arrow { stroke: #215c37; stroke-width: 3.4; stroke-linecap: round; marker-end: url(#watershed-arrowhead); vector-effect: non-scaling-stroke; pointer-events: none; }
+.watershed-flow-arrow + marker path,
+.watershed-map marker path { fill: #215c37; }
+.watershed-map-marker circle { fill: #39453f; stroke: #f5f1e8; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.watershed-map-marker text { fill: #fff; font-size: 13px; font-weight: 800; text-anchor: middle; pointer-events: none; }
+.watershed-map-marker.is-correct circle { fill: #28643b; }
+.watershed-map-marker.is-incorrect circle { fill: #8e3b32; }
+.watershed-source-label { fill: #1f3037; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-anchor: middle; paint-order: stroke; stroke: rgba(255,255,255,.8); stroke-width: 3px; stroke-linejoin: round; }
+.watershed-map-figure figcaption { padding: 6px 3px 3px; color: var(--muted); font-size: .7rem; }
+.watershed-map-legend { display: flex; flex-wrap: wrap; gap: 13px; padding: 4px 3px 1px; color: var(--muted); font-size: .66rem; }
+.watershed-map-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.watershed-map-legend i { width: 11px; height: 11px; border: 1px solid var(--watershed-outline); background: var(--watershed-option); }
+.watershed-map-legend i.is-source { background: var(--watershed-source); }
+.watershed-choice-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.watershed-choice { min-width: 0; display: flex; align-items: flex-start; gap: 9px; padding: 10px; border: 1px solid var(--border); background: var(--surface-raised); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .14s ease, background-color .14s ease; }
+.watershed-choice:hover:not(:disabled) { border-color: var(--control-border); }
+.watershed-choice:focus-visible { outline-offset: 2px; }
+.watershed-choice:disabled { cursor: default; }
+.watershed-choice.is-selected { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.watershed-choice.is-correct { border-color: var(--success); background: color-mix(in srgb, var(--success) 9%, var(--surface-raised)); }
+.watershed-choice.is-incorrect { border-color: var(--error); background: color-mix(in srgb, var(--error) 8%, var(--surface-raised)); }
+.watershed-choice-letter { width: 26px; height: 26px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--surface-soft); color: var(--ink); font-size: .74rem; font-weight: 800; }
+.watershed-choice-copy { min-width: 0; flex: 1; display: grid; gap: 3px; }
+.watershed-choice-copy strong { font-size: .77rem; line-height: 1.35; overflow-wrap: anywhere; }
+.watershed-choice-copy small { color: var(--muted); font-size: .65rem; }
+.watershed-choice-result { align-self: center; max-width: 105px; color: var(--muted); font-size: .63rem; line-height: 1.25; text-align: right; }
+.watershed-choice.is-correct .watershed-choice-result { color: var(--success); }
+.watershed-choice.is-incorrect .watershed-choice-result { color: var(--error); }
+.watershed-match-controls { display: flex; align-items: center; gap: 12px; }
+.watershed-match-feedback { flex: 1; margin: 0; padding: 10px 12px; background: var(--surface-soft); color: var(--muted); font-size: .76rem; line-height: 1.45; }
+.watershed-match-feedback strong { color: var(--ink); }
+.watershed-match-feedback.is-correct { border-left: 3px solid var(--success); }
+.watershed-match-feedback.is-incorrect { border-left: 3px solid var(--error); }
+.watershed-match-source { margin: 0; color: var(--muted); font-size: .67rem; line-height: 1.5; }
+.watershed-match-source a { color: inherit; text-underline-offset: 2px; }
+
+@media (max-width: 720px) {
+  .watershed-choice-list { grid-template-columns: 1fr; }
+  .watershed-choice-result { max-width: none; margin-left: auto; }
+  .watershed-match-controls { align-items: stretch; flex-direction: column; }
+}
+
+@media (max-width: 520px) {
+  .watershed-match-heading { align-items: flex-start; gap: 8px; }
+  .watershed-match-score { min-width: 70px; padding: 7px 8px; }
+  .watershed-map-figure { padding: 5px; }
+  .watershed-map-figure figcaption { font-size: .64rem; }
+  .watershed-map-legend { gap: 8px; font-size: .6rem; }
+  .watershed-match-task { padding: 10px 12px; }
+  .watershed-match-task h3 { font-size: .94rem; }
+  .watershed-choice { padding: 9px; }
+}
+
+html[data-theme='dark'] .watershed-match-task,
+html[data-theme='dark'] .watershed-map-figure,
+html[data-theme='dark'] .watershed-choice,
+html[data-theme='dark'] .watershed-match-feedback { background: var(--surface); }
+html[data-theme='dark'] .watershed-match-game { --watershed-option: #857b68; --watershed-outline: #c1b49e; --watershed-source: #779aaa; }
+html[data-theme='dark'] .watershed-map-marker circle { fill: #303d3e; stroke: #f2e7d9; }
+html[data-theme='dark'] .watershed-map-marker.is-correct circle { fill: #246239; }
+html[data-theme='dark'] .watershed-map-marker.is-incorrect circle { fill: #843d36; }
+html[data-theme='dark'] .watershed-source-label { fill: #122128; stroke: rgba(255,255,255,.9); }

@@ -23,6 +23,7 @@ export const DAILY_GAME_ELIGIBILITY: readonly DailyGameEligibility[] = [
   { gameId: 'historical-geography', eligible: false, reason: 'Excluded from Daily; its historical map deck and one-guess format have not been reviewed for the rotation.' },
   { gameId: 'projection-match', eligible: false, reason: 'Free Play only while the task prompts and four-round difficulty are evaluated.' },
   { gameId: 'population-pyramid', eligible: false, reason: 'Free Play only while the population-profile prompt and spacing bands are evaluated with players.' },
+  { gameId: 'watershed-match', eligible: false, reason: 'Free Play only while the WBD sample, downstream wording and map choices are evaluated with players.' },
 ]
 
 const knownGameIds = new Set<string>(GAME_IDS)
