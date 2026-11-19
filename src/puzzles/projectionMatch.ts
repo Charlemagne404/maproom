@@ -9,11 +9,27 @@ export interface ProjectionQuestion {
   explanation: string
 }
 
-export const PROJECTION_DETAILS: Record<ProjectionId, { name: string; shortName: string }> = {
-  'equal-earth': { name: 'Equal Earth', shortName: 'Equal Earth' },
-  mercator: { name: 'Mercator', shortName: 'Mercator' },
-  equirectangular: { name: 'Equirectangular', shortName: 'Equirectangular' },
-  orthographic: { name: 'Orthographic', shortName: 'Orthographic' },
+export const PROJECTION_DETAILS: Record<ProjectionId, { name: string; shortName: string; visualDescription: string }> = {
+  'equal-earth': {
+    name: 'Equal Earth',
+    shortName: 'Equal Earth',
+    visualDescription: 'Oval world map with curved meridians and straight parallels.',
+  },
+  mercator: {
+    name: 'Mercator',
+    shortName: 'Mercator',
+    visualDescription: 'Rectangular world map with straight meridians and parallels; the latitude lines get farther apart toward the poles.',
+  },
+  equirectangular: {
+    name: 'Equirectangular',
+    shortName: 'Equirectangular',
+    visualDescription: 'Rectangular world map with straight, evenly spaced meridians and parallels; land stretches sideways toward the poles.',
+  },
+  orthographic: {
+    name: 'Orthographic',
+    shortName: 'Orthographic',
+    visualDescription: 'Round, globe-like view of one hemisphere, with distant regions cut off at the edge.',
+  },
 }
 
 const QUESTIONS: Record<ProjectionId, ProjectionQuestion> = {

@@ -117,7 +117,7 @@ export function ProjectionMatchGame({ data, mode, date, seed }: { data: Geograph
               key={projectionId}
               className={`projection-map-option${isSelected ? ' is-selected' : ''}${checked && isCorrect ? ' is-correct' : ''}${checked && isSelected && !isCorrect ? ' is-incorrect' : ''}`}
               type="button"
-              aria-label={`Map option ${String.fromCharCode(65 + index)}${checked ? `, ${PROJECTION_DETAILS[projectionId].name}` : ''}`}
+              aria-label={`Map option ${String.fromCharCode(65 + index)}: ${PROJECTION_DETAILS[projectionId].visualDescription}${checked ? ` ${PROJECTION_DETAILS[projectionId].name}.` : ''}`}
               aria-pressed={isSelected}
               disabled={checked}
               onClick={() => setSelected(projectionId)}

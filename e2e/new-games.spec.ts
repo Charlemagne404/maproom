@@ -145,6 +145,16 @@ test('Map Projection Match renders the four map views, restores checked feedback
   await expect(page.locator('.projection-map-option')).toHaveCount(4)
   await expect(page.locator('.projection-map-visual path.projection-map-land')).toHaveCount(4)
   for (const path of await page.locator('.projection-map-land').all()) expect((await path.getAttribute('d'))?.length ?? 0).toBeGreaterThan(100)
+  const optionNames = await page.locator('.projection-map-option').evaluateAll((elements) => elements.map((element) => element.getAttribute('aria-label') ?? ''))
+  expect(optionNames).toHaveLength(4)
+  expect(new Set(optionNames).size).toBe(4)
+  expect(optionNames.join(' ').toLowerCase()).toContain('curved meridians')
+  expect(optionNames.join(' ').toLowerCase()).toContain('evenly spaced meridians')
+  expect(optionNames.join(' ').toLowerCase()).toContain('hemisphere')
+  await expect(page.getByRole('button', { name: /oval world map/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /latitude lines get farther apart toward the poles/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /evenly spaced meridians/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /round, globe-like view/i })).toBeVisible()
   await page.screenshot({ path: 'artifacts/qa/product-quality/map-projection-match-desktop.png', fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.locator('.projection-map-grid')).toHaveCSS('grid-template-columns', /\d+px \d+px/)
@@ -158,6 +168,10 @@ test('Map Projection Match renders the four map views, restores checked feedback
   await expect(page.getByRole('status')).toBeFocused()
   await expect(page.getByRole('status')).toContainText('Good match.')
   await expect(page.locator('.projection-option-name')).toHaveCount(4)
+  const checkedOptionNames = await page.locator('.projection-map-option').evaluateAll((elements) => elements.map((element) => element.getAttribute('aria-label') ?? ''))
+  for (const name of ['Equal Earth', 'Mercator', 'Equirectangular', 'Orthographic']) {
+    expect(checkedOptionNames.join(' ')).toContain(name)
+  }
   await expect.poll(() => page.evaluate(() => {
     const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<{ gameId: string; payload?: { answers?: string[] } }>
     return sessions.find((session) => session.gameId === 'projection-match')?.payload?.answers?.length ?? 0
