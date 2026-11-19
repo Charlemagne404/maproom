@@ -10,7 +10,7 @@ The official [Teuteuf Games portfolio](https://teuteuf.fr/) listed 19 games on t
 | --- | --- | --- |
 | Worldle | Identify a country from its silhouette; the official page advertises eight bonus rounds, and wrong guesses return distance, direction and a proximity indicator. | Country Outlines and informative miss feedback. |
 | Travle | Build a country path between endpoints; the game evaluates routes against shortest-path expectations. | Border Route and route-quality feedback. |
-| Geozee | Assign countries to categories and maximize the resulting category score. | Geography Grid category design and meaningful trade-offs. |
+| Geozee | Assign countries to categories and maximize the resulting category score. | Category design and strategic one-to-one allocation; one full daily round played. |
 | Flagle | Guess a flag in six attempts; the official page advertises five bonus rounds with country trivia. | Flag Study progression and optional learning. |
 | GeoGrid | Fill a 3×3 grid by naming a country that satisfies the row and column clues. | Geography Grid. |
 | GeoConnections | Find links among countries, cities, landmarks and other places, and organize them into four categories. | Geography Connections editorial standards. The sampled live board used country tiles. |

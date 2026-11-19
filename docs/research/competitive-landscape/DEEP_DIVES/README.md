@@ -20,4 +20,5 @@ Reviewed 19 November 2026. Each note distinguishes a round actually played from 
 | [World Geography Games](world-geography-games.md) | Catalog and one canvas quiz opened; test click did not register. |
 | [MapGuesser — Find the Feature](mapguesser-feature.md) | One Golfe du Lion sea round played; target outline and distance feedback observed. |
 | [Worldly Games — Rankings](worldly-rankings.md) | One GDP ordering puzzle solved in three guesses; positional feedback and tap-to-swap observed. |
+| [Geozee](geozee.md) | One full nine-country daily assignment completed; post-game optimal allocation and score display inspected. |
 | [NYT Games](nyt-games.md) | Browser safety blocked access; no game observations. |

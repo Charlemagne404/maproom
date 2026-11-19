@@ -4,7 +4,7 @@
 
 ### Direct browser observation
 
-- [Teuteuf portfolio](https://teuteuf.fr/): counted 19 current game entries. Directly played a round or partial round of Worldle, Travle, Flagle, GeoGrid, GeoConnections and Historicale. Opened Geozee, WhereTaken and WhenTaken but did not submit a round after consent controls appeared. See individual studies for limits.
+- [Teuteuf portfolio](https://teuteuf.fr/): counted 19 current game entries. Directly played a round or partial round of Worldle, Travle, Flagle, GeoGrid, GeoConnections, Historicale and Geozee. Opened WhereTaken and WhenTaken but did not submit a round after consent controls appeared. See individual studies for limits.
 - [Geocore Classic catalog](https://www.geocore.fun/game-catalog): observed 85/85 entries, numbered 001–069 and 072–087, thirteen input labels, category totals, Windows-only tags, and no-Pro/no-account labels. Also checked [Play](https://www.geocore.fun/play) and a guest Click Country round.
 - [Seterra](https://www.seterra.com/): played one US states round. Guest score advanced after an Illinois answer; no high-score login was used.
 - [Globle](https://globle-game.com/): submitted one wrong country and observed country coloring plus closest-border distance.
@@ -243,3 +243,9 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 
 - The prompt now says to add both sides of the four oldest age bands (65–69 through 80+) when comparing the 65+ target. The bundled male and female cohort values are each shares of total population, so the wording follows the source transformation and does not require interpreting sex-specific denominators.
 - Browser assertions check that the instruction is visible before answering on desktop and mobile. A player session is still needed to test whether this explanation makes the visual comparison intuitive.
+
+## 19 November 2026 — Geozee daily allocation play
+
+- Completed one nine-country guest daily round after rejecting optional tracking. The permanent one-to-one assignment scored 718/782; the result screen reported 7,732 players and top 16%. See the [Geozee deep dive](DEEP_DIVES/geozee.md) for the assignment table and observed score values.
+- “See optimal” displayed an assignment whose nine card scores total 782, while the header remained at 718/782 and “best 718.” The same view makes the category-allocation trade-off clear, but its aggregate header is inconsistent with the displayed cards.
+- Geozee uses an irreversible allocation loop, distinct from Geography Grid's two-criterion intersections. No Maproom gameplay change follows from one competitor session; actual Maproom play evidence remains open.
