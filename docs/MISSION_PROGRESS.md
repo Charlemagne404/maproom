@@ -548,7 +548,7 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Kept the one-decimal display and added a note beside the open table explaining the rounding; corrected the accessible chart caption and research/rules documentation. This clarifies the existing math without changing the ordering target, score or data.
 - The focused production-preview test now asserts the rounding note on desktop and mobile and captures the open table in both layouts. Screenshots are retained at `artifacts/qa/product-quality/population-pyramid-cohort-table.png` and `population-pyramid-mobile-dark-table.png`; player comprehension of the note still needs independent review. The game remains Free Play only and has not been deployed.
 
-## Population Pyramid Sort keyboard focus after reordering — 19 November 2026
+## Reorder keyboard focus across three games — 19 November 2026
 
-- A desktop keyboard check showed that moving Profile B to the first position disabled the focused Earlier button and left focus on the page body. Focus now follows the moved profile's same-direction control when enabled, then falls back to that profile's opposite enabled control at a list endpoint.
-- The production-preview test covers both endpoint fallback and focus retention during an interior move. Lint, production build/artifact validation and the focused Population Pyramid suite passed (2/2). No scoring, order, source data, Daily eligibility or deployment state changed.
+- A desktop keyboard check showed that moving a profile to the first position disabled the focused Earlier button and left focus on the page body. The same endpoint pattern existed in Latitude Ladder and Historical Geography sequence mode. A shared focus helper now follows each moved item and selects its opposite enabled control when the preferred direction becomes unavailable.
+- Production-preview browser checks cover endpoint fallback and continued focus during an interior move in all three games. Lint, production build/artifact validation and the three relevant Playwright files passed (12/12). No scores, ordering rules, source data or Daily eligibility changed; no deployment occurred.

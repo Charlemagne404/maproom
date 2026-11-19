@@ -10,6 +10,7 @@ import { formatCoordinate } from '../../geography/coordinates'
 import type { GeographyData, GameMode } from '../../geography/types'
 import { countCorrectCityPositions, createCityOrderQuestion, moveCity, type LadderAxis } from '../../puzzles/latitudeLadder'
 import { useGameSession } from '../session'
+import { useReorderFocus } from '../useReorderFocus'
 
 export function LatitudeLadderGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const selectedFormat = useFreePlayFormat()
@@ -79,6 +80,7 @@ function LatitudeRound({ axis, continents, data, mode, question, round, scope, s
   const [correctCount, setCorrectCount] = useState(() => typeof saved?.correctCount === 'number' ? saved.correctCount : 0)
   const [message, setMessage] = useState(() => typeof saved?.message === 'string' ? saved.message : '')
   const [score, setScore] = useState(() => typeof saved?.score === 'number' ? saved.score : 0)
+  const { buttonRef, rememberMove } = useReorderFocus(order)
   const { save, saveError, saveProgress } = session
   const cityById = useMemo(() => new Map(question.startingOrder.map((city) => [city.id, city])), [question.startingOrder])
   const orderedCities = order.flatMap((id) => cityById.get(id) ? [cityById.get(id)!] : [])
@@ -108,6 +110,9 @@ function LatitudeRound({ axis, continents, data, mode, question, round, scope, s
 
   function shift(index: number, direction: -1 | 1) {
     if (finished) return
+    const nextIndex = index + direction
+    if (nextIndex < 0 || nextIndex >= order.length) return
+    rememberMove(order[index]!, direction)
     setOrder((current) => moveCity(current, index, direction))
   }
 
@@ -139,7 +144,7 @@ function LatitudeRound({ axis, continents, data, mode, question, round, scope, s
                 <span className="latitude-city-label"><strong>{city.name}</strong><small>{country?.name ?? city.countryIso3}</small></span>
                 {finished
                   ? <span className="latitude-city-coordinate">{formatCoordinate(axis === 'latitude' ? city.lat : city.lon, axis)}</span>
-                  : <span className="latitude-move-controls"><button type="button" aria-label={`Move ${city.name} earlier`} title="Move earlier" disabled={index === 0} onClick={() => shift(index, -1)}><ArrowUp size={16} aria-hidden="true" /></button><button type="button" aria-label={`Move ${city.name} later`} title="Move later" disabled={index === orderedCities.length - 1} onClick={() => shift(index, 1)}><ArrowDown size={16} aria-hidden="true" /></button></span>}
+                  : <span className="latitude-move-controls"><button ref={buttonRef(city.id, -1)} type="button" aria-label={`Move ${city.name} earlier`} title="Move earlier" disabled={index === 0} onClick={() => shift(index, -1)}><ArrowUp size={16} aria-hidden="true" /></button><button ref={buttonRef(city.id, 1)} type="button" aria-label={`Move ${city.name} later`} title="Move later" disabled={index === orderedCities.length - 1} onClick={() => shift(index, 1)}><ArrowDown size={16} aria-hidden="true" /></button></span>}
               </li>
             })}
           </ol>

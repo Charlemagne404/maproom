@@ -8,6 +8,7 @@ import type { HistoricalMap } from '../../geography/historical/types'
 import type { GameMode } from '../../geography/types'
 import { createHistoricalDeck, createHistoricalSequenceDeck, createHistoricalSequenceOrder, evaluateHistoricalGuess, evaluateHistoricalSequenceOrder, formatHistoricalYearRange, type HistoricalDifficulty, type HistoricalGuessResult, type HistoricalSequence, type HistoricalSequenceResult } from '../../puzzles/historical-geography'
 import { useGameSession } from '../session'
+import { useReorderFocus } from '../useReorderFocus'
 import './historical-geography.css'
 
 const difficultyOptions = [
@@ -274,6 +275,8 @@ function HistoricalSequenceRound({ sequence, sequenceCount, mode, round, seed, s
   const [result, setResult] = useState<HistoricalSequenceResult | null>(isHistoricalSequenceResult(saved?.result) ? saved.result : null)
   const [showResults, setShowResults] = useState(false)
   const [orderAnnouncement, setOrderAnnouncement] = useState('')
+  const orderIds = useMemo(() => order.map((map) => map.id), [order])
+  const { buttonRef, rememberMove } = useReorderFocus(orderIds)
   const labels = useMemo(() => new Map(initialOrder.map((map, index) => [map.id, String.fromCharCode(65 + index)])), [initialOrder])
 
   useEffect(() => {
@@ -291,6 +294,7 @@ function HistoricalSequenceRound({ sequence, sequenceCount, mode, round, seed, s
   function moveMap(index: number, direction: -1 | 1) {
     const destination = index + direction
     if (destination < 0 || destination >= order.length) return
+    rememberMove(order[index]!.id, direction)
     const nextOrder = [...order]
     ;[nextOrder[index], nextOrder[destination]] = [nextOrder[destination]!, nextOrder[index]!]
     setOrder(nextOrder)
@@ -336,8 +340,8 @@ function HistoricalSequenceRound({ sequence, sequenceCount, mode, round, seed, s
                 <figcaption><strong>Map {label}</strong><span>Position {index + 1}</span></figcaption>
               </figure>
               {!result && <div className="historical-sequence-controls" role="group" aria-label={`Reorder map ${label}`}>
-                <button type="button" className="button button-outline" aria-label={`Move map ${label} earlier`} disabled={index === 0} onClick={() => moveMap(index, -1)}><ArrowUp size={15} aria-hidden="true" /><span>Earlier</span></button>
-                <button type="button" className="button button-outline" aria-label={`Move map ${label} later`} disabled={index === order.length - 1} onClick={() => moveMap(index, 1)}><ArrowDown size={15} aria-hidden="true" /><span>Later</span></button>
+                <button ref={buttonRef(map.id, -1)} type="button" className="button button-outline" aria-label={`Move map ${label} earlier`} disabled={index === 0} onClick={() => moveMap(index, -1)}><ArrowUp size={15} aria-hidden="true" /><span>Earlier</span></button>
+                <button ref={buttonRef(map.id, 1)} type="button" className="button button-outline" aria-label={`Move map ${label} later`} disabled={index === order.length - 1} onClick={() => moveMap(index, 1)}><ArrowDown size={15} aria-hidden="true" /><span>Later</span></button>
               </div>}
             </li>
           )
