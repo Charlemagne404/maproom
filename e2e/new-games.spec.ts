@@ -41,6 +41,14 @@ async function highlightedRiver(page: Page) {
   return { target: target!, wrong: wrong!, secondWrong: secondWrong!, centerCountry: centerCountry! }
 }
 
+function projectionOptionFor(prompt: string): string {
+  if (prompt.includes('true relative areas')) return 'Map option A'
+  if (prompt.includes('constant-heading course')) return 'Map option B'
+  if (prompt.includes('evenly spaced latitude')) return 'Map option C'
+  if (prompt.includes('near side')) return 'Map option D'
+  throw new Error(`No projection answer was defined for task: ${prompt}`)
+}
+
 test('Riverways loads its optional line layer, restores a guess, reveals the answer and replays', async ({ page }) => {
   await openGame(page, 'rivers')
   await expect(page.getByRole('group', { name: 'World map with one highlighted river trace' })).toBeVisible()
@@ -123,6 +131,62 @@ test('Latitude Ladder supports both setup formats, city ordering, result maps an
   await expect(page.locator('.latitude-axis-badge')).toContainText('Longitude')
 })
 
+test('Map Projection Match renders the four map views, restores checked feedback and completes a Free Play set', async ({ page }) => {
+  await page.goto('/explore')
+  const catalogueCard = page.locator('.game-card-projection-match')
+  await expect(catalogueCard).toBeVisible()
+  await expect(catalogueCard.getByRole('heading', { name: 'Map Projection Match' })).toBeVisible()
+  await expect(catalogueCard.getByRole('link')).toHaveAttribute('href', '/games/projection-match?mode=freeplay')
+  await expect(catalogueCard.locator('.art-projection-match svg')).toBeVisible()
+
+  await openGame(page, 'projection-match')
+  const task = page.getByRole('heading', { level: 3 })
+  const firstPrompt = await task.innerText()
+  await expect(page.locator('.projection-map-option')).toHaveCount(4)
+  await expect(page.locator('.projection-map-visual path.projection-map-land')).toHaveCount(4)
+  for (const path of await page.locator('.projection-map-land').all()) expect((await path.getAttribute('d'))?.length ?? 0).toBeGreaterThan(100)
+  await page.screenshot({ path: 'artifacts/qa/product-quality/map-projection-match-desktop.png', fullPage: true })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.locator('.projection-map-grid')).toHaveCSS('grid-template-columns', /\d+px \d+px/)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0)
+  await page.screenshot({ path: 'artifacts/qa/product-quality/map-projection-match-mobile.png', fullPage: true })
+  await page.setViewportSize({ width: 1440, height: 960 })
+
+  await page.getByRole('button', { name: projectionOptionFor(firstPrompt) }).focus()
+  await page.keyboard.press('Space')
+  await page.getByRole('button', { name: 'Check map' }).click()
+  await expect(page.getByRole('status')).toBeFocused()
+  await expect(page.getByRole('status')).toContainText('Good match.')
+  await expect(page.locator('.projection-option-name')).toHaveCount(4)
+  await expect.poll(() => page.evaluate(() => {
+    const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<{ gameId: string; payload?: { answers?: string[] } }>
+    return sessions.find((session) => session.gameId === 'projection-match')?.payload?.answers?.length ?? 0
+  })).toBe(1)
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Start free play' })).toBeVisible()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(task).toHaveText(firstPrompt)
+  await expect(page.getByRole('status')).toBeFocused()
+  await expect(page.getByRole('status')).toContainText('Good match.')
+  await page.getByRole('button', { name: 'Next mapping task' }).click()
+  await expect(page.getByRole('heading', { level: 3 })).toBeFocused()
+
+  for (let round = 1; round < 4; round += 1) {
+    await page.getByRole('button', { name: projectionOptionFor(await task.innerText()) }).click()
+    await page.getByRole('button', { name: 'Check map' }).click()
+    if (round < 3) {
+      await expect(page.getByRole('status')).toContainText('Good match.')
+      await page.getByRole('button', { name: 'Next mapping task' }).click()
+    }
+  }
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-dialog .game-results-summary')).toContainText('4 / 4 correct')
+  await expect(page.locator('.game-results-dialog .game-results-score')).toContainText('1,000')
+  await expect(page.locator('.game-results-dialog')).toContainText('tradeoffs')
+  await page.locator('.game-results-dialog').getByRole('button', { name: 'Match another set' }).click()
+  await expect(page.locator('.projection-match-heading .eyebrow')).toContainText('1 of 4')
+})
+
 test('the new games remain usable with touch at a narrow viewport', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
   const page = await context.newPage()
@@ -147,6 +211,12 @@ test('the new games remain usable with touch at a narrow viewport', async ({ bro
     await page.getByRole('button', { name: 'Check the line' }).tap()
     await expect(page.locator('.map-marker-answer')).toHaveCount(5)
     await expect(page.locator('.latitude-axis-badge')).toContainText('Latitude')
+
+    await openGame(page, 'projection-match')
+    await expect(page.locator('.projection-map-land').first()).toHaveCSS('fill', 'rgb(213, 196, 173)')
+    await page.getByRole('button', { name: 'Map option A' }).tap()
+    await page.getByRole('button', { name: 'Check map' }).tap()
+    await expect(page.getByRole('status')).toBeVisible()
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow).toBeLessThanOrEqual(0)
   } finally {

@@ -1,6 +1,6 @@
 # Game rules and scoring
 
-Maproom has thirteen games. Each Daily lineup selects six of eight eligible games: Find the country, Country Outline Quiz, Border Route, Flag Match, Geography Grid, Capitals & Cities, Riverways and Latitude Ladder. Geography Connections, Higher or Lower: Countries, Neighbour Challenge, City Distance & Direction and When Was This Map? are Free Play experiences; historical maps remain explicitly outside the Daily rotation. Daily dates use the time zone in Settings. In-progress daily sessions are saved locally and reopen with the same question sequence; completed results remain available from the puzzle and Statistics.
+Maproom has fourteen games. Each Daily lineup selects six of eight eligible games: Find the country, Country Outline Quiz, Border Route, Flag Match, Geography Grid, Capitals & Cities, Riverways and Latitude Ladder. Geography Connections, Higher or Lower: Countries, Neighbour Challenge, City Distance & Direction, When Was This Map? and Map Projection Match are Free Play experiences; the latter two remain explicitly outside the Daily rotation. Daily dates use the time zone in Settings. In-progress daily sessions are saved locally and reopen with the same question sequence; completed results remain available from the puzzle and Statistics.
 
 ## Country pools
 
@@ -59,6 +59,10 @@ Order five populated places from north to south or west to east; the selected ax
 Study an unlabeled global political-boundary snapshot and enter the year it depicts. The 20-map seeded deck is deterministic for a session and does not repeat an entry until all 20 have appeared. Easy accepts guesses within 100 years, Medium within 50 years, and Hard within 25 years; each boundary is inclusive and the result shows the exact accepted range. A closer guess earns more points, from 1,000 at the depicted year to zero at twice the selected tolerance. The reveal gives the depicted year, distance from the guess, a short historical explanation, and expandable date, source and license details.
 
 Each SVG is a Maproom-generated 31 December snapshot from CShapes 2.1, not an archival map published in that year. The initial curated years are 1886, 1898, 1914, 1918, 1920, 1923, 1939, 1945, 1949, 1956, 1960, 1965, 1971, 1975, 1980, 1991, 1993, 2002, 2006 and 2011. Attribution, context links, source hashes and dating caveats are recorded per map. CShapes is licensed CC BY-NC-SA 4.0, so the derived collection is for noncommercial use and adaptations must retain the same license. The game is Free Play only and is not in Daily rotation. Its generalized global boundaries omit subnational detail, many occupation fronts and some disputed or de facto arrangements; see [historical data research](data/historical/RESEARCH.md).
+
+## Map Projection Match
+
+Match each mapping task to one of four rendered views: Equal Earth, Mercator, Equirectangular or Orthographic. Every Free Play set asks once about each projection in a shuffled order. Choose one of the four maps and check it to reveal the recommended match and its properties. A correct answer earns 250 points, up to 1,000 across the four tasks. Task wording describes a common strength; it does not claim a projection preserves every map property or suits every scale and region. Map shapes use Maproom's bundled Natural Earth country boundaries and D3's local projection implementations. The game is Free Play only and remains outside Daily while prompt clarity and difficulty are evaluated.
 
 ## Local results and review
 

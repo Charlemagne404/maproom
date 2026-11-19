@@ -1,6 +1,6 @@
 # Maproom game audit
 
-Audit completed 18 November 2026 across all thirteen integrated game implementations, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
+Audit started 18 November 2026 and updated 19 November across all fourteen integrated game implementations, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
 
 ## Game-by-game review
 
@@ -95,9 +95,16 @@ Audit completed 18 November 2026 across all thirteen integrated game implementat
 - **Visual, mobile and accessibility:** The year input is labeled and keyboard-submittable; the map has alternative text, status text, visible focus styles and a responsive entry layout. Reveal and map transitions honor reduced-motion preference. Dark theme changes the surrounding controls and panels; the generated map itself remains a warm paper palette in both themes. No physical-device or formal assistive-technology review has yet been performed.
 - **Performance and geographic accuracy:** The game lazily loads one manifest and only the current local SVG; successful `/data/` requests use the existing service-worker cache for later offline use. CShapes 2.1 gives generalized international boundaries and dependent territories, not subnational geography, every front line or a complete record of contested/de facto borders. Every displayed year is a 31 December snapshot, not an archival publication date. The data and derived maps are CC BY-NC-SA 4.0: noncommercial use only, attribution and ShareAlike required. Unit, browser, production-artifact and offline checks cover tolerance boundaries, deterministic variety, source disclosure, manifest completeness and asset hashes.
 
+### Map Projection Match
+
+- **Gameplay, rules and balance:** Four task prompts ask players to choose between Equal Earth, Mercator, Equirectangular and Orthographic. Each four-question Free Play set uses every projection once in a seeded order, earns 250 points per correct answer, and stays outside Daily while prompt clarity and difficulty are evaluated.
+- **Feedback and replay:** Checking a choice names the best-matching projection and explains its defining property and a material tradeoff. The next task advances explicitly; answers and the current task are saved for resumption, and replay shuffles the four tasks for a new set.
+- **Visual, mobile and accessibility:** Each option is a keyboard-operable button containing a small rendered world map and graticule. The four-up desktop layout becomes a two-by-two grid on narrow screens. Option letters remain available before selection; projection names and correct/incorrect states appear after checking. Focus moves to the feedback and next task; production-preview checks cover keyboard selection, 390px touch play and overflow. Broader screen-reader and assistive-technology review remains outstanding.
+- **Performance and geographic accuracy:** The four projections use the bundled Natural Earth country geometry and the existing `d3-geo` dependency; no additional data service or asset is needed. Each projection preserves different properties and none preserves every property of a globe. The simplified prompts describe common use cases, not universal best-projection rules.
+
 ## Shared findings and changes from this mission
 
-- The original ten games already used shared session/result paths, reusable settings, local persistence and a curated daily allowlist. The two added games keep those boundaries through independent puzzle modules rather than a universal game engine.
+- The original ten games already used shared session/result paths, reusable settings, local persistence and a curated daily allowlist. Riverways, Latitude Ladder, Historical Geography and Map Projection Match keep those boundaries through independent puzzle modules rather than a universal game engine.
 - Game metadata and setup formats now live in one catalog, while a separate exhaustive lazy component registry owns the UI imports. Adding a Free Play game can no longer require editing unrelated navigation switches and the registry is checked against the stable ID union.
 - The baseline browser suite found the autocomplete Enter edge case in Country Outlines. The shared input now remembers an accepted label and submits on the next Enter, preserving the familiar two-step keyboard action. Targeted regression tests cover it.
 - Interactive country maps now expose a single Tab stop. Arrow keys move focus to the nearest country in that screen direction; Enter and Space select it, and Home/End move to the first/last country. An associated instruction gives these controls to assistive technology. Keyboard selection and the one-stop tab order have browser coverage.

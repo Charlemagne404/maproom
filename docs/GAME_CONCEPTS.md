@@ -29,7 +29,7 @@ This backlog combines research opportunities with Maproom's existing data, brows
 | 21 | **Migration Arrows** · Match a migration flow map to a broad region or period; comparing movement makes population geography dynamic. | 4/4/2/3/4/5 | Candidate. Sensitive interpretation, year selection and attribution needed. |
 | 22 | **National Park Locator** · Place protected areas within a region from their outline; conservation geography has strong visual and learning value. | 4/4/2/3/5/5 | Candidate. License and coverage vary by country. |
 | 23 | **Landform Pairing** · Match a plateau, basin or range to its neighboring landforms; spatial relationships can feel more like exploration than recall. | 4/4/3/3/4/5 | Candidate. Needs consistent landform outlines and labels. |
-| 24 | **Map Projection Match** · Identify the projection or distortion from graticules and area cues; the puzzle reveals why every flat map makes tradeoffs. | 5/4/4/4/5/5 | Candidate. Good teaching value; needs clear, nontechnical clue design. |
+| 24 | **Map Projection Match** · Match a mapping task to one of four rendered projections, then learn the property and tradeoff. | 5/4/4/4/5/5 | Implemented in Free Play on 19 November; browser and unit checks cover four-task variety, saved progress and results. Player clarity and difficulty remain unmeasured. |
 | 25 | **Country Rank Order** · Sort countries by population, area or density; quick turns make comparisons easy to replay. | 2/5/5/5/4/1 | Not selected. Direct overlap with Higher or Lower. |
 | 26 | **Neighbor Chain** · Build a path through countries sharing land borders; the shortest chain is the challenge. | 2/4/5/5/4/1 | Not selected. Direct overlap with Border Route. |
 | 27 | **Flag Family** · Group flags by shared design elements; visual pattern detection is quick and accessible. | 2/4/5/5/4/1 | Not selected. Direct overlap with Flag Study and Connections. |
@@ -41,7 +41,7 @@ This backlog combines research opportunities with Maproom's existing data, brows
 
 Riverways and Latitude Ladder were the strongest pair because they add distinct actions and disciplines: tracing physical geography and ordering urban coordinates. Both fit existing local data, can produce seeded rounds without a server, and use shared setup, result, persistence and statistics paths. Free Play city games omit GeoNames records for historical, abandoned, destroyed or sectioned places, while daily city generation retains its established data pool. Both new games remain outside Daily while their difficulty and long-term replay patterns are observed.
 
-The remaining candidates are not implementation commitments. Watershed Match, Climate Twins, Terrain Profile, Biomes Mosaic and Map Projection Match are promising future investigations; each would first need source and license review, a testable puzzle rule, and a clear distinction from today's games. The finalization phase makes no selection among them; prioritize maintenance and player evidence before another expansion.
+Watershed Match, Climate Twins, Terrain Profile and Biomes Mosaic remain proposals, not implementation commitments. Map Projection Match moved into implementation during the 19 November quality mission after official projection-property review showed that the task could be generated from existing local geometry without new datasets. Keep it outside Daily until players have assessed its prompts, effort and replay value.
 
 ### Watershed Match source review — 18 November 2026
 

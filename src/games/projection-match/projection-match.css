@@ -1,0 +1,52 @@
+.projection-match-game { display: grid; align-content: start; gap: 12px; }
+.projection-match-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.projection-match-heading h2 { margin: 0 0 4px; font-size: clamp(1.45rem, 2.4vw, 1.9rem); font-weight: 700; letter-spacing: -.035em; }
+.projection-match-heading p { color: var(--muted); font-size: .78rem; line-height: 1.45; }
+.projection-match-heading .eyebrow { margin-bottom: 4px; }
+.projection-match-score { min-width: 84px; padding: 9px 12px; border: 1px solid var(--border); color: var(--muted); text-align: center; font-size: .8rem; }
+.projection-match-score strong { color: var(--ink); font-size: 1.2rem; }
+.projection-match-task { padding: 12px 15px; border-left: 3px solid var(--accent); background: var(--surface-raised); }
+.projection-match-task .eyebrow { margin-bottom: 3px; }
+.projection-match-task h3 { max-width: 790px; margin: 0; font-size: 1rem; line-height: 1.4; }
+.projection-map-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.projection-map-option { min-width: 0; overflow: hidden; padding: 8px; border: 1px solid var(--border); background: var(--surface-raised); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .15s ease, background-color .15s ease, transform .15s ease; }
+.projection-map-option:hover:not(:disabled) { border-color: var(--control-border); transform: translateY(-1px); }
+.projection-map-option:focus-visible { outline-offset: 2px; }
+.projection-map-option:disabled { cursor: default; }
+.projection-map-option.is-selected { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.projection-map-option.is-correct { border-color: var(--success); box-shadow: inset 0 0 0 1px var(--success); }
+.projection-map-option.is-incorrect { border-color: var(--error); box-shadow: inset 0 0 0 1px var(--error); }
+.projection-option-label { display: block; margin: 0 0 6px; color: var(--muted); font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.projection-map-visual { display: block; width: 100%; height: auto; aspect-ratio: 320 / 190; border: 1px solid var(--border); background: var(--water); }
+.projection-map-ocean { fill: var(--water); }
+.projection-map-globe { fill: var(--surface-soft); stroke: var(--map-outline); stroke-width: 1.4; }
+.projection-map-land { fill: #e5d6c4; fill-rule: evenodd; stroke: #86796b; stroke-width: .7; stroke-linejoin: round; }
+.projection-map-graticule { fill: none; stroke: color-mix(in srgb, var(--map-outline) 62%, transparent); stroke-width: .55; pointer-events: none; }
+.projection-option-name { display: block; padding-top: 7px; font-size: .78rem; font-weight: 700; }
+.projection-match-controls { display: flex; align-items: center; gap: 12px; }
+.projection-match-feedback { flex: 1; padding: 10px 12px; background: var(--surface-soft); color: var(--muted); font-size: .78rem; line-height: 1.45; }
+.projection-match-feedback strong { color: var(--ink); }
+.projection-match-feedback.is-correct { border-left: 3px solid var(--success); }
+.projection-match-feedback.is-incorrect { border-left: 3px solid var(--error); }
+.projection-match-source, .projection-match-complete { color: var(--muted); font-size: .68rem; line-height: 1.45; }
+.projection-match-game > .game-results-dialog { align-self: start; }
+
+@media (max-width: 900px) {
+  .projection-map-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .projection-match-controls { align-items: stretch; flex-direction: column; }
+}
+
+@media (max-width: 520px) {
+  .projection-match-heading { align-items: flex-start; }
+  .projection-match-score { min-width: 68px; padding: 7px 8px; }
+  .projection-map-grid { gap: 8px; }
+  .projection-map-option { padding: 6px; }
+  .projection-option-label { margin-bottom: 4px; font-size: .6rem; }
+  .projection-match-task { padding: 10px 12px; }
+  .projection-match-task h3 { font-size: .91rem; }
+}
+
+html[data-theme='dark'] .projection-match-task,
+html[data-theme='dark'] .projection-map-option,
+html[data-theme='dark'] .projection-match-feedback { background: var(--surface); }
+html[data-theme='dark'] .projection-map-land { fill: #d5c4ad; stroke: #a89681; }

@@ -56,7 +56,7 @@ const snapshotPaths = [
   'games/flags/index.html', 'games/grid/index.html', 'games/cities/index.html',
   'games/connections/index.html', 'games/higher-lower/index.html', 'games/neighbours/index.html',
   'games/distance/index.html', 'games/rivers/index.html', 'games/latitude-ladder/index.html',
-  'games/historical-geography/index.html',
+  'games/historical-geography/index.html', 'games/projection-match/index.html',
 ]
 for (const relative of snapshotPaths) {
   const html = await readFile(await requiredFile(relative), 'utf8')
@@ -70,7 +70,7 @@ if (allHtml.length !== snapshotPaths.length) fail(`expected ${snapshotPaths.leng
 
 const sitemap = await readFile(await requiredFile('sitemap.xml'), 'utf8')
 const sitemapUrls = sitemap.match(/<loc>/g) ?? []
-if (sitemapUrls.length !== 18) fail(`expected 18 indexable sitemap URLs, found ${sitemapUrls.length}`)
+if (sitemapUrls.length !== 19) fail(`expected 19 indexable sitemap URLs, found ${sitemapUrls.length}`)
 const deployment = await readFile(path.join(root, 'scripts/finalize-deployment.sh'), 'utf8')
 const domain = deployment.match(/^readonly DOMAIN='([^']+)'$/m)?.[1]
 if (!domain || !sitemap.includes(`<loc>https://${domain}/`)) fail('sitemap origin does not match the deployment hostname')
@@ -86,7 +86,7 @@ for (const asset of precache.assets) {
   await requiredFile(asset.slice(1))
 }
 const compiledFiles = await readdir(path.join(dist, 'assets'))
-for (const chunk of ['CountryIdentificationGame', 'OutlineGame', 'BorderRouteGame', 'FlagGame', 'GeographyGridGame', 'CitiesGame', 'ConnectionsGame', 'HigherLowerGame', 'NeighbourGame', 'DistanceGame', 'RiverwaysGame', 'LatitudeLadderGame', 'HistoricalGeographyGame']) {
+for (const chunk of ['CountryIdentificationGame', 'OutlineGame', 'BorderRouteGame', 'FlagGame', 'GeographyGridGame', 'CitiesGame', 'ConnectionsGame', 'HigherLowerGame', 'NeighbourGame', 'DistanceGame', 'RiverwaysGame', 'LatitudeLadderGame', 'HistoricalGeographyGame', 'ProjectionMatchGame']) {
   if (!compiledFiles.some((file) => file.startsWith(`${chunk}-`) && file.endsWith('.js'))) fail(`lazy game chunk is missing for ${chunk}`)
 }
 const worker = await readFile(await requiredFile('sw.js'), 'utf8')

@@ -21,6 +21,7 @@ export const DAILY_GAME_ELIGIBILITY: readonly DailyGameEligibility[] = [
   { gameId: 'rivers', eligible: true, reason: 'Seeded from a named river pool, with stable scoring and saved progress.' },
   { gameId: 'latitude-ladder', eligible: true, reason: 'Seeded five-city order, stable scoring, and saved progress.' },
   { gameId: 'historical-geography', eligible: false, reason: 'Excluded from Daily; its historical map deck and one-guess format have not been reviewed for the rotation.' },
+  { gameId: 'projection-match', eligible: false, reason: 'Free Play only while the task prompts and four-round difficulty are evaluated.' },
 ]
 
 const knownGameIds = new Set<string>(GAME_IDS)

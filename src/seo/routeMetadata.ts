@@ -152,6 +152,11 @@ const gameCopy = {
     description: 'Study a Maproom-generated snapshot of international boundaries from 1886 to 2011, then estimate the year depicted.',
     summary: 'Read a generated historical political-boundary snapshot, enter its depicted year, and learn the context and sources behind it.',
   },
+  'projection-match': {
+    title: 'Map projection quiz',
+    description: 'Compare four world map projections and match each one to a mapping task, from equal-area maps to globe-like views.',
+    summary: 'Match Equal Earth, Mercator, Equirectangular and Orthographic maps to the tasks they suit, then learn what each projection distorts.',
+  },
 } satisfies Record<string, { title: string; description: string; summary: string }>
 
 export const gamePages: PageMetadata[] = games.map((game) => {

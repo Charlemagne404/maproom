@@ -18,6 +18,7 @@ const components: Record<GameId, GeographyGameComponent> = {
   rivers: lazy(() => import('./riverways/RiverwaysGame').then((module) => ({ default: module.RiverwaysGame }))),
   'latitude-ladder': lazy(() => import('./latitude-ladder/LatitudeLadderGame').then((module) => ({ default: module.LatitudeLadderGame }))),
   'historical-geography': lazy(() => import('./historical-geography/HistoricalGeographyGame').then((module) => ({ default: module.HistoricalGeographyGame }))),
+  'projection-match': lazy(() => import('./projection-match/ProjectionMatchGame').then((module) => ({ default: module.ProjectionMatchGame }))),
 }
 
 export function getGameComponent(gameId: GameId): GeographyGameComponent {

@@ -8,7 +8,7 @@ This ranked candidate list consolidates the earlier [30-concept evaluation](../.
 | 2 | **Climate Twins** — choose which of two cities matches a seasonal climate chart. | Needs a versioned climate-normal dataset and explanations for elevation and ocean effects. | Candidate. |
 | 3 | **Terrain Profile** — order summits or passes by elevation and compare their profile. | Needs consistent elevations and vertical-datum notes. | Candidate. |
 | 4 | **Population Pyramid Sort** — rank countries from age-distribution silhouettes, then reveal a consistent year. | Demographic source and year need clear coverage. | Candidate. |
-| 5 | **Map Projection Match** — identify a projection from graticule and area/shape distortion clues. | Can be generated locally; needs clear teaching copy and nontechnical clues. | Candidate. |
+| 5 | **Map Projection Match** — match a mapping task to an Equal Earth, Mercator, Equirectangular or Orthographic view and learn its tradeoff. | Uses existing Natural Earth geometry and `d3-geo`; no new data or license is needed. | **Implemented as four seeded Free Play tasks.** Unit and production-preview browser checks cover the task set, restore and replay. Player comprehension remains unmeasured. |
 | 6 | **Biomes Mosaic** — match broad vegetation/climate tiles to world regions. | Requires a defensible classification, generalized map tiles and data provenance. | Candidate. |
 | 7 | **Plate Boundary Lab** — infer a broad tectonic boundary from earthquake and volcano patterns. | Requires scientific curation and dated geophysical data. | Candidate. |
 | 8 | **Historic Borders** — compare two dated boundary reconstructions and locate a changed region. | Requires licensed, comparable historical layers; must distinguish reconstruction from archival map. | Candidate; keep secondary. |
@@ -39,4 +39,4 @@ This ranked candidate list consolidates the earlier [30-concept evaluation](../.
 
 ## Selection rule
 
-The next new game should add a different player action and a distinct learning outcome, not just another question bank. It must use a source that can be bundled and disclosed, have enough data for varied replay, work offline, fit a keyboard/touch interaction, and remain outside Daily until separately evaluated.
+The next new game should add a different player action and a distinct learning outcome, not just another question bank. It must use a source that can be bundled and disclosed, have enough data for varied replay, work offline, fit a keyboard/touch interaction, and remain outside Daily until separately evaluated. Map Projection Match passed that engineering screen; its four-task difficulty and teaching clarity still need player evaluation.

@@ -52,6 +52,7 @@ export const games: GameInfo[] = [
     { id: 'west-east', title: 'West to east', description: 'Order five cities by longitude.' },
   ], requiresCountryGeometry: true },
   { id: 'historical-geography', title: 'When Was This Map?', shortTitle: 'Historical maps', category: 'Historical geography', description: 'Read a Maproom-generated snapshot of historical boundaries, then guess its depicted year.', action: 'Place the year', icon: Clock3, path: '/games/historical-geography', requiresCountryGeometry: false },
+  { id: 'projection-match', title: 'Map Projection Match', shortTitle: 'Projection Match', category: 'Map literacy', description: 'Match four map projections to the jobs they suit, and see the tradeoffs each one makes.', action: 'Match the maps', icon: Globe2, path: '/games/projection-match', requiresCountryGeometry: true },
 ]
 
 export function formatsForGame(gameId: GameId): GameFormat[] {

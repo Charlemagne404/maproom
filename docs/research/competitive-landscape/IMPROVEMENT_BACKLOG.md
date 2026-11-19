@@ -27,3 +27,7 @@ Rank is a product judgment based on expected gameplay benefit, evidence, source 
 - Do not turn every game into a timed recall quiz; use time only where it improves the skill being tested.
 - Do not add photo games without an asset-rights and offline-storage plan.
 - Do not promote Historical Geography into Daily without a separate review of content, licensing, identity and persistence.
+
+## New game evaluation
+
+**Map Projection Match** is implemented as a four-task Free Play set. It uses the existing country geometry and D3 projection library, and it remains outside Daily. The local checks establish deterministic task coverage, answer persistence and responsive map rendering; a player study still needs to assess whether the map differences and task wording are clear enough without prior cartography knowledge.

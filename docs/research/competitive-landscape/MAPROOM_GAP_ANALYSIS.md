@@ -1,10 +1,10 @@
 # Maproom gap analysis
 
-This comparison builds on the dated thirteen-game [engineering audit](../../GAME_AUDIT.md), the existing [research notes](../../GAME_RESEARCH.md), and the public-play studies in this folder. It is not a player study. Browser self-play verifies that a flow works; it cannot establish that players find it fun or fair.
+This comparison builds on the fourteen-game [engineering audit](../../GAME_AUDIT.md), the existing [research notes](../../GAME_RESEARCH.md), and the public-play studies in this folder. It is not a player study. Browser self-play verifies that a flow works; it cannot establish that players find it fun or fair.
 
 ## Current strengths
 
-- Maproom already spans map selection, silhouettes, flags, route construction, grids, grouped logic, city placement, comparisons, river traces, ordering and historical maps.
+- Maproom already spans map selection, silhouettes, flags, route construction, grids, grouped logic, city placement, comparisons, river traces, ordering, historical maps and projection tradeoffs.
 - Daily puzzle identity, Free Play settings, saved sessions, offline data and reusable result flows are established.
 - Country Outlines already gives distance, direction and later regional clues. Latitude Ladder has accessible move controls and a post-submit map/coordinate reveal.
 - Geography Grid rejects unsolvable boards. Geography Connections keeps its 24 boards authored, seeded and uniqueness-audited rather than inventing arbitrary category combinations at runtime.
@@ -27,6 +27,7 @@ This comparison builds on the dated thirteen-game [engineering audit](../../GAME
 | Riverways | Trace a generalized watercourse and name it; local data and replay. | Learn whether the disclosed generalized-line clue helps without implying shortest-course distance. | **Implemented:** line-centre distance/direction on each miss, plus target-centre country after two misses; player interpretation remains unmeasured. |
 | Latitude Ladder | Reorder cities on either axis; exact-position score and post-submit map. | Test whether difficulty should be controlled by regional scope or by city spacing, using players rather than arbitrary labels. | Backlog. |
 | Historical Geography | Curated dated boundary reconstructions, citations and explicit license disclosure. | Present a stronger secondary timeline/sequence challenge only if the underlying dated maps can be compared fairly. | Research; stays outside Daily. |
+| Map Projection Match | Four rendered world projections tied to concrete mapping tasks, with a property and tradeoff reveal. | Check whether people can recognize the purpose of each projection from the map and concise task text. | **Implemented:** four seeded Free Play tasks use bundled geometry and D3; comprehension and difficulty remain unmeasured. |
 
 ## First improvement: Riverways feedback
 
@@ -49,3 +50,7 @@ The existing game accepted longer valid routes and scored their extra borders, b
 ### Neighbour Challenge set-difference feedback
 
 The old check state reported how many neighbors matched, were missed, or were extra, then hid the selected set. It showed the full correct list but did not identify which names belonged in the missed and incorrect counts. Results now list the found, missed and extra countries explicitly. The browser regression submits one missing neighbor and one valid non-neighbor, verifies both names, then completes the remaining four exact rounds. This confirms the feedback flow, not that players remember the correction later.
+
+### Map Projection Match
+
+Map Projection Match adds a visual map-reading action that was missing from the existing library: choose a projection from four rendered options based on a practical mapping task. A four-question seeded Free Play set covers Equal Earth, Mercator, Equirectangular and Orthographic once each. The prompt copy follows USGS guidance about projection properties and limitations; no flat map is presented as preserving every property. The maps use bundled Natural Earth geometry and `d3-geo`, with no new external data. The game stays outside Daily. Unit and production-preview browser checks verify task variety, feedback, saved progress, completion and replay; human understanding remains unmeasured.

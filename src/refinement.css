@@ -2118,12 +2118,12 @@ html[data-theme='dark'] .setup-choice.is-selected { background: color-mix(in srg
   .latitude-move-controls button { width: 36px; height: 40px; }
 }
 
-.game-card-rivers, .game-card-latitude-ladder { min-height: 190px; }
+.game-card-rivers, .game-card-latitude-ladder, .game-card-projection-match { min-height: 190px; }
 .game-card-rivers { background: #3e4842; color: #f5eee5; }
 .game-card-latitude-ladder { background: #e8ddd0; color: var(--ink); }
 .game-card-rivers .game-card-copy h2, .game-card-rivers .game-card-action { color: #f5eee5; }
 .game-card-rivers .game-card-action svg { color: #f29a62; }
-.game-card-rivers .game-card-art, .game-card-latitude-ladder .game-card-art { height: 91px; }
+.game-card-rivers .game-card-art, .game-card-latitude-ladder .game-card-art, .game-card-projection-match .game-card-art { height: 91px; }
 
 /* Maproom interaction finish: larger map stages and compact, floating controls. */
 .geo-map { touch-action: none; overscroll-behavior: contain; user-select: none; -webkit-user-select: none; }
@@ -2286,6 +2286,12 @@ html[data-theme='dark'] .setup-choice.is-selected { background: color-mix(in srg
 .river-mouth { fill: #f29a62; stroke: #343b36; stroke-width: 2; }
 .game-card-rivers:hover .river-course { stroke-dashoffset: -20; }
 .art-latitude-ladder { width: min(245px, 100%); height: 88px; margin: 8px auto 5px; }
+.art-projection-match { width: min(245px, 100%); height: 88px; margin: 8px auto 5px; }
+.art-projection-match svg { width: 100%; height: 100%; overflow: visible; }
+.projection-art-graticule { fill: none; stroke: #a49a8c; stroke-width: 1; }
+.projection-art-land { fill: #c6b8a6; stroke: #8f8170; stroke-width: 1; stroke-linejoin: round; }
+.projection-art-globe { fill: none; stroke: #8f8170; stroke-width: 1.5; }
+.projection-art-globe-lines { fill: none; stroke: #a49a8c; stroke-width: 1; }
 .art-latitude-ladder svg { width: 100%; height: 100%; overflow: visible; }
 .ladder-graticule { fill: none; stroke: rgba(41, 38, 34, .2); stroke-width: 1; stroke-dasharray: 2 5; }
 .ladder-order-line { fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
@@ -2294,10 +2300,10 @@ html[data-theme='dark'] .setup-choice.is-selected { background: color-mix(in srg
 .art-latitude-ladder g text { fill: var(--ink); font-family: var(--sans); font-size: 10px; font-weight: 800; text-anchor: middle; }
 
 @media (max-width: 760px) {
-  .game-card-rivers, .game-card-latitude-ladder { min-height: 172px; }
-  .game-card-rivers .game-card-art, .game-card-latitude-ladder .game-card-art { height: 76px; }
+  .game-card-rivers, .game-card-latitude-ladder, .game-card-projection-match { min-height: 172px; }
+  .game-card-rivers .game-card-art, .game-card-latitude-ladder .game-card-art, .game-card-projection-match .game-card-art { height: 76px; }
 }
 
 @media (max-width: 370px) {
-  .game-card-rivers .game-card-art, .game-card-latitude-ladder .game-card-art { height: 70px; }
+  .game-card-rivers .game-card-art, .game-card-latitude-ladder .game-card-art, .game-card-projection-match .game-card-art { height: 70px; }
 }
