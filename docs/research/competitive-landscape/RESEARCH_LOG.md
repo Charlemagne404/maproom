@@ -70,3 +70,26 @@
 - Added the exact-year value to the country catalog as `lifeExpectancyYears2023`, with no fallback for absent observations. The data manifest records the raw API hash, license, attribution and ISO3 transformation.
 - Added the measure to Higher or Lower Free Play only. Its description calls it a 2023 estimate at birth, not an individual prediction or healthcare-quality score. Close comparisons now use a 1 to under 4 year gap; Standard uses 4+ years. This avoids treating 17,506 of 18,721 Standard-pool pairs as close under the old ratio rule. World-pool availability is 3,962 Close and 13,258 Standard pairs; all continents have at least 20 pairs in each tier.
 - Updated the country data builder, artifact validation, game rules, source documentation and existing-game backlog. Daily measure selection and puzzle identities are unchanged. Player testing remains needed before considering Daily use.
+
+## 19 November 2026 — Latitude Ladder city-spacing audit
+
+The audit sampled the existing Free Play eligibility rules: GeoNames cities with population at least 100,000, valid coordinates, and feature codes other than historical, destroyed, abandoned or section records. The resulting pool contains 5,870 cities: Africa 826, Asia 2,962, Europe 798, North America 643, South America 611 and Oceania 30. For each scope and axis, 20,000 five-city samples were drawn uniformly without replacement using Python `random.Random(20261119).sample`. This estimates the current generator's uniform seeded shuffle without reproducing its PRNG stream. The measurement is the smallest of the four adjacent coordinate gaps after sorting the five cities by latitude or longitude. The percentages below are the share of rounds whose closest pair fell below each threshold; they describe generated content, not human answer accuracy.
+
+| Scope | Axis | Closest gap under 0.25° | Under 0.5° | Under 1° |
+| --- | --- | ---: | ---: | ---: |
+| World | North–south | 7.6% | 14.6% | 27.1% |
+| World | West–east | 3.4% | 6.4% | 11.5% |
+| Africa | North–south | 12.8% | 22.6% | 37.8% |
+| Africa | West–east | 13.4% | 23.1% | 38.8% |
+| Asia | North–south | 13.7% | 25.2% | 43.5% |
+| Asia | West–east | 7.7% | 14.1% | 25.0% |
+| Europe | North–south | 25.4% | 43.8% | 69.2% |
+| Europe | West–east | 9.3% | 17.7% | 31.5% |
+| North America | North–south | 19.1% | 31.9% | 51.9% |
+| North America | West–east | 13.6% | 22.9% | 37.3% |
+| Oceania | North–south | 25.9% | 39.3% | 68.5% |
+| Oceania | West–east | 28.4% | 44.4% | 60.9% |
+| South America | North–south | 18.2% | 29.8% | 46.6% |
+| South America | West–east | 15.7% | 27.1% | 45.8% |
+
+Europe and Oceania produce more close pairs on some axes, while world west–east rounds are usually more widely spaced. A universal degree threshold would therefore change meaning by region; longitude degrees also represent shorter ground distances closer to the poles. The current sampler remains unchanged. Moderated play should record order accuracy, confidence and completion by scope/axis before any difficulty labels or spacing constraints are introduced.

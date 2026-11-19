@@ -163,9 +163,10 @@ test('form boundaries and keyboard map focus meet non-text contrast across theme
     expect(focusRatio!.ratio, `${theme} map focus ${JSON.stringify(focusRatio)}`).toBeGreaterThanOrEqual(3)
 
     await page.getByRole('button', { name: 'Game settings' }).click()
-    await expect(page.locator('.game-setting-toggle i')).toBeVisible()
-    expect(await controlBoundaryFailures(page), `${theme} game setting switch`).toEqual([])
     const timedRoundSwitch = page.getByLabel('60-second speed round')
+    const timedRoundToggle = page.locator('.game-setting-toggle').filter({ has: timedRoundSwitch })
+    await expect(timedRoundToggle.locator('i')).toBeVisible()
+    expect(await controlBoundaryFailures(page), `${theme} game setting switch`).toEqual([])
     await timedRoundSwitch.check()
     expect(await controlBoundaryFailures(page), `${theme} game setting switch on`).toEqual([])
     await timedRoundSwitch.uncheck()
