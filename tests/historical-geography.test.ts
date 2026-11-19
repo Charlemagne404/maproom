@@ -28,6 +28,26 @@ describe('historical geography game', () => {
     expect(() => evaluateHistoricalGuess(2000, 0, 'easy')).toThrow(RangeError)
   })
 
+  it('prevents one fixed year guess from passing most of the complete map collection', () => {
+    const years = manifest.maps.map((map) => map.depictedYear)
+    const bestFixedGuessCoverage = (tolerance: number) => Math.max(
+      ...Array.from({ length: 2023 - 1886 + 1 }, (_, index) => 1886 + index)
+        .map((guess) => years.filter((year) => Math.abs(guess - year) <= tolerance).length),
+    )
+
+    expect(bestFixedGuessCoverage(HISTORICAL_TOLERANCES.easy)).toBe(8)
+    expect(bestFixedGuessCoverage(HISTORICAL_TOLERANCES.medium)).toBe(4)
+    expect(bestFixedGuessCoverage(HISTORICAL_TOLERANCES.hard)).toBe(2)
+    expect(bestFixedGuessCoverage(HISTORICAL_TOLERANCES.easy)).toBeLessThan(manifest.maps.length / 2)
+    const bestFixedGuessMeanScore = (difficulty: keyof typeof HISTORICAL_TOLERANCES) => Math.max(
+      ...Array.from({ length: 2023 - 1886 + 1 }, (_, index) => 1886 + index)
+        .map((guess) => manifest.maps.reduce((total, map) => total + evaluateHistoricalGuess(map.depictedYear, guess, difficulty).score, 0) / manifest.maps.length),
+    )
+    expect(bestFixedGuessMeanScore('easy')).toBeLessThan(400)
+    expect(bestFixedGuessMeanScore('medium')).toBeLessThan(200)
+    expect(bestFixedGuessMeanScore('hard')).toBeLessThan(100)
+  })
+
   it('builds the same seeded map order from differently ordered manifests and exhausts the deck before repeating', () => {
     const forward = createHistoricalDeck(manifest.maps, 'test-seed')
     const reversed = createHistoricalDeck([...manifest.maps].reverse(), 'test-seed')

@@ -26,21 +26,21 @@ Source-backed sets marked `advisory` are a separate review queue. Their exact or
 
 ### Starter-library overlap review
 
-The 24-board audit reports no unassigned exact quartet. The following broad matches were reviewed as deliberate cross-group decoys; counts are the number of tiles matching that rule, not additional answer groups. This is the baseline to compare against when content changes. Any new warning must be reviewed and recorded before publication.
+The 24-board audit reports no unassigned exact quartet. Counts are the number of tiles matching that rule, not additional answer groups. Rows for Atlas 02, 04, 11, 13, 22 and 23 below reflect the alpha-candidate edits; the other rows remain the reviewed opening-library counts. Any new warning must be reviewed and recorded before publication.
 
 | Board | Reviewed broad matches |
 | --- | --- |
-| Atlas 02 | landlocked (5); Europe (5); Africa (5) |
+| Atlas 02 | landlocked (5); Asia (5); Africa (5) |
 | Atlas 03 | landlocked (6); Asia (7); Europe (6) |
-| Atlas 04 | Asia (6); Europe (8); Northern Europe (5) |
+| Atlas 04 | Asia (6); Europe (6) |
 | Atlas 05 | Asia (7); South-Eastern Asia (5) |
 | Atlas 06 | landlocked (5); Africa (7) |
 | Atlas 07 | Asia (12); Western Asia (6) |
 | Atlas 08 | Europe (6); Africa (6) |
 | Atlas 09 | Asia (6); Europe (6) |
-| Atlas 11 | landlocked (6); Europe (8) |
+| Atlas 11 | none above the four-tile review threshold; its four “-stan” answers are also the same four Asia tiles, not an alternative tile set |
 | Atlas 12 | Asia (6); Africa (6) |
-| Atlas 13 | landlocked (5); Asia (5); Europe (6) |
+| Atlas 13 | none above the four-tile review threshold; its Iran-border quartet also shares the same four Asia tiles |
 | Atlas 14 | Europe (10) |
 | Atlas 15 | country names beginning B (7); Asia (7); Europe (6); 2023 population above 100 million (5) |
 | Atlas 16 | Asia (8) |
@@ -49,19 +49,28 @@ The 24-board audit reports no unassigned exact quartet. The following broad matc
 | Atlas 19 | Asia (7); Europe (5) |
 | Atlas 20 | Asia (6); Africa (6) |
 | Atlas 21 | landlocked (6); Asia (6); Europe (6) |
-| Atlas 22 | Europe (8) |
+| Atlas 22 | Europe (7) |
 | Atlas 23 | Asia (5); Europe (8) |
 | Atlas 24 | Asia (7) |
 
 Atlas 01 and Atlas 10 produce no broad-match warning under the checked rule set. The audit intentionally avoids treating arbitrary population or area cutoffs as plausible alternatives: such bins can be invented endlessly and are not clues unless the board names and dates them. It does check authored bands, the recurring under-1,000 km² and above-100-million thresholds, country and capital initials, name patterns, all catalogue borders and regions, landlocked status, and every named set.
 
-### Developer self-play follow-up — Atlas 04
+### Alpha-candidate fairness repair — 19 November 2026
 
-A direct, fixed-seed developer play-through raised an unassigned exact association that the current audit rule bank does not check. Atlas 04 contains Finland, France, Ireland and the Netherlands; selecting those four as euro-area members received “No match.” The European Union's current [official euro-area list](https://european-union.europa.eu/institutions-law-budget/euro/countries-using-euro_en) includes all four (page last updated 12 January 2026). A separate guess of the United Kingdom, Ireland, Iceland and New Zealand received one-away feedback, consistent with three members of the authored “end in land” group. Screenshots: [euro-area no-match](../../../docs/research/competitive-landscape/STUDIES/evidence/connections-atlas-04-euro-area-no-match.png) and [island one-away](../../../docs/research/competitive-landscape/STUDIES/evidence/connections-atlas-04-island-one-away.png).
+An offline scan against the EU's current euro-area membership and the authored board rules confirmed that the flagged groups could produce plausible alternatives. The changed boards were reviewed one by one and repaired with factual, sourced tile sets rather than hiding the advisory:
 
-An offline tile-set scan against the EU's current 21-country euro-area list found exact, unassigned four-tile alternatives on Atlas 02 (BEL, ESP, LUX, PRT), Atlas 04 (FIN, FRA, IRL, NLD), Atlas 13 (AUT, FIN, IRL, LUX), and Atlas 23 (FRA, HRV, LUX, SVN). Atlas 11 and Atlas 22 each contain five euro-area members, while Atlas 19 and Atlas 24's four-member matches are already their authored EEC-founding-state groups. A subsequent code change added the euro area as an advisory-only fact set. The audit reports four exact-set candidates and two larger overlaps separately from hard validation issues; player review is still needed to decide whether any board needs an edit.
+| Board | Editorial change | Reason |
+| --- | --- | --- |
+| Atlas 02 | Replaced Portugal with Timor-Leste in the Portuguese-official-language set. | Removes the exact BEL/ESP/LUX/PRT euro-area quartet while keeping four valid CPLP members. |
+| Atlas 04 | Replaced Finland with Poland and Ireland with Thailand in the “end in land” set; replaced Czechia and Laos with Niger and Burkina Faso in the landlocked set; replaced Norway with Germany in the North Sea set. | Removes the euro quartet and the additional Germany-border, Myanmar-border, and Northern Europe exact alternatives found during validation. The remaining Asia (6) and Europe (6) intersections are broad decoys, not exact four-tile matches. |
+| Atlas 11 | Replaced the Swiss-border group with a 2023 5–10 million population group using Liberia, Libya, Sierra Leone and New Zealand; changed its four “-stan” members to Afghanistan, Kazakhstan, Pakistan and Uzbekistan. | The Swiss-border and Adriatic groups exposed five euro-area tiles. The sourced group removes the China-border quartet; the revised board has three China-border tiles, short of a second group. The Asia association matches the same “-stan” quartet, not another set of tiles. |
+| Atlas 13 | Replaced the 2023 population quartet AUT/FIN/IRL/LUX with CRI/SLV/NZL/NIC; replaced Indonesia with Gabon in the Equator set; replaced Armenia with Turkey in the Iran-border set. | Removes the euro quartet and the landlocked alternative found in the first replacement pass. The Iran-border group and Asia each describe the same four tiles. |
+| Atlas 22 | Replaced the OPEC subset with a 2023 5–10 million population group (CRI/NIC/SLV/ISR), replaced Lesotho with Eswatini in the SACU subset, and replaced Bulgaria with Turkey in the Black Sea group. | The OPEC and Black Sea tiles made another Asia quartet; the SACU change removes a landlocked alternative, and the Black Sea change removes an additional euro-area tile. The EEC label now says “Among the six 1957 EEC founders,” and the reveal names the 1957 Treaty of Rome. Its four EEC tiles also use the euro, but that remains the same answer set. The remaining Europe (7) intersection is broad and produces no alternate exact quartet. |
+| Atlas 23 | Replaced Croatia with Bosnia and Herzegovina in the former-Yugoslav-republic subset. | Keeps the sourced six-republic set while removing the exact FRA/HRV/LUX/SVN euro-area quartet. |
 
-This is a developer self-play and source-based signal, not independent player evidence. No board content changed. The blinded pilot now prioritizes Atlas 02, 04, 13 and 23 for exact-set review, then Atlas 11 and 22 for larger-overlap review, without naming the proposed association to participants. Use unaided alternatives and fairness ratings before considering edits.
+The resulting code audit passes for all 24 boards and reports no unassigned exact quartet or unassigned euro-area advisory. Atlas 22 still has seven Europe tiles. That is a deliberate broad red herring: the four EEC founders are the specified answer, and the remaining three Europe tiles do not make a second four-tile membership set. Atlas 22's four EEC tiles also use the euro, but that association is the same tile answer, not a different selection. Atlas 11's “-stan” quartet and Atlas 13's Iran-border quartet likewise share their answer tiles with the Asia label; neither creates another set of four tiles. Atlas 02 and 04 retain the documented broad regional overlaps from the audit table, with no exact alternate quartet.
+
+Developer first-read play and the unit audit are not independent player evidence. The blinded [review protocol](../../../docs/research/competitive-landscape/STUDIES/connections-content-review.md) remains unrun; perceived difficulty and whether these deliberate overlaps feel fair remain unknown. Keep its study before making further content tuning.
 
 ### Answer-set repetition review
 

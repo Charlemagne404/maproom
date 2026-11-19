@@ -12,9 +12,9 @@ import { useReorderFocus } from '../useReorderFocus'
 import './historical-geography.css'
 
 const difficultyOptions = [
-  { value: 'easy', label: 'Easy · within 100 years' },
-  { value: 'medium', label: 'Medium · within 50 years' },
-  { value: 'hard', label: 'Hard · within 25 years' },
+  { value: 'easy', label: 'Easy · within 20 years' },
+  { value: 'medium', label: 'Medium · within 8 years' },
+  { value: 'hard', label: 'Hard · within 2 years' },
 ]
 
 interface SavedHistoricalProgress {
@@ -80,7 +80,7 @@ export function HistoricalGeographyGame({ mode, date, seed }: { mode: GameMode; 
       {format === 'year'
         ? <>
           <GameSettingSelect label="Difficulty" value={difficulty} options={difficultyOptions} onChange={(value) => setDifficulty(value as HistoricalDifficulty)} />
-          <p className="historical-settings-note">Tolerance is inclusive. The accepted year range appears with each result.</p>
+          <p className="historical-settings-note">The accepted year range is inclusive and appears with each result. Difficulty is tuned to the 1886–2011 snapshot collection.</p>
         </>
         : <p className="historical-settings-note">Reorder three unlabeled snapshots from oldest to newest. Each result reveals the dates and historical context.</p>}
     </div>

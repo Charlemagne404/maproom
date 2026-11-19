@@ -204,7 +204,7 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
   puzzle('atlas-02', 'easy', [
     g('atlas-02-stan', 'End in “-stan”', 'The common country name ends with the letters stan.', 1, ['KAZ', 'AFG', 'TJK', 'UZB'], { type: 'country-name-suffix', value: 'stan' }),
     g('atlas-02-france', 'Share a land border with France', 'Each country shares a land border with France.', 2, ['BEL', 'ESP', 'MCO', 'LUX'], { type: 'border-country', countryCode: 'FRA' }),
-    g('atlas-02-portuguese', 'Portuguese is an official language', 'Portuguese is an official language in all four states.', 3, ['AGO', 'CPV', 'GNB', 'PRT'], setFact('cplp-portuguese-official')),
+    g('atlas-02-portuguese', 'Portuguese is an official language', 'Portuguese is an official language in all four states.', 3, ['AGO', 'CPV', 'GNB', 'TLS'], setFact('cplp-portuguese-official')),
     g('atlas-02-capricorn', 'The Tropic of Capricorn crosses their land', 'The Tropic of Capricorn crosses dry land in each country.', 4, ['ARG', 'CHL', 'MDG', 'NAM'], setFact('tropic-capricorn-land-crossings')),
   ], 'A visible name pattern gives way to a border set, a language relationship, and a latitude line.'),
   puzzle('atlas-03', 'easy', [
@@ -214,11 +214,11 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
     g('atlas-03-red-sea', 'Border the Red Sea', 'Each has a Red Sea or Gulf of Aqaba shoreline.', 4, ['ISR', 'JOR', 'SAU', 'EGY'], setFact('red-sea-coast')),
   ], 'Language status, two marginal seas, and a river-side capital clue keep political and physical geography in play together.'),
   puzzle('atlas-04', 'easy', [
-    g('atlas-04-landlocked', 'Landlocked countries', 'Each has no sea coastline.', 1, ['CZE', 'LAO', 'UZB', 'UGA'], { type: 'landlocked' }),
+    g('atlas-04-landlocked', 'Landlocked countries', 'Each has no sea coastline.', 1, ['NER', 'BFA', 'UZB', 'UGA'], { type: 'landlocked' }),
     g('atlas-04-india', 'Share a land border with India', 'Each country shares a land border with India.', 2, ['BGD', 'CHN', 'MMR', 'PAK'], { type: 'border-country', countryCode: 'IND' }),
-    g('atlas-04-land', 'End in the letters “land”', 'The common country name ends with land.', 3, ['FIN', 'IRL', 'ISL', 'NZL'], { type: 'country-name-suffix', value: 'land' }),
-    g('atlas-04-north-sea', 'Have a North Sea shoreline', 'Each has a shoreline on the North Sea.', 4, ['GBR', 'NOR', 'NLD', 'FRA'], setFact('north-sea-coast')),
-  ], 'The board combines landlocked status, a border with India, a country-name ending, and a North Sea shoreline.'),
+    g('atlas-04-land', 'End in the letters “land”', 'The common country name ends with land.', 3, ['THA', 'ISL', 'NZL', 'POL'], { type: 'country-name-suffix', value: 'land' }),
+    g('atlas-04-north-sea', 'Have a North Sea shoreline', 'Each has a shoreline on the North Sea.', 4, ['GBR', 'DEU', 'NLD', 'FRA'], setFact('north-sea-coast')),
+  ], 'Thailand replaces Ireland in the correctly defined country-name ending, while Burkina Faso replaces Laos in the landlocked group, avoiding the Myanmar-border alternative. Germany replaces Norway on the North Sea group. These edits remove the Northern Europe, Germany-border and euro-area quartets.'),
   puzzle('atlas-05', 'easy', [
     g('atlas-05-name-a', 'Country names beginning with A', 'Each country name starts with the letter A.', 1, ['AFG', 'ALB', 'ARM', 'AUS'], { type: 'country-name-initial', initial: 'A' }),
     g('atlas-05-brazil', 'Share a land border with Brazil', 'Each country shares a land border with Brazil.', 2, ['BOL', 'PER', 'URY', 'VEN'], { type: 'border-country', countryCode: 'BRA' }),
@@ -258,10 +258,10 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
   ], 'A regional clue and a border clue share the board with founding memberships from two distant regions.'),
   puzzle('atlas-11', 'medium', [
     g('atlas-11-caribbean', 'In the Caribbean', 'Each is catalogued in the Caribbean subregion.', 1, ['DMA', 'BHS', 'BRB', 'CUB'], { type: 'subregion', value: 'Caribbean' }),
-    g('atlas-11-switzerland', 'Share a land border with Switzerland', 'Each country shares a land border with Switzerland.', 2, ['AUT', 'DEU', 'FRA', 'LIE'], { type: 'border-country', countryCode: 'CHE' }),
+    g('atlas-11-population', 'Between 5 and 10 million people in 2023', 'Each had a 2023 population from 5 million up to, but not including, 10 million.', 2, ['LBR', 'LBY', 'SLE', 'NZL'], between5mAnd10m()),
     g('atlas-11-adriatic', 'Have an Adriatic Sea shoreline', 'Each has an Adriatic Sea shoreline.', 3, ['ALB', 'HRV', 'MNE', 'SVN'], setFact('adriatic-sea-coast')),
-    g('atlas-11-stan', 'End in “-stan”', 'The common country name ends with the letters stan.', 4, ['AFG', 'KGZ', 'TJK', 'TKM'], { type: 'country-name-suffix', value: 'stan' }),
-  ], 'The clues intentionally alternate between a broad region, a specific border, a sea, and a word ending.'),
+    g('atlas-11-stan', 'End in “-stan”', 'The common country name ends with the letters stan.', 4, ['AFG', 'KAZ', 'PAK', 'UZB'], { type: 'country-name-suffix', value: 'stan' }),
+  ], 'The clues intentionally alternate between a broad region, a dated population band, a sea, and a word ending. The sourced population group replaces the Swiss-border group after the latter, together with the Adriatic coast group, created a five-member euro-area overlap. The 5–10 million band uses three African profiles and one New Zealand profile to avoid the Adriatic and “-stan” countries; the selected “-stan” quartet leaves only two China-border matches on the board.'),
   puzzle('atlas-12', 'medium', [
     g('atlas-12-landlocked', 'Landlocked countries', 'Each has no sea coastline.', 1, ['AND', 'LAO', 'NER', 'UGA'], { type: 'landlocked' }),
     g('atlas-12-red-sea', 'Have a Red Sea shoreline', 'Each has a Red Sea shoreline.', 2, ['DJI', 'EGY', 'ERI', 'SDN'], setFact('red-sea-coast')),
@@ -269,11 +269,11 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
     g('atlas-12-capital-b', 'Their capitals begin with B', 'Bogotá, Beijing, Baghdad, and Bangkok begin with B.', 4, ['COL', 'CHN', 'IRQ', 'THA'], { type: 'capital-initial', initial: 'B' }),
   ], 'The statistical word “landlocked” sits alongside two physical geography clues and a capital pattern.'),
   puzzle('atlas-13', 'medium', [
-    g('atlas-13-equator', 'The Equator crosses their land', 'The Equator crosses dry land in each country.', 1, ['COD', 'COL', 'ECU', 'IDN'], setFact('equator-land-crossings')),
-    g('atlas-13-population', 'Between 5 and 10 million people in 2023', 'Each had a 2023 population from 5 million up to, but not including, 10 million.', 2, ['AUT', 'CRI', 'FIN', 'IRL'], between5mAnd10m()),
-    g('atlas-13-iran', 'Share a land border with Iran', 'Each country shares a land border with Iran.', 3, ['ARM', 'AZE', 'IRQ', 'PAK'], { type: 'border-country', countryCode: 'IRN' }),
+    g('atlas-13-equator', 'The Equator crosses their land', 'The Equator crosses dry land in each country.', 1, ['COD', 'COL', 'ECU', 'GAB'], setFact('equator-land-crossings')),
+    g('atlas-13-population', 'Between 5 and 10 million people in 2023', 'Each had a 2023 population from 5 million up to, but not including, 10 million.', 2, ['CRI', 'SLV', 'NZL', 'NIC'], between5mAnd10m()),
+    g('atlas-13-iran', 'Share a land border with Iran', 'Each country shares a land border with Iran.', 3, ['TUR', 'AZE', 'IRQ', 'PAK'], { type: 'border-country', countryCode: 'IRN' }),
     g('atlas-13-capital', 'Capital and country share a name', 'The national capital has the same name as its country.', 4, ['DJI', 'LUX', 'MCO', 'VAT'], { type: 'capital-country-name' }),
-  ], 'A dated population band and two border/physical clues are paired with a capital relationship.'),
+  ], 'A dated population band now samples Costa Rica, El Salvador, New Zealand and Nicaragua; this sourced mix preserves the Medium statistical clue while removing the exact euro-area quartet. Gabon replaces Indonesia in the Equator group to avoid adding a fifth Asian tile, and Turkey replaces Armenia in the Iran-border group to break a landlocked-country alternative.'),
   puzzle('atlas-14', 'medium', [
     g('atlas-14-population', 'Between 1 and 5 million people in 2023', 'Each had a 2023 population from 1 million up to, but not including, 5 million.', 1, ['ALB', 'BHR', 'BIH', 'ERI'], { type: 'population-band', minimum: 1_000_000, maximum: 5_000_000, year: '2023' }),
     g('atlas-14-nordic', 'Among the five Nordic sovereign states', 'These four are among the five Nordic Council member countries that are sovereign states.', 2, ['DNK', 'ISL', 'NOR', 'SWE'], setFact('nordic-sovereign-states')),
@@ -324,17 +324,17 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
     g('atlas-21-population', 'Between 1 and 5 million people in 2023', 'Each had a 2023 population from 1 million up to, but not including, 5 million.', 4, ['ALB', 'BIH', 'GAB', 'URY'], { type: 'population-band', minimum: 1_000_000, maximum: 5_000_000, year: '2023' }),
   ], 'Each clue points to a distinct scale: one border, capital river, marginal sea, or a dated population interval.'),
   puzzle('atlas-22', 'hard', [
-    g('atlas-22-sacu', 'Among SACU’s five member states', 'These four are members of the five-country Southern African Customs Union.', 1, ['BWA', 'LSO', 'NAM', 'ZAF'], setFact('sacu-members')),
-    g('atlas-22-eec', 'Among the six EEC founding states', 'These four were among the six states that signed the Treaty of Rome to establish the EEC.', 2, ['BEL', 'FRA', 'ITA', 'LUX'], setFact('eec-founding-members')),
-    g('atlas-22-opec', 'Among OPEC’s five founding members', 'These four were among the five countries that founded OPEC in 1960.', 3, ['IRN', 'IRQ', 'SAU', 'VEN'], setFact('opec-founding-members')),
-    g('atlas-22-black-sea', 'Have a Black Sea shoreline', 'Each has a shoreline on the Black Sea.', 4, ['BGR', 'ROU', 'RUS', 'UKR'], setFact('black-sea-coast')),
-  ], 'Customs, European integration and oil-export histories compete with a generalized Black Sea shoreline.'),
+    g('atlas-22-sacu', 'Among SACU’s five member states', 'These four are members of the five-country Southern African Customs Union.', 1, ['BWA', 'NAM', 'SWZ', 'ZAF'], setFact('sacu-members')),
+    g('atlas-22-eec', 'Among the six 1957 EEC founders', 'These four were among the six states that signed the 1957 Treaty of Rome to establish the European Economic Community.', 2, ['BEL', 'FRA', 'ITA', 'LUX'], setFact('eec-founding-members')),
+    g('atlas-22-population', 'Between 5 and 10 million people in 2023', 'Each had a 2023 population from 5 million up to, but not including, 10 million.', 3, ['CRI', 'NIC', 'SLV', 'ISR'], between5mAnd10m()),
+    g('atlas-22-black-sea', 'Have a Black Sea shoreline', 'Each has a shoreline on the Black Sea.', 4, ['ROU', 'RUS', 'TUR', 'UKR'], setFact('black-sea-coast')),
+  ], 'Customs, EEC founding, a dated population band, and a generalized Black Sea shoreline supply distinct kinds of clue. The population group replaces the OPEC quartet because its Asian members combined with Turkey to form a second exact Asia quartet. The SACU subset changes to avoid a landlocked quartet with Luxembourg. The four Treaty signatories remain the same intended tile group even though they also use the euro.'),
   puzzle('atlas-23', 'hard', [
-    g('atlas-23-yugoslav', 'Among the former Yugoslav republics', 'These four were among the six republics of the Socialist Federal Republic of Yugoslavia.', 1, ['HRV', 'MNE', 'SRB', 'SVN'], setFact('former-yugoslav-republics')),
+    g('atlas-23-yugoslav', 'Among the former Yugoslav republics', 'These four were among the six republics of the Socialist Federal Republic of Yugoslavia.', 1, ['BIH', 'MNE', 'SRB', 'SVN'], setFact('former-yugoslav-republics')),
     g('atlas-23-g7', 'Among the seven G7 members', 'These four are among the seven G7 member countries.', 2, ['CAN', 'FRA', 'GBR', 'USA'], setFact('g7-members')),
     g('atlas-23-india', 'Share a land border with India', 'Each country shares a land border with India.', 3, ['BGD', 'MMR', 'NPL', 'PAK'], { type: 'border-country', countryCode: 'IND' }),
     g('atlas-23-capital', 'Capital and country share a name', 'The national capital has the same name as its country.', 4, ['DJI', 'LUX', 'MCO', 'SGP'], { type: 'capital-country-name' }),
-  ], 'A history set, an explicitly partial G7 set, a border clue and matching capital names form four different kinds of link.'),
+  ], 'Bosnia and Herzegovina replaces Croatia within the valid six-republic Yugoslav set, preserving the historical clue while removing the exact current-euro quartet from the board.'),
   puzzle('atlas-24', 'hard', [
     g('atlas-24-guinea', 'Names containing “Guinea”', 'The country name itself contains Guinea.', 1, ['GIN', 'GNB', 'GNQ', 'PNG'], { type: 'country-name-contains', value: 'Guinea' }),
     g('atlas-24-india', 'Share a land border with India', 'Each country shares a land border with India.', 2, ['BGD', 'BTN', 'NPL', 'PAK'], { type: 'border-country', countryCode: 'IND' }),

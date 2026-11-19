@@ -36,9 +36,11 @@ const HISTORICAL_SEQUENCE_YEARS = [
 ] as const
 
 export const HISTORICAL_TOLERANCES: Record<HistoricalDifficulty, number> = {
-  easy: 100,
-  medium: 50,
-  hard: 25,
+  // The 20-map pack spans 125 years. Wider windows make a fixed midpoint guess
+  // pass too many rounds, so these bands are calibrated to the shipped dates.
+  easy: 20,
+  medium: 8,
+  hard: 2,
 }
 
 export function createHistoricalDeck(maps: readonly HistoricalMap[], seed: string): HistoricalMap[] {

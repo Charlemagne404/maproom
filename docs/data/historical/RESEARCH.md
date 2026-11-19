@@ -59,3 +59,9 @@ The [David Rumsey Map Collection](https://www.davidrumsey.com/) was also reviewe
 - A 20-map deck provides variety but repeats after all 20 entries; the seed fixes the ordering for reproducible play.
 - Lazy loading requests the small manifest first and only the current SVG as the game advances. Maproom’s existing `/data/` service-worker runtime caches successful data requests, so a map is available offline after it has been fetched once. A first visit without network access requires a prior successful fetch/cache.
 - No external image, tile, geocoder or map API is used in play. The direct source, license and historical citations are opened only when the player follows a link.
+
+## Difficulty calibration — alpha candidate
+
+The 20 selected snapshots cover 1886–2011, a 125-year span. The earlier inclusive ±100/±50/±25-year tolerances did not match that compact deck: a guess of 1949 fell within 100 years of every snapshot and could pass every Easy map without reading its boundaries. We kept the existing Easy/Medium/Hard structure, but narrowed the accepted intervals to ±20/±8/±2 years. No maps or source data were added; the selected pack already contains identifiable, context-backed dates, and changing tolerance was the smallest correction.
+
+The exhaustive unit check evaluates every integer guess across the CShapes source span against all 20 depicted years. The best fixed guess can pass at most 8/20 Easy maps, 4/20 Medium maps, and 2/20 Hard maps. The highest average score from one fixed guess is 359/1,000 on Easy, below 200 on Medium, and below 100 on Hard. Each accepted range is shown before play and in the result. These are generator-level calibration checks, not evidence of player-perceived difficulty; the original year bands were changed because their center-guess exploit was deterministic and reproducible.
