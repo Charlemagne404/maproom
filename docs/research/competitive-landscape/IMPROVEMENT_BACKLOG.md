@@ -1,0 +1,29 @@
+# Existing-game improvement backlog
+
+Rank is a product judgment based on expected gameplay benefit, evidence, source readiness, effort and regression risk. Scores and rankings are not player-study results. The first two completed items stay visible so the next session can distinguish shipped work from ideas.
+
+| Rank | Game / task | Evidence and expected benefit | Status / next step |
+| ---: | --- | --- | --- |
+| 1 | Riverways: reveal spatially useful information after every miss. | Direct Worldle/Flagle play showed spatial feedback; Maproom had an information-poor first miss. | **Implemented and verified.** Calculated line-centre distance/direction per miss; target-centre country after miss two. Unit, production-preview and local self-play checks pass. Seek player feedback before tuning. |
+| 2 | Connections: keep the editorial uniqueness check fast. | The baseline 36-board generator/audit scenario exceeded Vitest's 5-second timeout even though runtime gameplay selects fixed authored boards. | **Implemented and verified.** Audit only the 16 board tiles against each rule; all exact-match checks remain. Full unit suite passes at the normal timeout. |
+| 3 | Geography Grid: measure clue-family variety and repetition in actual play. | Live GeoGrid/Geocore surfaces expose compact intersecting criteria; generated board count alone did not show which clue pairs repeated or how broad the intersections were. | **Generator-level change verified; player evidence remains open.** The 240-board Free Play pool now has 50 clue categories, 371 distinct row/column pairs (baseline 345), and P90 intersection size 27 (baseline 32). Maximum category appearances changed 76→77, so this is a modest variety/distribution gain, not uniform category balance. Observe real sessions before further tuning. |
+| 4 | Geography Connections: conduct a blinded editorial review of difficulty and decoys. | A uniqueness validator cannot tell whether a human sees a fair connection or a red herring. | Play all current tiers with independent players. Preserve the 24 authored boards unless new content passes the same source and ambiguity review. |
+| 5 | Riverways: run moderated first-read and replay sessions. | The new feedback is based on generalized line centres; whether it helps or distracts is unknown. | Ask players to explain the clue and choose their next guess; compare round completion and perceived accuracy. |
+| 6 | Latitude Ladder: calibrate difficulty by spacing and region. | Exact-position scoring is objective, but difficulty labels need evidence. | Record order accuracy across world/continent rounds; prefer observed calibration to arbitrary city-pool sizes. |
+| 7 | Capitals & Cities: evaluate marker-first entry and result reveal. | TimeGuessr/WhereTaken rely on a location commitment before reveal; Maproom already has map placement and distance scores. | Test existing city placement with new players; only add a separate mode if it tests a distinct skill. Keep coordinates secondary. |
+| 8 | Border Route: explain route quality and alternatives after completion. | Travle explicitly distinguishes route quality while Maproom accepts arbitrary-order entry and valid longer paths. | Review result copy and score with players; never constrain intermediate-entry order or reject a valid route. |
+| 9 | Find the country: compare the current one-click round with an optional multi-guess practice mode. | Worldle creates a sequence of decisions, while Maproom's fast one-click round suits a different purpose. | Prototype only in Free Play; compare clarity and round length before considering Daily. |
+| 10 | Flag Study: audit progressive reveal against similar and asymmetric flags. | Flagle gradually reveals flag areas; not all flags reveal equally useful information. | Create a balanced offline test set; measure whether reveal order helps rather than over-rewards large color fields. |
+| 11 | Neighbour Challenge: teach missing/extra membership after checking. | Full-set recall can be frustrating if the only useful feedback arrives at the final check. | Test a single explicit check/reveal flow; keep route validity separate from set recall. |
+| 12 | Higher or Lower: investigate sourceable metric diversity. | Current population, area and density are coherent comparisons; adding metrics without year/source matching would reduce trust. | Identify same-year public sources and country coverage first. No new dataset is approved. |
+| 13 | Distance & Direction: calibrate close-call rounds. | Distance/latitude/longitude use different mental skills. | Use completion and answer spread to tune pair generation; preserve the current two-choice input. |
+| 14 | Country Outlines: validate difficulty against players. | Candidate eligibility and guess budgets are curated, but statistical fairness is not human-verified. | Ask players to classify a fixed sample before changing thresholds. |
+| 15 | Historical Geography: evaluate a small curated sequence mode. | Historicale shows timeline and before/after loops, but Maproom uses dated boundary reconstructions with a noncommercial license. | Prototype from existing dates only after testing whether map differences are visually distinguishable. Keep secondary and outside Daily. |
+| 16 | All interactive maps: physical-device and voice-control review. | Automated desktop browser coverage is not proof of real touch precision or voice-control operation. | Schedule device and assistive-technology sessions; fix observed barriers. |
+
+## Not immediate work
+
+- Do not add new data to Higher or Lower or Connections until its source, date and interpretation are clear.
+- Do not turn every game into a timed recall quiz; use time only where it improves the skill being tested.
+- Do not add photo games without an asset-rights and offline-storage plan.
+- Do not promote Historical Geography into Daily without a separate review of content, licensing, identity and persistence.

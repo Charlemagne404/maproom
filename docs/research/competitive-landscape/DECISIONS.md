@@ -1,0 +1,17 @@
+# Research and product decisions
+
+Updated 19 November 2026. This log records choices for the continuous quality mission, not final product policy.
+
+| Decision | Basis | Consequence |
+| --- | --- | --- |
+| Improve a current game's feedback before adding another quiz. | The mission prioritizes game quality. Riverways had a clear first-miss information gap, while another game would add more content and maintenance. | Add spatial miss feedback in Riverways first; defer new game code. |
+| Compare generalized river-line centres, and label the measure. | Natural Earth centerlines have no verified network or flow graph in this build. Centre-to-centre distance and direction are computable; shortest course distance is not. | Round distance to 50 km, report direction, disclose that it is not nearest-course distance, and test all authored questions. |
+| Show the target-centre country after the second miss. | Existing country polygons can locate all 134 authored question centres in the current question pool. The clue is local and deterministic. | Provide one broad spatial comparison before the more specific country clue. |
+| Preserve all 24 Connections boards and their standards. | The content guide requires authored, sourceable and uniqueness-audited groups. The test timeout came from repeated whole-catalog scans in the audit, not gameplay generation. | Optimize exact checking over the 16 board tiles; do not lower test timeout or change boards. |
+| Keep the test timeout at its normal value. | After the audit optimization, the formerly slow 36-board scenario passed with the normal Vitest timeout. | Future content work remains covered by the same run-time check. |
+| Balance only the expanded Grid Free Play pool by observed generator usage. | The old 240-board pool had 345 distinct row/column category pairs and a P90 intersection size of 32; a weighted Free Play draw produced 371 pairs and P90 27 while retaining 240 valid boards. The most-used clue changed from 76 to 77 appearances, so this is not uniform balance. | Keep the Daily generator and identity path unchanged; retain regression thresholds for pool size, category/pair variety and intersection size. Treat human difficulty and perceived repetition as unmeasured. |
+| Do not treat an advertised mode as tested or free. | Geocore's catalog includes Windows-only, Pro and account labels; GeoGuessr's guest play redirected to signup. | Catalog exact observed labels and state access uncertainty per mode. |
+| Do not grant third-party precise-location or advertising consent for research. | WhenTaken and WhereTaken consent screens listed precise geolocation and ad processing; a scored round could not be responsibly inspected without deciding those preferences. | Record public instructions and initial UI, not full-round results. |
+| Do not route around the NYT browser safety block. | The user's research instructions require respecting access restrictions. | Mark NYT gameplay unobserved and select other references for direct play. |
+| Do not add a new game to Daily automatically. | Current Daily has an explicit allowlist and deterministic puzzle identity. | Future games require a separate content, persistence, fairness and schedule review. |
+| Keep photo-based games as research only. | Rights, attribution, consent, offline packaging and image provenance need dedicated review. | Do not reuse competitor photographs or build image-round content from scraped pages. |

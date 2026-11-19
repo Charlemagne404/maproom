@@ -347,6 +347,7 @@ export function createGridPresets(countries: Country[] = [], options: { expanded
 
   const candidates: GridPreset[] = []
   const ids = new Set<string>()
+  const categoryUsage = new Map<string, number>()
   const addCandidate = (columns: GridCategory[], rows: GridCategory[], expanded: boolean) => {
     const cells = rows.flatMap((row) => columns.map((column) => intersections.get(`${column.id}|${row.id}`) ?? []))
     if (columns.length !== 3 || rows.length !== 3 || cells.some((cell) => cell.length < 2 || cell.length > 90) || !hasDistinctGridAnswers(cells)) return
@@ -354,6 +355,7 @@ export function createGridPresets(countries: Country[] = [], options: { expanded
     if (ids.has(id)) return
     ids.add(id)
     candidates.push({ id, title: expanded ? 'Regions & map facts' : 'Regions & geographic facts', columns, rows })
+    for (const category of [...columns, ...rows]) categoryUsage.set(category.id, (categoryUsage.get(category.id) ?? 0) + 1)
   }
   if (options.expanded) {
     const southernEurope = regions.find((category) => category.id === 'm49-southern-europe')
@@ -372,10 +374,10 @@ export function createGridPresets(countries: Country[] = [], options: { expanded
     }
   }
   const random = seededRandom(options.expanded ? 'maproom:grid-preset-pool:v3' : 'maproom:grid-preset-pool:v2')
-  const maximumAttempts = 24_000
+  const maximumAttempts = options.expanded ? 36_000 : 24_000
   for (let attempt = 0; attempt < maximumAttempts && candidates.length < 240; attempt += 1) {
-    const columns = chooseThree(regions, random)
-    const rows = chooseThree(attributes, random)
+    const columns = options.expanded ? chooseBalancedThree(regions, random, categoryUsage) : chooseThree(regions, random)
+    const rows = options.expanded ? chooseBalancedThree(attributes, random, categoryUsage) : chooseThree(attributes, random)
     if (!columns || !rows) continue
     addCandidate(columns, rows, Boolean(options.expanded))
     if (candidates.length >= 240) break
@@ -413,6 +415,24 @@ function chooseThree<T>(values: readonly T[], random: () => number): [T, T, T] |
   if (third >= skipped[0]) third += 1
   if (third >= skipped[1]) third += 1
   return [values[first]!, values[second]!, values[third]!]
+}
+
+function chooseBalancedThree(values: readonly GridCategory[], random: () => number, usage: Map<string, number>): [GridCategory, GridCategory, GridCategory] | null {
+  if (values.length < 3) return null
+  const remaining = [...values]
+  const selected: GridCategory[] = []
+  while (selected.length < 3) {
+    const weights = remaining.map((category) => 1 / (1 + (usage.get(category.id) ?? 0)) ** 0.75)
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
+    let position = random() * totalWeight
+    let index = weights.findIndex((weight) => {
+      position -= weight
+      return position < 0
+    })
+    if (index < 0) index = remaining.length - 1
+    selected.push(remaining.splice(index, 1)[0]!)
+  }
+  return [selected[0]!, selected[1]!, selected[2]!]
 }
 
 function hasDistinctGridAnswers(cells: Country[][]): boolean {

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { geoEqualEarth, geoPath } from 'd3-geo'
-import type { RiverFeature } from '../src/geography/types'
-import { buildRiverQuestionPool } from '../src/puzzles/rivers'
+import type { Country, RiverFeature } from '../src/geography/types'
+import { buildRiverQuestionPool, riverCentreCountry } from '../src/puzzles/rivers'
 import { loadTopologyFeatures } from './topology'
 
 async function openGame(page: Page, id: string, format?: string) {
@@ -15,12 +15,16 @@ async function openGame(page: Page, id: string, format?: string) {
 }
 
 async function highlightedRiver(page: Page) {
-  const [riverResponse, countryFeatures] = await Promise.all([
+  const [riverResponse, countryFeatures, catalogResponse] = await Promise.all([
     page.request.get(new URL('/data/rivers.json', page.url()).toString()),
     loadTopologyFeatures(page, '/data/countries.topo.json'),
+    page.request.get(new URL('/data/countries.json', page.url()).toString()),
   ])
   expect(riverResponse.ok()).toBe(true)
+  expect(catalogResponse.ok()).toBe(true)
   const riverData = await riverResponse.json() as { features: RiverFeature[] }
+  const catalog = await catalogResponse.json() as { countries: Country[] }
+  const countriesByCode = new Map(catalog.countries.map((country) => [country.iso3, country]))
   const collection = { type: 'FeatureCollection', features: countryFeatures } as unknown as GeoJSON.FeatureCollection
   const projection = geoEqualEarth().fitExtent([[16, 14], [944, 466]], collection)
   const path = geoPath(projection)
@@ -29,8 +33,12 @@ async function highlightedRiver(page: Page) {
   const target = pool.find((river) => path(river.feature as unknown as GeoJSON.Feature) === renderedPath)
   expect(target, 'the highlighted path maps to a validated question').toBeDefined()
   const wrong = pool.find((river) => river.id !== target?.id)
+  const secondWrong = pool.find((river) => river.id !== target?.id && river.id !== wrong?.id)
   expect(wrong).toBeDefined()
-  return { target: target!, wrong: wrong! }
+  expect(secondWrong).toBeDefined()
+  const centerCountry = riverCentreCountry(target!.feature, countryFeatures, countriesByCode)
+  expect(centerCountry, 'every authored question has a country containing its calculated centre').toBeTruthy()
+  return { target: target!, wrong: wrong!, secondWrong: secondWrong!, centerCountry: centerCountry! }
 }
 
 test('Riverways loads its optional line layer, restores a guess, reveals the answer and replays', async ({ page }) => {
@@ -43,21 +51,29 @@ test('Riverways loads its optional line layer, restores a guess, reveals the ans
   expect(pathBefore).toMatch(/^M/)
   await expect(page.locator('.riverways-source-note')).toContainText('Natural Earth')
 
-  const { target, wrong } = await highlightedRiver(page)
+  const { target, wrong, secondWrong, centerCountry } = await highlightedRiver(page)
   const answer = page.getByLabel('Name the highlighted river')
   await answer.fill(wrong.name)
   await page.getByRole('option', { name: wrong.name, exact: true }).click()
   await page.getByRole('button', { name: 'Guess' }).click()
   await expect(page.locator('.riverways-attempts .is-used')).toHaveCount(1)
+  await expect(page.locator('.answer-feedback')).toContainText(`${wrong.name} is not this river.`)
+  await expect(page.locator('.answer-feedback')).toContainText(/(?:about [\d,]+ km .+ of the highlighted line’s centre|within 50 km of the highlighted line’s centre)/)
+
+  await answer.fill(secondWrong.name)
+  await page.getByRole('option', { name: secondWrong.name, exact: true }).click()
+  await page.getByRole('button', { name: 'Guess' }).click()
+  await expect(page.locator('.riverways-attempts .is-used')).toHaveCount(2)
+  await expect(page.locator('.answer-feedback')).toContainText(`The highlighted line’s calculated centre falls in ${centerCountry}.`)
   await expect.poll(() => page.evaluate(() => {
     const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<{ gameId: string; payload?: { attempts?: string[] } }>
     return sessions.find((session) => session.gameId === 'rivers')?.payload?.attempts?.length ?? 0
-  })).toBe(1)
+  })).toBe(2)
 
   await page.reload()
   await expect(page.getByRole('button', { name: 'Start free play' })).toBeVisible()
   await page.getByRole('button', { name: 'Start free play' }).click()
-  await expect(page.locator('.riverways-attempts .is-used')).toHaveCount(1)
+  await expect(page.locator('.riverways-attempts .is-used')).toHaveCount(2)
   await expect(page.locator('.map-line-feature')).toHaveAttribute('d', pathBefore!)
 
   const restoredAnswer = page.getByRole('combobox', { name: 'Name the highlighted river' })

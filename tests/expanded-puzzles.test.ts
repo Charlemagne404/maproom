@@ -82,6 +82,24 @@ describe('expanded daily and practice puzzle builders', () => {
       const candidates = gridCandidates(countries, row, column)
       return candidates.length >= 2 && candidates.length <= 90
     })))).toBe(true)
+
+    const categoryPairs = new Set<string>()
+    const clueCategories = new Set<string>()
+    const intersectionSizes: number[] = []
+    for (const preset of freeplayPresets) {
+      for (const category of [...preset.columns, ...preset.rows]) clueCategories.add(category.id)
+      for (const row of preset.rows) {
+        for (const column of preset.columns) {
+          categoryPairs.add(`${row.id}|${column.id}`)
+          intersectionSizes.push(gridCandidates(countries, row, column).length)
+        }
+      }
+    }
+    intersectionSizes.sort((left, right) => left - right)
+    expect(freeplayPresets).toHaveLength(240)
+    expect(clueCategories.size).toBeGreaterThanOrEqual(50)
+    expect(categoryPairs.size).toBeGreaterThanOrEqual(360)
+    expect(intersectionSizes[Math.floor(intersectionSizes.length * 0.9)]).toBeLessThanOrEqual(30)
   })
 
   it('applies the documented Standard and ordinary Extended pools', () => {

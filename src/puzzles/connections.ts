@@ -95,8 +95,7 @@ export function auditConnectionsPuzzle(
       allAnswerCodes.add(code)
     }
     answerSets.push(codes)
-    const factMembers = new Set(membersForFact(group.fact, eligible))
-    const matchedOnBoard = new Set([...board].filter((code) => factMembers.has(code)))
+    const matchedOnBoard = matchingTilesForFact(group.fact, board, byCode)
     if (!sameSet(matchedOnBoard, codes)) {
       issues.push(`${puzzle.id}/${group.id}: the declared fact must match exactly its four board tiles; found ${[...matchedOnBoard].join(', ')}.`)
     }
@@ -104,7 +103,7 @@ export function auditConnectionsPuzzle(
   if (allAnswerCodes.size !== 16) issues.push(`${puzzle.id}: answer groups must cover all sixteen tiles exactly once.`)
 
   for (const rule of auditFacts(puzzle.groups, eligible)) {
-    const matched = new Set([...board].filter((code) => membersForFact(rule, eligible).includes(code)))
+    const matched = matchingTilesForFact(rule, board, byCode)
     if (matched.size < 4) continue
     if (answerSets.some((answer) => sameSet(answer, matched))) continue
     const label = describeFact(rule)
@@ -179,9 +178,15 @@ function auditFacts(groups: ConnectionsGroup[], countries: Country[]): Connectio
   return [...rules.values()]
 }
 
-function membersForFact(rule: ConnectionsFactRule, countries: Country[]): string[] {
-  if (rule.type === 'named-set') return namedFactSetById.get(rule.id)?.members.filter((code) => countries.some((country) => country.iso3 === code)) ?? []
-  return countries.filter((country) => factMatches(rule, country)).map((country) => country.iso3)
+function matchingTilesForFact(rule: ConnectionsFactRule, board: Set<string>, byCode: Map<string, Country>): Set<string> {
+  if (rule.type === 'named-set') {
+    const members = new Set(namedFactSetById.get(rule.id)?.members ?? [])
+    return new Set([...board].filter((code) => byCode.has(code) && members.has(code)))
+  }
+  return new Set([...board].filter((code) => {
+    const country = byCode.get(code)
+    return country ? factMatches(rule, country) : false
+  }))
 }
 
 function factMatches(rule: ConnectionsFactRule, country: Country): boolean {

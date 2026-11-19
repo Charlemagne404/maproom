@@ -1,5 +1,6 @@
-import type { GeoFeature, RiverFeature } from '../geography/types'
-import { normalizeAnswer, seededShuffle } from './engine'
+import { geoCentroid, geoContains } from 'd3-geo'
+import type { Country, Coordinates, GeoFeature, RiverFeature } from '../geography/types'
+import { directionFromTo, greatCircleKm, normalizeAnswer, seededShuffle } from './engine'
 
 export interface RiverQuestion {
   id: string
@@ -15,6 +16,48 @@ const RANK_LIMIT: Record<RiverDifficulty, number> = { easy: 2, medium: 3, hard: 
 
 export function riverRankLimit(difficulty: RiverDifficulty): number {
   return RANK_LIMIT[difficulty]
+}
+
+export interface RiverCentreProximity {
+  distanceKm: number
+  direction: string | null
+}
+
+/** Compare the calculated centres of two generalized river traces. */
+export function riverCentreProximity(guess: GeoFeature, target: GeoFeature): RiverCentreProximity | null {
+  const from = riverCentre(target)
+  const to = riverCentre(guess)
+  if (!from || !to) return null
+  const distanceKm = greatCircleKm(from, to)
+  return {
+    distanceKm: Math.round(distanceKm / 50) * 50,
+    direction: distanceKm < 25 ? null : directionFromTo(from, to),
+  }
+}
+
+/** Returns the catalogued country containing the calculated centre of a mapped river trace. */
+export function riverCentreCountry(
+  river: GeoFeature,
+  countryFeatures: GeoFeature[],
+  countriesByCode: ReadonlyMap<string, Country>,
+): string | null {
+  const [longitude, latitude] = geoCentroid(river as unknown as GeoJSON.Feature)
+  if (!Number.isFinite(longitude) || !Number.isFinite(latitude) || Math.abs(latitude) > 90) return null
+  const point: [number, number] = [longitude, latitude]
+  for (const feature of countryFeatures) {
+    if (!geoContains(feature as unknown as GeoJSON.Feature, point)) continue
+    const code = feature.properties.iso3
+    const country = code ? countriesByCode.get(code) : undefined
+    if (country) return country.name
+  }
+  return null
+}
+
+function riverCentre(feature: GeoFeature): Coordinates | null {
+  const [longitude, latitude] = geoCentroid(feature as unknown as GeoJSON.Feature)
+  return Number.isFinite(longitude) && Number.isFinite(latitude) && Math.abs(latitude) <= 90
+    ? { lat: latitude, lon: longitude }
+    : null
 }
 
 export function buildRiverQuestionPool(features: RiverFeature[]): RiverQuestion[] {
