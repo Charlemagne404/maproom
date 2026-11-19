@@ -8,7 +8,7 @@ import { buildOutlineCandidateGroups, EMPTY_OUTLINE_PROGRESS, outlineQuestionAt 
 import { flagCountryPool } from '../src/games/flags/questionPool'
 import { gridCandidates, shortestPath, validGridPresets } from '../src/puzzles/engine'
 import { CONNECTIONS_PUZZLES } from '../src/puzzles/connections-content'
-import { exploreExperienceCount, freePlayCardCount } from './gameCatalogCounts'
+import { exploreGameCardCount, freePlayCardCount } from './gameCatalogCounts'
 
 test.beforeAll(() => {
   mkdirSync('artifacts/qa/product-consistency', { recursive: true })
@@ -349,7 +349,11 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await keyboardPage.close()
 
   await page.goto('/explore')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreExperienceCount)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreGameCardCount)
+  const historicalCollection = page.locator('.historical-explore-collection')
+  await expect(historicalCollection).toBeVisible()
+  await expect(historicalCollection.locator('.historical-explore-license')).toContainText('non-commercial use')
+  await expect(historicalCollection.getByRole('link', { name: 'Play When Was This Map?' })).toHaveAttribute('href', '/games/historical-geography?mode=freeplay')
   const formatFavorites = page.locator('.explore-grid .game-format-card .favorite-button')
   const formatFavoriteNames = await formatFavorites.evaluateAll((buttons) => buttons.map((button) => button.getAttribute('aria-label') ?? ''))
   expect(new Set(formatFavoriteNames).size).toBe(formatFavoriteNames.length)
@@ -378,6 +382,11 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await page.getByLabel('Search games').fill('capitals')
   await expect(page.locator('.explore-grid .game-card')).toHaveCount(4)
   await expect(page.locator('.explore-grid .game-card-cities')).toHaveCount(4)
+  await page.getByLabel('Search games').fill('')
+  await page.getByRole('button', { name: 'Historical geography', exact: true }).click()
+  await expect(page.locator('.historical-explore-collection')).toHaveCount(0)
+  await expect(page.locator('.explore-grid .game-card-historical-geography .game-card-link'))
+    .toHaveAttribute('href', '/games/historical-geography?mode=freeplay')
 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
@@ -1452,7 +1461,8 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   await expect(page.locator('.daily-grid .game-card')).toHaveCount(6)
   await expect(page.locator('.other-games-carousel .game-card')).toHaveCount(freePlayCardCount)
   await page.goto('/explore')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreExperienceCount)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreGameCardCount)
+  await expect(page.locator('.historical-explore-collection')).toBeVisible()
   await page.screenshot({ path: 'artifacts/qa/product-consistency/explore-desktop.png', fullPage: true })
 
   for (const [route, name] of [['/statistics', 'statistics'], ['/settings', 'settings'], ['/data', 'data'], ['/about', 'about'], ['/privacy', 'privacy']] as const) {
@@ -2067,5 +2077,6 @@ test('the production service worker reopens cached routes when offline', async (
 
   await page.goto('/explore')
   await expect(page.getByRole('heading', { name: 'Geography games' })).toBeVisible()
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreExperienceCount)
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreGameCardCount)
+  await expect(page.locator('.historical-explore-collection')).toBeVisible()
 })

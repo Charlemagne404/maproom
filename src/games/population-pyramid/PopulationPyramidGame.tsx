@@ -105,9 +105,10 @@ function PopulationPyramidSession({ data, populationData, mode, date, seed }: {
     const finalAnswers = answers.slice(0, round + 1)
     const finalScore = finalAnswers.reduce((total, answer, index) => total + scorePopulationPyramidOrder(answer, trueOrder(deck[index]!)).score, 0)
     const finalExactRounds = finalAnswers.reduce((total, answer, index) => total + Number(scorePopulationPyramidOrder(answer, trueOrder(deck[index]!)).exact), 0)
+    const finalCorrectPairs = finalAnswers.reduce((total, answer, index) => total + scorePopulationPyramidOrder(answer, trueOrder(deck[index]!)).correctPairs, 0)
     setFinished(true)
     await saveProgress({ version: 1, setIndex, round, answers: finalAnswers, order, finished: true })
-    await save(finalScore, finalExactRounds, POPULATION_PYRAMID_ROUNDS, { setIndex, answers: finalAnswers })
+    await save(finalScore, finalCorrectPairs, finalAnswers.length * 3, { setIndex, answers: finalAnswers, perfectRounds: finalExactRounds })
   }
 
   function replay() {
@@ -197,10 +198,10 @@ function PopulationPyramidSession({ data, populationData, mode, date, seed }: {
         gameId="population-pyramid"
         mode={mode}
         score={score}
-        correct={exactRounds}
-        total={POPULATION_PYRAMID_ROUNDS}
+        correct={answers.reduce((total, answer, index) => total + (deck[index] ? scorePopulationPyramidOrder(answer, trueOrder(deck[index]!)).correctPairs : 0), 0)}
+        total={POPULATION_PYRAMID_ROUNDS * 3}
         title={exactRounds === POPULATION_PYRAMID_ROUNDS ? 'Every profile set in order.' : 'A clearer picture of age.'}
-        message={`${score.toLocaleString()} of 1,500 possible points across 15 pairwise comparisons. Each round used the same 2023 age profiles, with the differences between countries narrowing as you went.`}
+        message={`${score.toLocaleString()} of 1,500 possible points across 15 pairwise comparisons; ${exactRounds} of ${POPULATION_PYRAMID_ROUNDS} rounds had every pair in the right order. Each round used 2023 age profiles with progressively narrower differences.`}
         saveError={saveError}
         onReplay={mode === 'freeplay' ? replay : undefined}
         replayLabel="Compare another set"

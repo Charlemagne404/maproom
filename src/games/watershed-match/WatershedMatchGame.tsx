@@ -102,9 +102,9 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
     <div className="game-body watershed-match-game">
       <header className="watershed-match-heading">
         <div>
-          <span className="eyebrow">U.S. watershed sample · {question.region} · {Math.min(round + 1, WATERSHED_MATCH_ROUNDS)} of {WATERSHED_MATCH_ROUNDS}</span>
-          <h2>Follow the flow</h2>
-          <p>Choose the neighboring subwatershed that receives the greatest share of this area’s mapped flow.</p>
+          <span className="eyebrow">Recorded downstream link · {question.region} · {Math.min(round + 1, WATERSHED_MATCH_ROUNDS)} of {WATERSHED_MATCH_ROUNDS}</span>
+          <h2>Match the recorded link</h2>
+          <p>Choose the neighboring HUC12 unit that the USGS Watershed Boundary Dataset lists as this area’s downstream destination.</p>
         </div>
         <div className="watershed-match-score" aria-label={`${correctCount} correct out of ${answers.length} answered`}><strong>{score}</strong><span> / 500</span></div>
       </header>
@@ -152,7 +152,7 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
             </g>
           })}
         </svg>
-        <figcaption id="watershed-map-caption">The source area is shown in blue. After checking, the arrow marks the recorded link; it is not a river trace.</figcaption>
+        <figcaption id="watershed-map-caption">Blue marks the starting area. The map gives location context only: river channels and flow direction are not drawn. The arrow appears after you check.</figcaption>
         <div className="watershed-map-legend"><span><b className="watershed-map-legend-source">S</b>Starting subwatershed</span><span><i />Candidate downstream area</span></div>
       </figure>
 

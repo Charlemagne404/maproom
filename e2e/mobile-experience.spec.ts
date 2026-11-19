@@ -17,6 +17,8 @@ const gameRoutes = [
   ['flags', 'daily'],
   ['grid', 'daily'],
   ['cities', 'daily'],
+  ['rivers', 'daily'],
+  ['latitude-ladder', 'daily'],
   ['connections', 'freeplay'],
   ['higher-lower', 'freeplay'],
   ['neighbours', 'freeplay'],
@@ -24,6 +26,9 @@ const gameRoutes = [
   ['rivers', 'freeplay'],
   ['latitude-ladder', 'freeplay'],
   ['historical-geography', 'freeplay'],
+  ['projection-match', 'freeplay'],
+  ['population-pyramid', 'freeplay'],
+  ['watershed-match', 'freeplay'],
 ] as const
 
 const representativeViewports = [
@@ -63,7 +68,7 @@ test('core pages fit phone and tablet viewports without horizontal overflow', as
   await context.close()
 })
 
-test('all thirteen games open and remain within narrow phone widths', async ({ browser, baseURL }) => {
+test('all sixteen games open and remain within narrow phone and tablet widths', async ({ browser, baseURL }) => {
   test.setTimeout(300_000)
   const context = await browser.newContext({
     viewport: { width: 320, height: 568 },

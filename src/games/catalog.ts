@@ -54,7 +54,7 @@ export const games: GameInfo[] = [
   { id: 'historical-geography', title: 'When Was This Map?', shortTitle: 'Historical maps', category: 'Historical geography', description: 'Read a Maproom-generated snapshot of historical boundaries, then guess its depicted year.', action: 'Place the year', icon: Clock3, path: '/games/historical-geography', requiresCountryGeometry: false },
   { id: 'projection-match', title: 'Map Projection Match', shortTitle: 'Projection Match', category: 'Map literacy', description: 'Match four map projections to the jobs they suit, and see the tradeoffs each one makes.', action: 'Match the maps', icon: Globe2, path: '/games/projection-match', requiresCountryGeometry: true },
   { id: 'population-pyramid', title: 'Population Pyramid Sort', shortTitle: 'Population Pyramid', category: 'Human geography', description: 'Order anonymous 2023 age profiles by the share of people aged 65 and older.', action: 'Order age profiles', icon: BarChart3, path: '/games/population-pyramid', requiresCountryGeometry: false },
-  { id: 'watershed-match', title: 'Watershed Match', shortTitle: 'Watersheds', category: 'Physical geography', description: 'Follow the majority flow from one subwatershed into the neighboring area it drains to.', action: 'Follow the flow', icon: Waves, path: '/games/watershed-match', requiresCountryGeometry: false },
+  { id: 'watershed-match', title: 'Watershed Match', shortTitle: 'Watersheds', category: 'Physical geography', description: 'Match a subwatershed to its recorded USGS downstream link in a limited Free Play pilot.', action: 'Match a downstream link', icon: Waves, path: '/games/watershed-match', requiresCountryGeometry: false },
 ]
 
 export function formatsForGame(gameId: GameId): GameFormat[] {

@@ -19,6 +19,10 @@ const freePlayGames: Array<{ id: string; title: string; format?: string }> = [
   { id: 'distance', title: 'City Distance & Direction' },
   { id: 'rivers', title: 'Riverways' },
   { id: 'latitude-ladder', title: 'Latitude Ladder', format: '&format=west-east' },
+  { id: 'historical-geography', title: 'When Was This Map?' },
+  { id: 'projection-match', title: 'Map Projection Match' },
+  { id: 'population-pyramid', title: 'Population Pyramid Sort' },
+  { id: 'watershed-match', title: 'Watershed Match' },
 ]
 
 function secondsFromCssTime(value: string): number {
@@ -26,32 +30,45 @@ function secondsFromCssTime(value: string): number {
   return value.trim().endsWith('ms') ? amount / 1000 : amount
 }
 
-test('Explore setup configures and starts every free-play game', async ({ page }) => {
+test('Explore setup starts all sixteen Free Play games', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 960 })
 
   for (const game of freePlayGames) {
     await page.goto('/explore')
     const target = `/games/${game.id}?mode=freeplay${game.format ?? ''}`
-    await page.locator(`a.game-card-link[href="${target}"]`).click()
+    const catalogueLink = game.id === 'historical-geography'
+      ? page.locator(`.historical-explore-link[href="${target}"]`)
+      : page.locator(`a.game-card-link[href="${target}"]`)
+    await catalogueLink.click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
     await expect(dialog.getByRole('heading', { name: game.title, exact: true })).toBeVisible()
     await expect(page.locator('.game-body')).toBeVisible()
 
-    const settings = dialog.locator('.game-setup-settings')
-    await expect(settings.locator('.practice-config')).toBeVisible()
-    if (game.id === 'countries') {
-      const timedRound = settings.getByLabel('60-second speed round')
-      await timedRound.check()
-      await expect(timedRound).toBeChecked()
-    }
-    const alternateChoice = settings.locator('.setup-choice[aria-pressed="false"]:visible').first()
-    if (await alternateChoice.count()) {
-      await alternateChoice.click()
+    if (['projection-match', 'population-pyramid', 'watershed-match'].includes(game.id)) {
+      const prompt = dialog.locator('.game-setup-description')
+      await expect(prompt).toBeVisible()
+      await expect(prompt).toContainText(game.id === 'projection-match'
+        ? 'Match four map projections to the jobs they suit'
+        : game.id === 'population-pyramid'
+          ? 'Order anonymous 2023 age profiles'
+          : 'Match a subwatershed to its recorded USGS downstream link')
     } else {
-      const select = settings.locator('select').first()
-      await expect(select).toBeVisible()
-      await select.selectOption({ index: 1 })
+      const settings = dialog.locator('.game-setup-settings')
+      await expect(settings.locator('.practice-config')).toBeVisible()
+      if (game.id === 'countries') {
+        const timedRound = settings.getByLabel('60-second speed round')
+        await timedRound.check()
+        await expect(timedRound).toBeChecked()
+      }
+      const alternateChoice = settings.locator('.setup-choice[aria-pressed="false"]:visible').first()
+      if (await alternateChoice.count()) {
+        await alternateChoice.click()
+      } else {
+        const select = settings.locator('select').first()
+        await expect(select).toBeVisible()
+        await select.selectOption({ index: 1 })
+      }
     }
 
     await expect(dialog.locator('.game-setup-start')).toHaveAttribute('aria-disabled', 'false')

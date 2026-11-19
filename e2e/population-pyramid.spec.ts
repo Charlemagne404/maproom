@@ -84,8 +84,8 @@ test('Population Pyramid Sort reveals sourced profiles, saves ordering, scores f
   }
   await page.getByRole('button', { name: 'Finish set' }).click()
   await expect(page.locator('.game-results-dialog')).toBeVisible()
-  await expect(page.locator('.game-results-dialog .game-results-summary')).toContainText('/ 5 correct')
-  await expect(page.locator('.game-results-dialog .game-results-message')).toContainText('15 pairwise comparisons')
+  await expect(page.locator('.game-results-dialog .game-results-summary')).toContainText('/ 15 correct')
+  await expect(page.locator('.game-results-dialog .game-results-message')).toContainText(/15 pairwise comparisons; \d of 5 rounds had every pair in the right order/)
   await expect(page.locator('.game-results-dialog .game-results-score')).toContainText(/\d+points/)
   await page.locator('.game-results-dialog').getByRole('button', { name: 'Compare another set' }).click()
   await expect(page.locator('.population-pyramid-heading .eyebrow')).toContainText('1 of 5')

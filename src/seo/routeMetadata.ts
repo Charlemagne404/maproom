@@ -165,7 +165,7 @@ const gameCopy = {
   'watershed-match': {
     title: 'Watershed Match',
     description: 'Read a detailed map of U.S. subwatersheds and choose the neighboring area that receives most of the highlighted unit’s flow.',
-    summary: 'Follow the USGS Watershed Boundary Dataset’s downstream links across five map questions. Each reveal shows which neighboring subwatershed receives most of the mapped flow.',
+    summary: 'Match recorded USGS Watershed Boundary Dataset downstream links across five Free Play map questions in a limited U.S. pilot sample.',
   },
 } satisfies Record<string, { title: string; description: string; summary: string }>
 

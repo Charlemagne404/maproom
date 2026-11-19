@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test'
 type HistoricalMapEntry = { id: string; assetUrl: string; depictedYear: number }
 type HistoricalManifest = { maps: HistoricalMapEntry[] }
 
-const toleranceFor = { easy: 100, medium: 50, hard: 25 } as const
+const toleranceFor = { easy: 20, medium: 8, hard: 2 } as const
 
 async function startHistorical(page: Page) {
   await page.goto('/games/historical-geography?mode=freeplay')
@@ -46,7 +46,7 @@ test('Explore and direct routes launch the authored historical game, accept incl
   await expect(page.getByText(/CC BY-NC-SA 4.0 · non-commercial use/)).toBeVisible()
   await page.getByRole('link', { name: /Play When Was This Map/ }).click()
   await expect(page.locator('.game-setup-panel')).toBeVisible()
-  await page.getByRole('button', { name: 'Hard · within 25 years' }).click()
+  await page.getByRole('button', { name: 'Hard · within 2 years' }).click()
   await page.getByRole('button', { name: 'Start free play' }).click()
   await expect(page.locator('.game-setup-panel')).toBeHidden()
   await expect(page.locator('.historical-round-heading p')).toContainText('Maproom-generated snapshot')

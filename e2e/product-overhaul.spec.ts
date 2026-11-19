@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
-import { exploreExperienceCount } from './gameCatalogCounts'
+import { exploreGameCardCount } from './gameCatalogCounts'
 
 const screenshotDirectory = 'artifacts/screenshots/product-overhaul'
 
@@ -26,9 +26,13 @@ async function captureTheme(page: Page, viewport: 'desktop' | 'mobile', theme: '
   await page.screenshot({ path: `${screenshotDirectory}/${prefix}-home.png`, fullPage: true })
 
   await page.goto('/explore')
-  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreExperienceCount)
-  const exploreGrid = await page.locator('.explore-grid').boundingBox()
-  for (const gameId of ['rivers', 'latitude-ladder', 'historical-geography']) {
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreGameCardCount)
+  const historicalCollection = page.locator('.historical-explore-collection')
+  await expect(historicalCollection).toBeVisible()
+  await expect(historicalCollection.locator('.historical-explore-license')).toContainText('non-commercial use')
+  await expect(historicalCollection.getByRole('link', { name: 'Play When Was This Map?' })).toHaveAttribute('href', '/games/historical-geography?mode=freeplay')
+  const exploreGrid = await page.locator('.game-grid.explore-grid[aria-label="Free play games and formats"]').boundingBox()
+  for (const gameId of ['rivers', 'latitude-ladder']) {
     const cardWidths = await page.locator(`.game-card-${gameId}`).evaluateAll((cards) => cards.map((card) => card.getBoundingClientRect().width))
     expect(cardWidths.length).toBeGreaterThan(0)
     expect(cardWidths.every((width) => width > (exploreGrid?.width ?? 0) * 0.25)).toBe(true)

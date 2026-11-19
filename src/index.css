@@ -140,6 +140,11 @@ p { margin-bottom: 0; }
 .section-label-row .eyebrow { margin: 0; }
 .section-label-row > span:last-child { color: var(--muted); font-size: .7rem; }
 .explore-grid .game-card { min-height: 278px; }
+.explore-experiments { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
+.explore-experiments-heading { margin: 0 0 15px; }
+.explore-experiments-heading .eyebrow { margin-bottom: 5px; }
+.explore-experiments-heading h2 { margin: 0 0 5px; font-size: clamp(1.25rem, 2vw, 1.65rem); letter-spacing: -.02em; }
+.explore-experiments-heading p { max-width: 65ch; margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.5; }
 .explore-count { margin-top: 18px; color: var(--muted); font-size: .73rem; }
 .empty-state { min-height: 275px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 34px 20px; border: 1px dashed var(--border); text-align: center; }
 .empty-state h2 { margin: 5px 0; }
@@ -686,6 +691,7 @@ h1, h2 { letter-spacing: -.035em; }
 .filter-chip.is-selected { border-color: var(--ink); background: var(--ink); color: var(--paper); }
 .explore-grid .game-card { min-height: 224px; }
 .explore-grid .game-card-link { min-height: 224px; }
+.explore-experiments { margin-top: 22px; padding-top: 15px; }
 .section-label-row { margin: 0 0 8px; }
 .section-label-row .eyebrow { margin: 0; }
 .explore-count { font-size: .68rem; }
