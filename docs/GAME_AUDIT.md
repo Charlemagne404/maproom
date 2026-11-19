@@ -63,7 +63,7 @@ Audit completed 18 November 2026 across all thirteen integrated game implementat
 ### Neighbour Challenge
 
 - **Gameplay, rules and balance:** Select the full reciprocal land-neighbor set. Minimum-neighbor practice makes the task less trivial; extra selections lose points, so players must balance recall with restraint.
-- **Feedback and replay:** Checking reveals missing and extra countries. Multiple rounds, continent scope and a timer create useful practice variety without changing the core rule.
+- **Feedback and replay:** Checking reports matched, missed and extra counts, then names each matched, missed and extra country so the player can learn the set difference. Multiple rounds, continent scope and a timer create useful practice variety without changing the core rule.
 - **Visual, mobile and accessibility:** Search chips and map selection provide complementary inputs. Neighbor labels and map feedback stay synchronized; text entry is important where the target has no map outline. Checking the complete set remains a deliberate game action, then the next target follows automatically after feedback. In timed Free Play, the countdown uses a quiet timer role; round score and untimed selection count remain announced separately.
 - **Performance and geographic accuracy:** Uses the same small adjacency graph as Border Route. It intentionally omits maritime connections and does not decide disputed borders.
 

@@ -191,6 +191,9 @@ function NeighbourRound({ data, countries, eligibility, mode, date, seed, scope,
   </div></GameSettingsMenu> : null
   const mapActive = locked ? question.neighbourCodes : selected
   const neighbourNames = question.neighbourCodes.map((code) => data.countriesByCode.get(code)?.name ?? code)
+  const matchedNames = selected.filter((code) => question.neighbourCodes.includes(code)).map((code) => data.countriesByCode.get(code)?.name ?? code)
+  const missedNames = question.neighbourCodes.filter((code) => !selected.includes(code)).map((code) => data.countriesByCode.get(code)?.name ?? code)
+  const extraNames = selected.filter((code) => !question.neighbourCodes.includes(code)).map((code) => data.countriesByCode.get(code)?.name ?? code)
   const focusCodes = [question.country.iso3]
 
   return <div className="game-body neighbour-game-body">
@@ -204,7 +207,9 @@ function NeighbourRound({ data, countries, eligibility, mode, date, seed, scope,
     </div>}
     {selected.length > 0 && !locked && <div className="neighbour-selected" aria-label="Selected neighbors">{selected.map((code) => <button type="button" key={code} aria-label={`Remove ${data.countriesByCode.get(code)?.name ?? code}`} onClick={() => { setSelected((current) => current.filter((item) => item !== code)); setSelectionNotice(''); setMessage('Check your full set when you are ready; incorrect selections reduce the score.') }}>{data.countriesByCode.get(code)?.name} ×</button>)}</div>}
     {selectionNotice && !locked && <div className="form-message form-message-error neighbour-selection-feedback" role="status" aria-live="polite">{selectionNotice}</div>}
-    {locked && <div className={`answer-feedback${roundExact ? ' is-correct' : ' is-incorrect'}`} role="status"><span className="feedback-icon"><Check size={17} /></span><span>{message}<small className="neighbour-reveal-list">Answer: {neighbourNames.join(', ')}.</small></span></div>}
+    {locked && <div className={`answer-feedback${roundExact ? ' is-correct' : ' is-incorrect'}`} role="status"><span className="feedback-icon"><Check size={17} /></span><span>{message}<small className="neighbour-reveal-list">{roundExact
+      ? `All neighbours: ${neighbourNames.join(', ')}.`
+      : `Found: ${matchedNames.length ? matchedNames.join(', ') : 'none'}. Missed: ${missedNames.length ? missedNames.join(', ') : 'none'}. Incorrect: ${extraNames.length ? extraNames.join(', ') : 'none'}.`}</small></span></div>}
     <p className="map-source-note"><CircleHelp size={14} /> Border answers follow reciprocal country-catalog land neighbors; maritime boundaries and disputed claims are not included.</p>
     <GameResultsDialog complete={finished} gameId="neighbours" mode={mode} score={score} correct={correct} total={resolved} title={timed && seconds === 0 ? 'Time is up.' : 'Border round complete.'} message={`${correct} perfect rounds across ${resolved} countries.`} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Find more neighbours" />
   </div>

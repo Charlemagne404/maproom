@@ -1606,6 +1606,7 @@ test('Neighbour Challenge evaluates the complete neighbor set without answer lea
     const current = countries.find((country) => country.name === currentName)
     expect(current).toBeDefined()
     const expected = countries.filter((country) => standardCodes.has(country.iso3) && country.iso3 !== current!.iso3 && (current!.borders.includes(country.iso3) || country.borders.includes(current!.iso3)))
+    const missed = index === 0 ? expected.pop() : undefined
     for (const neighbor of expected) {
       expect(neighbor, `neighbor ${neighbor.iso3} of ${current!.name}`).toBeDefined()
       await answerInput.fill(neighbor!.name)
@@ -1613,15 +1614,20 @@ test('Neighbour Challenge evaluates the complete neighbor set without answer lea
       await expect(option).toBeVisible()
       await option.click()
     }
+    if (index === 0) await chooseSuggestion(page, '#neighbour-answer', nonNeighbour!.name)
     await page.getByRole('button', { name: 'Check neighbors' }).click()
-    await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
+    if (index === 0) {
+      await expect(page.locator('.answer-feedback.is-incorrect')).toBeVisible()
+      await expect(page.locator('.neighbour-reveal-list')).toContainText(`Missed: ${missed!.name}.`)
+      await expect(page.locator('.neighbour-reveal-list')).toContainText(`Incorrect: ${nonNeighbour!.name}.`)
+    } else await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
     if (index < 4) {
       await waitForRoundProgress(page, 'countries', index + 2)
       await expect(page.getByRole('heading', { name: 'Complete the land borders' })).toBeFocused()
     }
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
-  await expect(page.locator('.game-results-summary')).toHaveText('5 / 5 correct · 100% accuracy')
+  await expect(page.locator('.game-results-summary')).toHaveText('4 / 5 correct · 80% accuracy')
   await page.screenshot({ path: 'artifacts/qa/product-consistency/neighbours-results-desktop.png' })
   await page.getByRole('button', { name: 'Find more neighbours' }).click()
   const replayTargetName = await page.locator('.neighbour-target strong').innerText()

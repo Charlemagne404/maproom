@@ -1,6 +1,6 @@
 # Existing-game improvement backlog
 
-Rank is a product judgment based on expected gameplay benefit, evidence, source readiness, effort and regression risk. Scores and rankings are not player-study results. The first two completed items stay visible so the next session can distinguish shipped work from ideas.
+Rank is a product judgment based on expected gameplay benefit, evidence, source readiness, effort and regression risk. Scores and rankings are not player-study results. Completed items stay visible so the next session can distinguish implemented work from ideas.
 
 | Rank | Game / task | Evidence and expected benefit | Status / next step |
 | ---: | --- | --- | --- |
@@ -14,7 +14,7 @@ Rank is a product judgment based on expected gameplay benefit, evidence, source 
 | 8 | Border Route: explain route quality and alternatives after completion. | Travle explicitly distinguishes route quality while Maproom accepts arbitrary-order entry and valid longer paths. | **Implemented and verified.** Results state the route length and shortest-path comparison, including extra stops, while longer valid routes remain accepted. Player comprehension remains unmeasured. |
 | 9 | Find the country: compare the current one-click round with an optional multi-guess practice mode. | Worldle creates a sequence of decisions, while Maproom's fast one-click round suits a different purpose. | Prototype only in Free Play; compare clarity and round length before considering Daily. |
 | 10 | Flag Study: audit progressive reveal against similar and asymmetric flags. | Flagle gradually reveals flag areas; not all flags reveal equally useful information. | Create a balanced offline test set; measure whether reveal order helps rather than over-rewards large color fields. |
-| 11 | Neighbour Challenge: teach missing/extra membership after checking. | Full-set recall can be frustrating if the only useful feedback arrives at the final check. | Test a single explicit check/reveal flow; keep route validity separate from set recall. |
+| 11 | Neighbour Challenge: teach missing/extra membership after checking. | Full-set recall can be frustrating if the only useful feedback arrives at the final check. | **Implemented and verified.** After checking, results name the matched, missed and extra countries; browser coverage verifies one missed and one extra item. Later recall remains unmeasured. |
 | 12 | Higher or Lower: investigate sourceable metric diversity. | Current population, area and density are coherent comparisons; adding metrics without year/source matching would reduce trust. | Identify same-year public sources and country coverage first. No new dataset is approved. |
 | 13 | Distance & Direction: calibrate close-call rounds. | Distance/latitude/longitude use different mental skills. | Use completion and answer spread to tune pair generation; preserve the current two-choice input. |
 | 14 | Country Outlines: validate difficulty against players. | Candidate eligibility and guess budgets are curated, but statistical fairness is not human-verified. | Ask players to classify a fixed sample before changing thresholds. |
