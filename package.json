@@ -14,6 +14,7 @@
     "e2e": "npm run build && playwright test",
     "data:sync": "node scripts/data/build-geography.mjs",
     "data:watersheds": "node scripts/data/build-watershed-match.mjs",
+    "data:watersheds:audit": "node scripts/data/audit-watershed-match.mjs",
     "data:geometries": "node scripts/data/rebuild-country-geometries.mjs",
     "qa:outlines": "node scripts/data/render-outline-catalogue.mjs",
     "preview": "vite preview"

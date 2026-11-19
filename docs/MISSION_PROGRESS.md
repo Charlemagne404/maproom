@@ -584,3 +584,9 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 ## Participant availability checkpoint — 19 November 2026
 
 - The user reports that no independent participants are available yet. Prepared study protocols remain unrun; do not treat developer self-play or static audits as participant evidence. Continue with useful source, content and implementation work that does not depend on recruitment.
+
+## Watershed Match source-link and projected-extent audit — 19 November 2026
+
+- Queried the three fixed boxes against the official USGS 2025 HUC12 collection. All 60 bundled `answerId` values match their source records' `ToHUC`; source/answer types remain `S`/`NM`, source sample labels match, and all 118 bundled names match current collection records. Added a read-only repeatable check at `npm run data:watersheds:audit`.
+- Projected all 240 source/choice shape instances with the gameplay Albers USA fit. The smallest bounding-box width is 48.0 and the smallest height is 66.1 viewBox units; the smallest projected area is 1,198 viewBox². This is a static extent check, not evidence of responsive legibility or human fairness.
+- No question or geometry changed. Manual name/decoy review and the 6–8 player first-read pilot remain open; no participants are available yet. Keep the prototype outside Daily and do not deploy it.

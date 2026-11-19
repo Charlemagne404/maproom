@@ -291,3 +291,10 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 ## 19 November 2026 — Participant availability checkpoint
 
 - The user reports that no independent participants are available yet. No moderated player studies have run; developer self-play and static audits remain separately labeled. Continue nonparticipant-dependent work while preserving the open human-validation gates.
+
+## 19 November 2026 — Watershed Match source-link and extent audit
+
+- Queried all three fixed sample boxes against the official [USGS 2025 HUC12 collection](https://api.water.usgs.gov/fabric/pygeoapi/collections/wbd12_20250107?f=html): 132, 105 and 142 features. Every one of the 60 bundled answers still equals its source record's `ToHUC`; all source/answer `HUType` and `HUMod` values remain S/NM, the source-region labels match, and all 118 bundled names match their official records.
+- Added the read-only `npm run data:watersheds:audit` command so source IDs, names, region tags, class filters and downstream links can be checked again without rewriting the bundled asset or manifest.
+- Projected the 240 source/choice shape instances using the gameplay Albers USA fit. Minimum polygon bounds are 48.0 × 77.7 and 93.7 × 66.1 viewBox units in their respective width/height cases; the smallest projected polygon area is 1,198 viewBox². These measurements do not establish responsive legibility, fairness or player understanding.
+- No question content changed. Name/decoy review and the 6–8 person first-read pilot remain open; the user reports no participants are available yet. Watershed Match remains Free Play only, outside Daily, and undeployed.

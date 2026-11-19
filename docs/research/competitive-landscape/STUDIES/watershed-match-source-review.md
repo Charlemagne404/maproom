@@ -2,7 +2,7 @@
 
 **Reviewed:** 19 November 2026
 
-**Status:** A limited WBD-only Free Play prototype is implemented with 60 screened questions and 118 HUC12 geometries from three sample areas. It remains outside Daily. Marker spacing and sample-area labels have been audited; question fairness, small-polygon legibility and player understanding still need review.
+**Status:** A limited WBD-only Free Play prototype is implemented with 60 screened questions and 118 HUC12 geometries from three sample areas. It remains outside Daily. Sample-area labels, marker spacing, stored downstream links and projected polygon extents have static checks; name/decoy fairness, responsive legibility and player understanding still need review.
 
 ## Question
 
@@ -82,9 +82,15 @@ The exact token-set matches cluster as follows. Question IDs are included so an 
 
 This inventory is for editorial follow-up, not a list of presumed defects. Do not show it to participants or use it to prompt a particular answer during the first-read pilot.
 
+## Source-link and projected-extent audit — 19 November 2026
+
+The read-only `npm run data:watersheds:audit` check queried the same three fixed boxes in the official 2025 HUC12 collection. It received the expected 132 Appalachian-window, 105 Columbia and 142 Susquehanna records. All 60 stored answers match the current official `ToHUC` value for their source, all source and answer units remain `HUType=S` and `HUMod=NM`, the source region labels match their boxes, and all 118 bundled names match their official HUC12 records. The script changes no files. It checks source linkage and labels, not whether a player can infer the relation or considers the choices fair.
+
+I also projected every source and candidate polygon in the 60 questions using gameplay's Albers USA fit and 760 × 400 viewBox. Across 240 rendered shape instances, the smallest bounding-box width is 48.0 units (Green Spring Creek, HUC12 `020503050305`), and the smallest height is 66.1 units (Big Run-Dry Fork, HUC12 `050200040405`); no polygon is below 30 units in either dimension. Projected polygon area ranges from 1,198 viewBox², with P10 5,076, median 10,506 and P90 21,276. This rules out an extremely small projected shape in the desktop coordinate system, but it does not establish visibility after responsive scaling, visual clarity, or touch/screen-reader usability.
+
 ## Remaining gates
 
-- Review all 60 source and answer names, distractor pairs and map extents; reject ambiguous choices, confusing labels and hard-to-see polygons. The [first-read player pilot](watershed-match-player-pilot.md) records question-level fairness and clarity without exposing the intended answer before each response.
+- Manually review all 60 source and answer names and distractor pairs; reject ambiguous choices or confusing labels. Responsive polygon legibility and answer fairness still need independent review. The [first-read player pilot](watershed-match-player-pilot.md) records question-level fairness and clarity without exposing the intended answer before each response.
 - The prototype currently filters to numeric 12-digit `ToHUC` destinations and excludes ocean, Canada, Mexico, closed-basin and other exceptional outlet codes. Keep that rule in place if the source pool expands.
 - Test the action with players against Riverways and a river-location competitor. Check whether the plain-language majority-flow prompt teaches a useful idea and whether five rounds feel fair. The first-read pilot is a qualitative check of this game, not a controlled comparison with Riverways.
 - Expand geographic coverage only after the limited sample passes question and comprehension review.
