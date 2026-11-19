@@ -168,7 +168,7 @@ for (const [relative, expected] of checksums) {
 const watersheds = await json('data/watershed-match.json')
 const watershedSource = dataManifest.sources.find((source) => source.name === 'USGS Watershed Boundary Dataset 2025 HUC12 sample')
 if (watersheds.schemaVersion !== 1 || watersheds.collection !== 'wbd12_20250107'
-  || watersheds.regions?.join(',') !== 'Potomac,Columbia,Susquehanna'
+  || watersheds.regions?.join(',') !== 'Appalachians,Columbia,Susquehanna'
   || watersheds.questions?.length !== 60 || watersheds.topology?.objects?.units?.geometries?.length !== 118
   || watershedSource?.license !== 'CC0 1.0 Universal (the API collection links CC0 terms)'
   || !watershedSource?.attribution?.includes('U.S. Geological Survey')) {

@@ -14,7 +14,7 @@ test('Watershed Match separates markers on its tightest map frame', async ({ pag
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.addInitScript((seedToken) => {
     Object.defineProperty(Crypto.prototype, 'randomUUID', { configurable: true, value: () => seedToken })
-  }, 'audit-53')
+  }, 'audit-138')
   await openGame(page)
   await expect(page.locator('#watershed-task-title')).toHaveText('Little River')
   await expect(page.locator('.watershed-map-marker')).toHaveCount(4)
@@ -40,7 +40,7 @@ test('Watershed Match reveals ToHUC answers, saves a round, scores five question
   await openGame(page)
   await expect(page.locator('.watershed-choice')).toHaveCount(3)
   await expect(page.locator('.watershed-shape')).toHaveCount(4)
-  await expect(page.locator('.watershed-match-source')).toContainText('Potomac, Columbia and Susquehanna')
+  await expect(page.locator('.watershed-match-source')).toContainText('Appalachians, Columbia and Susquehanna')
   await expect(page.locator('.watershed-match-source a')).toHaveAttribute('href', /wbd12_20250107/)
   await expect(page.getByRole('button', { name: 'Check destination' })).toBeDisabled()
   await page.screenshot({ path: 'artifacts/qa/product-quality/watershed-match-desktop.png', fullPage: true })
@@ -69,7 +69,7 @@ test('Watershed Match reveals ToHUC answers, saves a round, scores five question
     await page.locator('.watershed-choice').nth(round % 3).click()
     await page.getByRole('button', { name: 'Check destination' }).click()
   }
-  expect([...seenRegions].sort()).toEqual(['columbia', 'potomac', 'susquehanna'])
+  expect([...seenRegions].sort()).toEqual(['appalachians', 'columbia', 'susquehanna'])
   await expect(page.locator('.game-results-dialog')).toBeVisible()
   await expect(page.locator('.game-results-dialog .game-results-summary')).toContainText('/ 5 correct')
   await expect(page.locator('.game-results-dialog .game-results-message')).toContainText('500 points')

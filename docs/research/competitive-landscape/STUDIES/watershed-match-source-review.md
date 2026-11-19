@@ -2,7 +2,7 @@
 
 **Reviewed:** 19 November 2026
 
-**Status:** A limited WBD-only Free Play prototype is implemented with 60 screened questions and 118 HUC12 geometries from three sample systems. It remains outside Daily. A full-pool marker-spacing audit is complete; question fairness, small-polygon legibility and player understanding still need review.
+**Status:** A limited WBD-only Free Play prototype is implemented with 60 screened questions and 118 HUC12 geometries from three sample areas. It remains outside Daily. Marker spacing and sample-area labels have been audited; question fairness, small-polygon legibility and player understanding still need review.
 
 ## Question
 
@@ -24,7 +24,7 @@ The [USGS data dictionary](https://www.usgs.gov/ngp-standards-and-specifications
 
 The earlier source comparison found that WBD 2024 and Mainstems' January 2025 final-WBD snapshot could not be assumed to have matching shapes. The API's separate 2025 WBD snapshot provides a cleaner prototype path: use its own polygon geometry and `ToHUC` relations together, without joining a second snapshot or using Mainstems' display summary.
 
-I sampled the 2025 WBD API in three local areas around the Potomac, Columbia and Susquehanna systems. The returned GeoJSON contained 132, 105 and 142 HUC12 polygons respectively (379 unique features total). Of the 344 records whose `ToHUC` target was also present in the sampled geometry, every target shared an exact polygon-boundary segment with its source. There were 334 source units with a correct target and at least two other adjacent subwatersheds available as map alternatives. Requiring both source and target to be `HUType=S` and `HUMod=NM`, then requiring two other adjacent `S`/`NM` polygons with distinct names, leaves 95 candidate transitions across the three samples. These are candidate records, not 95 editorially approved questions; river names, visual framing and answer ambiguity still need review.
+I sampled the 2025 WBD API in three local bounding boxes. The first, originally labeled Potomac, covers a central Appalachian window at `-80,38,-79,39`; the other boxes sample the lower Columbia and Susquehanna areas. The returned GeoJSON contained 132, 105 and 142 HUC12 polygons respectively (379 unique features total). Of the 344 records whose `ToHUC` target was also present in the sampled geometry, every target shared an exact polygon-boundary segment with its source. There were 334 source units with a correct target and at least two other adjacent subwatersheds available as map alternatives. Requiring both source and target to be `HUType=S` and `HUMod=NM`, then requiring two other adjacent `S`/`NM` polygons with distinct names, leaves 95 candidate transitions across the three samples. These are candidate records, not 95 editorially approved questions; river names, visual framing and answer ambiguity still need review.
 
 ## Live gameplay comparison
 
@@ -46,18 +46,24 @@ This is a product hypothesis, not a validated rule set. Keep it U.S.-only and ou
 
 ## Prototype checkpoint — 19 November 2026
 
-- The bundled pool contains 60 source units selected from the 95 screened transitions: 31 Potomac, 22 Columbia and 7 Susquehanna questions. Each question shows one source HUC12 and three adjacent candidate polygons; the recorded `ToHUC` target is the answer.
+- The bundled pool contains 60 source units selected from the 95 screened transitions: 31 Appalachian-window, 22 Columbia and 7 Susquehanna questions. HUC8 review found four basins inside the Appalachian bounding box, so the earlier “Potomac” display label was corrected; the question IDs and hydrologic answers are unchanged. Each question shows one source HUC12 and three adjacent candidate polygons; the recorded `ToHUC` target is the answer.
 - The repeatable five-question deck samples each of the three systems, uses three choices with answer positions balanced 2/2/1, awards 100 points per correct answer and saves/restores progress. Native option buttons support keyboard and touch input.
-- The checked map highlights the downstream polygon and draws a schematic source-to-target arrow. The arrow indicates the recorded `ToHUC` relationship; it is not a mapped river course. The bundled TopoJSON contains 118 polygons and is 383,428 bytes (36,752 bytes when gzip-compressed). Its manifest records the CC0 source, attribution and SHA-256; the service worker caches it for offline play.
+- The checked map highlights the downstream polygon and draws a schematic source-to-target arrow. The arrow indicates the recorded `ToHUC` relationship; it is not a mapped river course. The bundled TopoJSON contains 118 polygons and is 383,588 bytes (36,769 bytes with gzip level 9). Its manifest records the CC0 source, attribution and SHA-256; the service worker caches it for offline play.
 - The question screen and reveal have been inspected in production-preview screenshots at desktop and 390 px mobile widths, including dark theme. This verifies those screens and interactions, not the fairness of all 60 questions or player comprehension.
 
-The three named systems are sample windows, not complete river basins or national coverage. The 60-question set is selected by a name-token similarity heuristic from candidate adjacency; it has not received editorial review. The map does not include river lines or a larger downstream network.
+The three labels identify sample areas, not complete river basins or national coverage. The 60-question set is selected by a name-token similarity heuristic from candidate adjacency; it has not received editorial review. The map does not include river lines or a larger downstream network.
 
 ## Map label spacing audit — 19 November 2026
 
 I projected all 60 source-plus-choice frames using the same Albers USA fit as gameplay. Three frames had at least one pair of marker centers closer than the 38-viewBox-unit spacing needed for the 32-unit badges. The map now moves only colliding badges, draws a connector back to each affected polygon centroid, and uses a compact `S` badge for the starting area. Across the pool, the final minimum badge-center gap is 38.25 units and the largest marker move is 38 units. The regression test checks the projected layout and safe bounds for every frame; the production-preview browser check exercises the tightest one, Little River. Its screenshot is `artifacts/qa/product-quality/watershed-match-marker-spacing.png`.
 
 This repairs callout collisions, not the underlying scale of the polygons. A and B can still label small or narrow areas, and the spacing pass does not establish that the name-based distractors feel fair or that players understand the majority-flow rule.
+
+## Sample-area name audit — 19 November 2026
+
+The 31 questions initially labeled Potomac come from the first bounding box, not one drainage basin. Their source HUC8 prefixes split into 19 in `02070001` (South Branch Potomac), two in `02080202` (Maury, within the James basin), six in `05020004` (Cheat, within the Monongahela basin), and four in `05050003` (Greenbrier, within the Kanawha basin). The [USGS hydrologic-unit descriptions](https://water.usgs.gov/GIS/huc_name.html) identify those distinct basin names and HUC8s. The player-facing label and the sample metadata now say “Appalachians”; question IDs, answer links, option choices and geometries are unchanged.
+
+The same static content pass found no repeated source/choice names within any of the 60 questions. The pool contains 43 distinct correct HUC12 destinations; 15 destination IDs recur elsewhere in the pool, with a maximum of three questions per destination. The five-question deck prevents a destination from appearing twice in one set. Using the generator's name-token stop-word list, 21 of 120 wrong-choice labels have the same remaining token set as the correct destination. This confirms there are lexically close decoys, but it is not evidence that players find them fair or the rule understandable; no names or choices were changed from this check.
 
 ## Remaining gates
 

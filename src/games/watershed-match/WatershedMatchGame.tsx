@@ -189,7 +189,7 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
       </div>
 
       {saveError && <p className="form-message form-message-error" role="alert">{saveError}</p>}
-      <p className="watershed-match-source">Sample areas: the Potomac, Columbia and Susquehanna systems. This pilot does not cover the whole United States. Source: U.S. Geological Survey and Natural Resources Conservation Service, <a href="https://api.water.usgs.gov/fabric/pygeoapi/collections/wbd12_20250107?f=html" target="_blank" rel="noreferrer">2025 Watershed Boundary Dataset HUC12 collection</a>.</p>
+      <p className="watershed-match-source">Sample areas: the Appalachians, Columbia and Susquehanna. This pilot does not cover the whole United States. Source: U.S. Geological Survey and Natural Resources Conservation Service, <a href="https://api.water.usgs.gov/fabric/pygeoapi/collections/wbd12_20250107?f=html" target="_blank" rel="noreferrer">2025 Watershed Boundary Dataset HUC12 collection</a>.</p>
 
       <GameResultsDialog
         key={setIndex}
@@ -200,7 +200,7 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
         correct={correctCount}
         total={WATERSHED_MATCH_ROUNDS}
         title={correctCount === WATERSHED_MATCH_ROUNDS ? 'Every watershed link matched.' : 'The flow network gets clearer.'}
-        message={`${score.toLocaleString()} of 500 points. You followed downstream links across the Potomac, Columbia and Susquehanna sample areas.`}
+        message={`${score.toLocaleString()} of 500 points. You followed downstream links across Appalachian, Columbia and Susquehanna sample areas.`}
         saveError={saveError}
         onReplay={mode === 'freeplay' ? playAnotherSet : undefined}
         replayLabel="Follow another set"

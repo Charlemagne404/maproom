@@ -9,7 +9,7 @@ const outputPath = path.join(root, 'public/data/watershed-match.json')
 const manifestPath = path.join(root, 'public/data/data-manifest.json')
 const collectionUrl = 'https://api.water.usgs.gov/fabric/pygeoapi/collections/wbd12_20250107/items'
 const regions = [
-  { name: 'Potomac', bbox: '-80,38,-79,39', expectedFeatures: 132 },
+  { name: 'Appalachians', bbox: '-80,38,-79,39', expectedFeatures: 132 },
   { name: 'Columbia', bbox: '-123,45.1,-122,45.8', expectedFeatures: 105 },
   { name: 'Susquehanna', bbox: '-77.5,40,-76.5,41', expectedFeatures: 142 },
 ]
@@ -120,7 +120,7 @@ manifest.sources.push({
   licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
   attribution: 'U.S. Geological Survey and Natural Resources Conservation Service; Watershed Boundary Dataset 2025 snapshot.',
   transformations: [
-    'Retrieved the 2025 HUC12 collection in three fixed bounding boxes around the Potomac, Columbia and Susquehanna systems.',
+    'Retrieved the 2025 HUC12 collection in three fixed bounding boxes in the Appalachian, Columbia and Susquehanna sample areas.',
     'Kept only HUCType S and HUMod NM source/answer units with a numeric 12-digit ToHUC target that shares a polygon boundary.',
     'Selected two distinct, unmodified, adjacent HUC12 alternatives for each question; retained names with at least one plausibly similar neighboring choice.',
     'Bundled only geometry referenced by the screened questions and TopoJSON-quantized coordinates to a 20,000-step grid.',

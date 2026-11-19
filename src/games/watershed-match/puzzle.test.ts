@@ -55,6 +55,30 @@ describe('Watershed Match', () => {
     expect(movedMarkers).toBeGreaterThan(0)
   })
 
+  it('labels the mixed Potomac-area sample by its broader Appalachian geography', () => {
+    expect(data.regions).toEqual(['Appalachians', 'Columbia', 'Susquehanna'])
+    for (const question of data.questions) {
+      const names = [question.sourceId, ...question.optionIds]
+        .map((id) => data.unitsById.get(id)!.properties.name.trim().toLowerCase())
+      expect(new Set(names).size).toBe(4)
+    }
+
+    const appalachianHuc8Counts = data.questions
+      .filter((question) => question.region === 'Appalachians')
+      .reduce<Record<string, number>>((counts, question) => {
+        const huc8 = question.sourceId.slice(0, 8)
+        counts[huc8] = (counts[huc8] ?? 0) + 1
+        return counts
+      }, {})
+
+    expect(appalachianHuc8Counts).toEqual({
+      '02070001': 19,
+      '02080202': 2,
+      '05020004': 6,
+      '05050003': 4,
+    })
+  })
+
   it('builds deterministic five-question sets across three US regions with balanced answer positions', () => {
     const first = createWatershedMatchDeck(data.questions, 'sample-seed')
     const repeated = createWatershedMatchDeck(data.questions, 'sample-seed')
@@ -64,6 +88,7 @@ describe('Watershed Match', () => {
     expect(first).not.toEqual(next)
     expect(first).toHaveLength(WATERSHED_MATCH_ROUNDS)
     expect(new Set(first.map((question) => question.id)).size).toBe(WATERSHED_MATCH_ROUNDS)
+    expect(new Set(first.map((question) => question.answerId)).size).toBe(WATERSHED_MATCH_ROUNDS)
     expect(new Set(first.map((question) => question.region)).size).toBe(3)
 
     const correctPositions = first.map((question) => question.choices.indexOf(question.answerId))
@@ -75,6 +100,7 @@ describe('Watershed Match', () => {
     for (let setIndex = 0; setIndex < 50; setIndex += 1) {
       const deck = createWatershedMatchDeck(data.questions, 'many-seeds', setIndex)
       expect(new Set(deck.map((question) => question.region))).toEqual(new Set(data.regions))
+      expect(new Set(deck.map((question) => question.answerId)).size).toBe(WATERSHED_MATCH_ROUNDS)
       expect(deck).toHaveLength(WATERSHED_MATCH_ROUNDS)
     }
   })
