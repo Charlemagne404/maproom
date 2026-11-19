@@ -513,3 +513,14 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Checked the PB2002 scientific paper and the ODC-BY 1.0 conversion, which include seven boundary-step classes and detailed segment geometry. The current ArcGIS mirror has no stable version metadata, so it is not selected as the app's source.
 - USGS ComCat can provide dated GeoJSON event queries, but its event parameters are contributed by worldwide seismic networks. A fixed offline sample needs a contribution/redistribution review and a question-by-question fairness audit before bundling.
 - Kept Plate Boundary Lab as a candidate. Its pattern-inference action could be distinct, but no game was implemented and no source data changed.
+
+## Population Pyramid Sort scoring clarity — 19 November 2026
+
+- A production-preview screen review found that round feedback explained pairwise scoring, but the score panel said only “exact” and did not show the 1,500-point set maximum. The scoring rule is now stated before play, the running score is shown out of 1,500, and the counter names perfect rounds.
+- Updated the game audit, improvement backlog and source/rules review. Focused production-preview browser checks passed on desktop and 390px mobile, including dark mode, saved ordering, replay and offline loading. Screenshots: `artifacts/qa/product-quality/population-pyramid-desktop.png` and `population-pyramid-mobile-dark.png`.
+- Typecheck, lint, production build and artifact validation passed. The five-round rules, scoring, source data and Daily eligibility are unchanged; the game remains outside Daily and has not been deployed. Independent player comprehension remains unmeasured.
+
+## Plate Boundary Lab event-frame audit — 19 November 2026
+
+- Queried four fixed 2010–2019 M4.5+ rectangles through USGS FDSN with `contributor=us`; only event counts and depth-band summaries were retained. The Japan window had 3,285 events, San Andreas 48, Mid-Atlantic Ridge 192 and East Pacific Rise 38. All events in the selected transform/spreading windows were shallower than 70 km.
+- These exploratory frames do not establish a fair event-pattern clue or solve per-event reuse rights. Kept the game gated, recorded the evidence in the source study, research log and decision table, and deferred implementation. No event records or app data were saved.
