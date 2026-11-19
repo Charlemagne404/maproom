@@ -590,3 +590,10 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Queried the three fixed boxes against the official USGS 2025 HUC12 collection. All 60 bundled `answerId` values match their source records' `ToHUC`; source/answer types remain `S`/`NM`, source sample labels match, and all 118 bundled names match current collection records. Added a read-only repeatable check at `npm run data:watersheds:audit`.
 - Projected all 240 source/choice shape instances with the gameplay Albers USA fit. The smallest bounding-box width is 48.0 and the smallest height is 66.1 viewBox units; the smallest projected area is 1,198 viewBox². This is a static extent check, not evidence of responsive legibility or human fairness.
 - No question or geometry changed. Manual name/decoy review and the 6–8 player first-read pilot remain open; no participants are available yet. Keep the prototype outside Daily and do not deploy it.
+
+## Final mission closeout — 19 November 2026
+
+- Closed the continuous product-quality mission at the user's direction. The Watershed Match source-link audit and its documentation are preserved; no new backlog task, feature, research cycle, deployment or participant request was started.
+- The [final mission report](research/competitive-landscape/FINAL_MISSION_REPORT.md) summarizes delivered games and improvements, the competitive evidence, unresolved gates, preserved future opportunities, verification, and the final Git handover.
+- The product-quality branch is `codex/maproom-product-quality-20261119`; this is the existing remote branch. The similarly named unsuffixed `codex/maproom-product-quality` branch was not present in local or remote refs. The separate `/home/charlie/maproom` worktree remains clean on `codex/maproom-2.0-baseline-20261118`.
+- Final handover was committed and pushed to the product-quality branch. No force-push, merge into the integration branch, or deployment occurred.
