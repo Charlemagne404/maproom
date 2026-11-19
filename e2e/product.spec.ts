@@ -25,6 +25,7 @@ interface CountryRecord {
   hasGeometry: boolean
   borders: string[]
   population: number | null
+  lifeExpectancyYears2023?: number | null
   areaKm2: number | null
   capital: string | null
   capitalCoordinates?: { lat: number; lon: number } | null
@@ -1616,6 +1617,40 @@ test('Higher or Lower supports fixed and infinite Free play with keyboard contro
   await page.getByRole('button', { name: 'End session' }).click()
   await expect(page.locator('.game-results-dialog')).toBeVisible()
   await expect(page.locator('.game-results-summary')).toContainText('/ 2 correct')
+})
+
+test('Higher or Lower offers sourced life expectancy comparisons in Free Play only', async ({ page }) => {
+  await openGame(page, 'higher-lower')
+  await page.clock.pauseAt(new Date('2026-11-19T12:00:00Z'))
+  await setGameSetting(page, 'Compare', 'life-expectancy')
+  await setGameSetting(page, 'Difficulty', 'close')
+
+  await expect(page.locator('.higher-lower-prompt')).toHaveText('Which country has the higher life expectancy at birth?')
+  await expect(page.locator('.higher-lower-context')).toContainText('2023 World Bank WDI estimate')
+  const countries = await countryData(page)
+  const names = await page.locator('.higher-lower-country strong').allTextContents()
+  expect(names).toHaveLength(2)
+  const values = names.map((name) => countries.find((country) => country.name === name)?.lifeExpectancyYears2023)
+  expect(values.every((value): value is number => typeof value === 'number')).toBe(true)
+  const gap = Math.abs(values[0]! - values[1]!)
+  expect(gap).toBeGreaterThanOrEqual(1)
+  expect(gap).toBeLessThan(4)
+
+  await page.getByRole('button', { name: 'Game settings' }).click()
+  await expect(page.getByRole('combobox', { name: 'Difficulty' })).toHaveValue('close')
+  await expect(page.getByRole('option', { name: /Close calls · 1 to <4 years/ })).toBeAttached()
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('ArrowLeft')
+  await expect(page.locator('.higher-lower-response')).toBeVisible()
+  await expect(page.locator('.higher-lower-country.is-revealed .higher-lower-value')).toHaveCount(2)
+  await expect(page.locator('.higher-lower-country.is-revealed .higher-lower-value').first()).toContainText('years')
+  await page.screenshot({ path: 'artifacts/qa/product-quality/higher-lower-life-expectancy-desktop.png' })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.evaluate(() => { document.documentElement.dataset.theme = 'dark' })
+  await expect(page.locator('.higher-lower-context')).toBeVisible()
+  const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
+  expect(hasHorizontalOverflow).toBe(false)
+  await page.screenshot({ path: 'artifacts/qa/product-quality/higher-lower-life-expectancy-mobile-dark.png' })
 })
 
 test('Neighbour Challenge evaluates the complete neighbor set without answer leakage', async ({ page }) => {

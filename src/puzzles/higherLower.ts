@@ -1,7 +1,7 @@
 import type { Country } from '../geography/types'
 import { seededRandom } from './engine'
 
-export type CountryMeasure = 'population' | 'area' | 'density'
+export type CountryMeasure = 'population' | 'area' | 'density' | 'life-expectancy'
 export type ComparisonDifficulty = 'standard' | 'close'
 
 export interface HigherLowerQuestion {
@@ -16,6 +16,10 @@ export interface HigherLowerQuestion {
 export function countryMeasure(country: Country, measure: CountryMeasure): number | null {
   if (measure === 'population') return country.population && country.population > 0 ? country.population : null
   if (measure === 'area') return country.areaKm2 && country.areaKm2 > 0 ? country.areaKm2 : null
+  if (measure === 'life-expectancy') {
+    const value = country.lifeExpectancyYears2023
+    return value && value > 0 ? value : null
+  }
   if (!country.population || !country.areaKm2 || country.population <= 0 || country.areaKm2 <= 0) return null
   return country.population / country.areaKm2
 }
@@ -38,8 +42,15 @@ export function makeHigherLowerQuestions(
     if (pairs.has(pair)) continue
     const leftValue = countryMeasure(left, measure)!
     const rightValue = countryMeasure(right, measure)!
-    const ratio = Math.max(leftValue, rightValue) / Math.min(leftValue, rightValue)
-    if (!Number.isFinite(ratio) || ratio < minimumRatio || ratio > maximumRatio) continue
+    if (measure === 'life-expectancy') {
+      const yearGap = Math.abs(leftValue - rightValue)
+      const isClose = yearGap >= 1 && yearGap < 4
+      const isStandard = yearGap >= 4
+      if (difficulty === 'close' ? !isClose : !isStandard) continue
+    } else {
+      const ratio = Math.max(leftValue, rightValue) / Math.min(leftValue, rightValue)
+      if (!Number.isFinite(ratio) || ratio < minimumRatio || ratio > maximumRatio) continue
+    }
     pairs.add(pair)
     questions.push({ left, right, measure, leftValue, rightValue, answer: leftValue > rightValue ? 'left' : 'right' })
   }
@@ -49,5 +60,6 @@ export function makeHigherLowerQuestions(
 export function formatCountryMeasure(value: number, measure: CountryMeasure): string {
   if (measure === 'population') return `${Math.round(value).toLocaleString('en-US')} people`
   if (measure === 'area') return `${Math.round(value).toLocaleString('en-US')} km²`
+  if (measure === 'life-expectancy') return `${value.toFixed(1)} years`
   return `${Math.round(value).toLocaleString('en-US')} people/km²`
 }

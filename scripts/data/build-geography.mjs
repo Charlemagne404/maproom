@@ -26,6 +26,7 @@ const sources = {
   countryLicense: 'https://raw.githubusercontent.com/mledoze/countries/master/LICENSE',
   geonamesCities: 'https://download.geonames.org/export/dump/cities500.zip',
   worldBankPopulation: 'https://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL?format=json&date=2023&per_page=20000',
+  worldBankLifeExpectancy: 'https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?date=2023&format=json&per_page=20000',
   geoBoundaries: 'https://www.geoboundaries.org/api/current/gbOpen/ALL/ADM1/',
   geoNamesTerms: 'https://www.geonames.org/export/',
 };
@@ -60,12 +61,13 @@ async function fetchJson(url, target, label) {
   };
 }
 
-const [naturalEarth, naturalEarthDetail, naturalEarthRivers, countryCatalog, worldBankPopulation, geoBoundaryIndex, cityArchive] = await Promise.all([
+const [naturalEarth, naturalEarthDetail, naturalEarthRivers, countryCatalog, worldBankPopulation, worldBankLifeExpectancy, geoBoundaryIndex, cityArchive] = await Promise.all([
   fetchJson(sources.naturalEarth, path.join(rawDir, 'natural-earth-admin0-50m.geojson'), 'Natural Earth country boundaries'),
   fetchJson(sources.naturalEarthDetail, path.join(rawDir, 'natural-earth-admin0-10m.geojson'), 'Natural Earth detailed country boundaries'),
   fetchJson(sources.naturalEarthRivers, path.join(rawDir, 'natural-earth-rivers-50m.geojson'), 'Natural Earth named rivers'),
   fetchJson(sources.countryCatalog, path.join(rawDir, 'mledoze-countries.json'), 'Country metadata'),
   fetchJson(sources.worldBankPopulation, path.join(rawDir, 'world-bank-population-2023.json'), 'World Bank 2023 population'),
+  fetchJson(sources.worldBankLifeExpectancy, path.join(rawDir, 'world-bank-life-expectancy-2023.json'), 'World Bank 2023 life expectancy'),
   fetchJson(sources.geoBoundaries, path.join(rawDir, 'geoboundaries-adm1-index.json'), 'geoBoundaries ADM1 index'),
   fetchBuffer(sources.geonamesCities, path.join(rawDir, 'geonames-cities500.zip'), 'GeoNames cities500'),
 ]);
@@ -75,6 +77,12 @@ if (!Array.isArray(worldBankPopulation.value) || !Array.isArray(worldBankPopulat
   throw new Error('World Bank population API returned an unexpected response.');
 }
 const populationByIso3 = new Map(worldBankPopulation.value[1]
+  .filter((item) => item?.countryiso3code && item.date === '2023' && Number.isFinite(item.value))
+  .map((item) => [item.countryiso3code, item]));
+if (!Array.isArray(worldBankLifeExpectancy.value) || !Array.isArray(worldBankLifeExpectancy.value[1])) {
+  throw new Error('World Bank life expectancy API returned an unexpected response.');
+}
+const lifeExpectancyByIso3 = new Map(worldBankLifeExpectancy.value[1]
   .filter((item) => item?.countryiso3code && item.date === '2023' && Number.isFinite(item.value))
   .map((item) => [item.countryiso3code, item]));
 
@@ -137,6 +145,7 @@ const countryOutput = catalogCountries
         : null,
       population: finiteOrNull(populationByIso3.get(country.cca3)?.value) ?? finiteOrNull(country.population),
       populationYear: populationByIso3.has(country.cca3) ? '2023' : null,
+      lifeExpectancyYears2023: finiteOrNull(lifeExpectancyByIso3.get(country.cca3)?.value),
       areaKm2: finiteOrNull(country.area),
       landlocked: Boolean(country.landlocked),
       borders: unique((country.borders ?? []).filter((code) => code !== country.cca3 && countriesByIso3.has(code))).sort(),
@@ -327,6 +336,7 @@ const coverage = {
     'GeoNames cities500 includes populated places of 50,000 or more plus national and first-level seats with lower population; cities below that threshold are omitted.',
     'National-capital names and coordinates are incomplete for some territories; capital-location questions use records with a known coordinate.',
     'Population uses World Bank 2023 annual estimates where an ISO3 match exists; area values come from the country catalog. Neither figure is a live statistical feed.',
+    'Life expectancy uses the World Bank WDI 2023 observation where available and has no fallback; it is a population estimate at birth, not an individual prediction or a direct measure of healthcare quality.',
     'River questions use named, generalized Natural Earth 1:50m centerlines with scale rank 4 or better; they are not complete hydrography or navigational data.',
   ],
 };
@@ -405,6 +415,17 @@ const manifest = {
       licenseUrl: 'https://datacatalog.worldbank.org/public-licenses',
       attribution: 'World Bank, World Development Indicators, Population total (SP.POP.TOTL).',
       transformations: ['Joined 2023 values by ISO3 code', 'Stored the observation year alongside each country population where available'],
+    },
+    {
+      name: 'World Bank World Development Indicators life expectancy at birth',
+      source: sources.worldBankLifeExpectancy,
+      version: `SP.DYN.LE00.IN for 2023; API last updated ${worldBankLifeExpectancy.value[0]?.lastupdated ?? 'not stated'}`,
+      retrievedAt,
+      sha256: worldBankLifeExpectancy.sha256,
+      license: 'Creative Commons Attribution 4.0 International (CC BY 4.0) with World Bank dataset terms',
+      licenseUrl: 'https://data.worldbank.org/summary-terms-of-use',
+      attribution: 'World Bank, World Development Indicators, Life expectancy at birth, total (SP.DYN.LE00.IN); source providers include UN World Population Prospects, national statistical offices and Eurostat.',
+      transformations: ['Joined the exact 2023 observation by ISO3 code', 'Stored the value in lifeExpectancyYears2023; missing observations remain null with no catalog fallback'],
     },
     {
       name: 'GeoNames cities500',

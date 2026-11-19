@@ -13,6 +13,7 @@ export interface Country {
   coordinates: Coordinates | null
   population: number | null
   populationYear: string | null
+  lifeExpectancyYears2023: number | null
   areaKm2: number | null
   landlocked: boolean
   borders: string[]

@@ -1607,6 +1607,8 @@ button, input, select { font-family: var(--sans); }
 .higher-lower-value { color: #8e4d2b; font-size: 1.1rem; font-weight: 800; font-variant-numeric: tabular-nums; }
 .higher-lower-game-body { gap: 10px; }
 .higher-lower-prompt { margin: 0; font-size: clamp(1.8rem, 3.4vw, 2.75rem); line-height: 1.08; }
+.higher-lower-context { display: block !important; max-width: 48rem; margin: 7px 0 0; color: var(--muted); font-size: .78rem; line-height: 1.4; }
+.higher-lower-availability { margin: 0; color: var(--muted); font-size: .75rem; }
 .higher-lower-response { display: block !important; margin: 7px 0 0; font-size: .86rem; font-weight: 700; }
 .higher-lower-response.is-correct { color: #526a51; }
 .higher-lower-response.is-incorrect { color: #a75235; }

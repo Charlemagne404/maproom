@@ -221,3 +221,4 @@ Geometry refreshed 2026-11-17 from the bundled Natural Earth sources.
 - GeoNames cities500 includes populated places of 50,000 or more plus national and first-level seats with lower population; cities below that threshold are omitted.
 - National-capital names and coordinates are incomplete for some territories; capital-location questions use records with a known coordinate.
 - Population uses World Bank 2023 annual estimates where an ISO3 match exists; area values come from the country catalog. Neither figure is a live statistical feed.
+- Life expectancy uses the World Bank WDI 2023 observation where available and has no fallback; it is a population estimate at birth, not an individual prediction or a direct measure of healthcare quality.

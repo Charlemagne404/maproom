@@ -55,10 +55,10 @@ Audit started 18 November 2026 and updated 19 November across all fourteen integ
 
 ### Higher or Lower
 
-- **Gameplay, rules and balance:** Compare population, area or density. Standard and Close Calls change challenge; missing values are excluded rather than guessed. A streak bonus keeps repeated play engaging.
-- **Feedback and replay:** The comparison appears after a choice with sourced values, and finite/unlimited modes give different session lengths. Results record completed rounds and score.
+- **Gameplay, rules and balance:** Compare population, area or density; Free Play also offers 2023 life expectancy at birth. That measure uses absolute gaps (Standard at least four years; Close one to under four years) because the existing ratio bands classify nearly every life-expectancy pair as Close. Missing observations are excluded, never filled from another source. Daily still uses its original three measures.
+- **Feedback and replay:** The comparison appears after a choice with sourced values, and finite/unlimited modes give different session lengths. Short finite decks name the number of eligible comparisons. Results record completed rounds and score.
 - **Visual, mobile and accessibility:** Two large country choices make the action clear. Keyboard choice, labels and responsive stacking support different input modes and narrow screens. During feedback, the chosen side stays focused through the reveal; the next comparison follows automatically after a short result pause.
-- **Performance and geographic accuracy:** All facts are local and no extra map asset is required. Population is the World Bank 2023 observation, area is catalogued, and density is derived; the game should not imply those are live values.
+- **Performance and geographic accuracy:** All facts are local and no extra map asset is required. Population is the World Bank 2023 observation with catalog fallback, area is catalogued, density is derived, and life expectancy uses the 2023 WDI estimate at birth with no fallback. The latter is a population estimate, not an individual prediction or a direct measure of health-system quality.
 
 ### Neighbour Challenge
 

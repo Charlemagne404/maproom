@@ -16,7 +16,8 @@
     "National-capital names and coordinates are incomplete for some territories; capital-location questions use records with a known coordinate.",
     "Population uses World Bank 2023 annual estimates where an ISO3 match exists; area values come from the country catalog. Neither figure is a live statistical feed.",
     "Explicit parent-territory links split detached overseas components into separate Extended entries while preserving domestic archipelagos. Disputed records without a resolved parent remain separate.",
-    "River questions use named, generalized Natural Earth 1:50m centerlines with scale rank 4 or better; they are not complete hydrography or navigational data."
+    "River questions use named, generalized Natural Earth 1:50m centerlines with scale rank 4 or better; they are not complete hydrography or navigational data.",
+    "Life expectancy uses the World Bank WDI 2023 observation where available and has no fallback; it is a population estimate at birth, not an individual prediction or a direct measure of healthcare quality."
   ],
   "outlineGeometryFeatureCount": 269,
   "countriesWithoutGeometry": [],

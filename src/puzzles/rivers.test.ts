@@ -85,7 +85,7 @@ describe('river question data', () => {
     const country: Country = {
       iso3: 'TST', parentIso3: null, iso2: 'TS', name: 'Testland', officialName: 'Testland', aliases: [],
       continent: 'Africa', subregion: 'Test Region', capital: null, capitals: [], capitalCoordinates: null, coordinates: null,
-      population: null, populationYear: null, areaKm2: null, landlocked: false, borders: [], independent: true,
+      population: null, populationYear: null, lifeExpectancyYears2023: null, areaKm2: null, landlocked: false, borders: [], independent: true,
       flagCode: 'ts', hasGeometry: true, regionCount: 0, regionSource: null,
     }
     const polygon: GeoFeature = {

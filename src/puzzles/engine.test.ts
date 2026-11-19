@@ -39,6 +39,7 @@ function country(iso3: string, overrides: Partial<Country> = {}): Country {
     coordinates: { lat: 0, lon: 0 },
     population: 1_000_000,
     populationYear: '2023',
+    lifeExpectancyYears2023: null,
     areaKm2: 100_000,
     landlocked: false,
     borders: [],

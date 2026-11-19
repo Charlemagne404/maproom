@@ -108,6 +108,18 @@ if (!scriptPolicy?.includes(`'${bootstrapHash}'`) || scriptPolicy.includes("'uns
 
 const dataManifest = await json('data/data-manifest.json')
 const artifacts = dataManifest.artifacts
+const countryCatalog = await json('data/countries.json')
+if (!Array.isArray(countryCatalog.countries)) fail('the country catalog has no country records')
+const lifeExpectancyValues = countryCatalog.countries.filter((country) => country.lifeExpectancyYears2023 !== null)
+if (countryCatalog.countries.some((country) => country.lifeExpectancyYears2023 !== null
+  && (!Number.isFinite(country.lifeExpectancyYears2023) || country.lifeExpectancyYears2023 <= 0))) {
+  fail('life expectancy values must be positive finite numbers or null')
+}
+if (lifeExpectancyValues.length < 190) fail('the country catalog has too few 2023 life expectancy observations')
+if (!dataManifest.sources.some((source) => source.name === 'World Bank World Development Indicators life expectancy at birth'
+  && /^[a-f0-9]{64}$/.test(source.sha256 ?? ''))) {
+  fail('the 2023 life expectancy source is missing from the data manifest')
+}
 const checksums = new Map([
   ['data/countries.topo.json', artifacts.countriesTopologySha256],
   ['data/countries-outline.topo.json', artifacts.countriesOutlineTopologySha256],
