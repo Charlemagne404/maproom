@@ -166,7 +166,7 @@ function HigherLowerRound({ countries, mode, date, seed, measure, difficulty, sc
       <div className="higher-lower-versus"><ArrowDownUp size={21} /><span>VS</span></div>
       <CountryChoice country={question.right} side="right" value={question.rightValue} measure={measure} showValue={showValues} selected={choice === 'right'} correct={question.answer === 'right'} disabled={Boolean(choice) || finished} onChoose={answer} />
     </div>
-    <GameResultsDialog complete={finished} gameId="higher-lower" mode={mode} score={score} correct={correct} total={resolved} title={timed && seconds === 0 ? 'Time is up.' : 'Comparison round complete.'} message={`Best streak: ${bestStreak}. Values use the 2023 country data.`} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Compare more countries" />
+    <GameResultsDialog complete={finished} gameId="higher-lower" mode={mode} score={score} correct={correct} total={resolved} title={timed && seconds === 0 ? 'Time is up.' : 'Comparison round complete.'} message={`Best streak: ${bestStreak}. Population uses 2023 World Bank data where available, with catalog fallback; area comes from the catalog, and density is derived.`} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Compare more countries" />
   </div>
 }
 

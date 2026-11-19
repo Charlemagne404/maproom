@@ -30,3 +30,9 @@
 - Neighbour Challenge follow-up: the check result now names the matched, missing and extra countries instead of revealing only counts plus the complete answer list. The production-preview regression checks one missing item, one extra item, and the subsequent exact-round results.
 - Focused Riverways, Connections and expanded-puzzle tests: 24/24 passed. Full unit suite: 117/117 passed. Typecheck, lint and build passed. Production-preview Riverways browser regression passed 1/1. Manual local-browser review verified a distance/direction miss and the second-miss Ethiopia clue on the live game screen.
 - This evidence is engineering verification and self-play, not a moderated player study, screen-reader assessment, physical-device session or production deployment.
+
+## 19 November 2026 — Higher or Lower source coverage
+
+- Queried five World Development Indicators series for the exact 2023 observation and matched them by ISO3 to Maproom's 195 Standard and 243 Extended identities. The API data metadata reported a last update of 11 November 2026. Coverage, positive-value counts, possible pair totals under the existing ratio bands, sources and interpretation limits are recorded in [GAME_RESEARCH.md](../../GAME_RESEARCH.md).
+- Life expectancy has the broadest positive coverage (194/195 Standard and 215/243 Extended) and supports 17,506 possible Standard-pool close pairs and 21,469 Extended-pool close pairs. It is a candidate for a separate content decision, not approved for implementation. GDP per capita, Internet use, CO₂-equivalent emissions and signed population growth each have distinct source or interpretation limits.
+- The source audit found that the results screen's blanket “2023 country data” wording overstated provenance. The result and rules now say that population uses 2023 World Bank data where present, falls back to country-catalog population, and that area comes from that catalog. No metric, data file or comparison rule changed.

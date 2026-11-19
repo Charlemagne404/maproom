@@ -36,7 +36,7 @@ Group sixteen countries into four sets of four. Select four countries at a time 
 
 ## Higher or Lower: Countries
 
-Compare two countries by population, land area, or population density. Practice offers Standard or Extended country pools, world or continent scope, Standard or Close calls, 10, 20, 50, or unlimited questions, and an optional 60-second round. Correct answers earn 100 points plus up to 50 streak points; a wrong answer earns no points and resets the streak. Values and the correct comparison appear after the choice. Population uses the 2023 World Bank estimate where available; area uses the country catalogue, and density is population divided by catalogued area. Missing facts are excluded.
+Compare two countries by population, land area, or population density. Practice offers Standard or Extended country pools, world or continent scope, Standard or Close calls, 10, 20, 50, or unlimited questions, and an optional 60-second round. Correct answers earn 100 points plus up to 50 streak points; a wrong answer earns no points and resets the streak. Values and the correct comparison appear after the choice. Population uses the 2023 World Bank series where available, with country-catalog values filling gaps; area comes from the country catalog, and density divides the population value by catalogued area. The observation year for catalog population fallbacks is not recorded.
 
 ## Neighbour Challenge
 

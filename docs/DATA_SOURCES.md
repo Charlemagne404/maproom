@@ -12,7 +12,7 @@ The `mledoze/countries` catalog supplies ISO codes, common and official names, a
 
 ## Population
 
-Country population quiz facts use the World Bank World Development Indicators series `SP.POP.TOTL` for the 2023 observation year, joined by ISO3 code. The observation year is stored beside the value; countries without a non-null World Bank value remain `null` rather than receiving an invented number. This series is not a live feed. World Bank open data is generally under CC BY 4.0 with the Bank's dataset terms; the manifest records the exact API response hash, API last-updated date, attribution and source URL. [World Bank Indicators API](https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation) · [World Bank data license](https://datacatalog.worldbank.org/public-licenses).
+Country population quiz facts use the World Bank World Development Indicators series `SP.POP.TOTL` for the 2023 observation year where a non-null value is available, joined by ISO3 code. The build falls back to the `population` field in the `mledoze/countries` catalog when that World Bank observation is absent; Maproom records no observation year for those fallback values. This is a pinned data build, not a live feed. World Bank open data is generally under CC BY 4.0 with the Bank's dataset terms; the manifest records the exact API response hash, API last-updated date, attribution and source URL. [World Bank Indicators API](https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api) · [World Bank data license](https://datacatalog.worldbank.org/public-licenses).
 
 ## First-level administrative boundaries
 
