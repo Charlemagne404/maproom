@@ -580,3 +580,7 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Developer Free Play reached the constant-heading prompt and showed that the four map options contained only land and graticules; no course was drawn. NOAA's Office of Coast Survey and USGS state that a Mercator chart renders a constant-course rhumb line straight, though it is generally not the shortest route.
 - Added the same amber route to all four map views for this task. The Mercator option keeps it straight while the other projections curve it, making the map comparison part of the decision. Accessible option descriptions report the same straight/curved distinction, and the prompt says the route is shared across the views.
 - A geometry test verifies collinearity on Mercator and curvature on the other projections. Typecheck, lint and production build passed; the focused production-preview Playwright case passed (1/1). Desktop and 390px dark-mode screenshots are retained in `docs/research/competitive-landscape/STUDIES/evidence/`. This is a self-play-driven clarity change, not participant evidence; player comprehension and physical/assistive-technology review remain open. The game stays outside Daily; no deployment occurred.
+
+## Participant availability checkpoint — 19 November 2026
+
+- The user reports that no independent participants are available yet. Prepared study protocols remain unrun; do not treat developer self-play or static audits as participant evidence. Continue with useful source, content and implementation work that does not depend on recruitment.
