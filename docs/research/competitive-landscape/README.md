@@ -11,6 +11,7 @@ Research captured 19 November 2026 for Maproom's continuous product-quality miss
 - [Improvement backlog](IMPROVEMENT_BACKLOG.md) ranks changes to existing games and records the implemented game improvements and Map Projection Match addition.
 - [Capitals & Cities placement pilot](STUDIES/capitals-cities-placement-pilot.md) is ready to evaluate map-first city placement and its distance reveal with new players; no sessions have been run.
 - [Biomes Mosaic source review](STUDIES/biomes-mosaic-source-review.md) checks RESOLVE ecoregion coverage and terms while keeping the game candidate gated on a distinct mechanic.
+- [Plate Boundary Lab source review](STUDIES/plate-boundary-lab-source-review.md) records the PB2002 boundary classes and the unresolved rights and fairness gates for an earthquake-pattern game.
 - [Game ideas](GAME_IDEAS.md) tracks distinct future game candidates and their data or licensing constraints.
 - [Decisions](DECISIONS.md) records product choices and unresolved questions.
 - [Research log](RESEARCH_LOG.md) records the date, scope, access state, and evidence type.

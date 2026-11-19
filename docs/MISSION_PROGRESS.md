@@ -507,3 +507,9 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Verified RESOLVE's 2017 source and terms: 846 terrestrial ecoregions, 14 biome classes, eight realms and CC BY 4.0. The current public polygon mirror returns one additional Rock and Ice feature outside those 14 biome classes; it is not versioned. The official source warns of polygons with more than one million vertices.
 - Compared this with the public-domain USGS World Terrestrial Ecosystems alternative. RESOLVE is the more direct broad-biome classification, but its complex polygons need a pinned source snapshot and simplification audit before offline use.
 - Kept the candidate gated: outline naming would repeat Country Outlines, and biome grouping would repeat Connections. No data or code changed; first define and review a distinct spatial action and learning goal.
+
+## Plate Boundary Lab source gate — 19 November 2026
+
+- Checked the PB2002 scientific paper and the ODC-BY 1.0 conversion, which include seven boundary-step classes and detailed segment geometry. The current ArcGIS mirror has no stable version metadata, so it is not selected as the app's source.
+- USGS ComCat can provide dated GeoJSON event queries, but its event parameters are contributed by worldwide seismic networks. A fixed offline sample needs a contribution/redistribution review and a question-by-question fairness audit before bundling.
+- Kept Plate Boundary Lab as a candidate. Its pattern-inference action could be distinct, but no game was implemented and no source data changed.
