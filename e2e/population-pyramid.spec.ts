@@ -24,6 +24,8 @@ test('Population Pyramid Sort reveals sourced profiles, saves ordering, scores f
   const cards = page.locator('.population-pyramid-card')
   await expect(cards).toHaveCount(3)
   await expect(page.locator('.population-pyramid-row')).toHaveCount(51)
+  await expect(page.locator('.population-pyramid-scoring-rule')).toHaveText('Each correctly ordered pair is worth 100 points (up to 300 per round). All three pairs right makes a perfect round.')
+  await expect(page.locator('.population-pyramid-score')).toHaveAttribute('aria-label', '0 of 1,500 points, 0 of 5 perfect rounds')
   await expect(page.locator('.population-pyramid-source')).toContainText('World Population Prospects 2024')
   await expect(page.locator('.population-pyramid-source')).toContainText('2023 estimates')
   await page.screenshot({ path: 'artifacts/qa/product-quality/population-pyramid-desktop.png', fullPage: true })
@@ -45,6 +47,7 @@ test('Population Pyramid Sort reveals sourced profiles, saves ordering, scores f
   await page.getByRole('button', { name: 'Check this order' }).click()
   await expect(page.locator('.population-pyramid-reveal')).toHaveCount(3)
   await expect(page.locator('.population-pyramid-feedback [role="status"]')).toContainText(/Perfect order|\d of 3 country pairs/)
+  await expect(page.locator('.population-pyramid-score')).toHaveAttribute('aria-label', /^\d+ of 1,500 points, \d of 5 perfect rounds$/)
   await page.screenshot({ path: 'artifacts/qa/product-quality/population-pyramid-reveal.png', fullPage: true })
 
   for (let round = 1; round < 5; round += 1) {
@@ -67,6 +70,8 @@ test('Population Pyramid Sort fits mobile, respects dark theme and opens its pro
   const page = await context.newPage()
   try {
     await openGame(page)
+    await expect(page.locator('.population-pyramid-scoring-rule')).toBeVisible()
+    await expect(page.locator('.population-pyramid-score')).toContainText('/ 1,500 points')
     await page.getByRole('button', { name: 'Switch to dark appearance' }).tap()
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
     await expect.poll(() => page.locator('.population-pyramid-order').evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(1)

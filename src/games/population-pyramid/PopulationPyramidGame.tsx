@@ -133,9 +133,10 @@ function PopulationPyramidSession({ data, populationData, mode, date, seed }: {
           <span className="eyebrow">Population profiles · {round + 1} of {POPULATION_PYRAMID_ROUNDS}</span>
           <h2>Order by the share aged 65+</h2>
           <p>Move the three profiles from the smallest 65+ share to the largest. Country names stay hidden until you check.</p>
+          <p className="population-pyramid-scoring-rule">Each correctly ordered pair is worth 100 points (up to 300 per round). All three pairs right makes a perfect round.</p>
         </div>
-        <div className="population-pyramid-score" aria-label={`${score} points, ${exactRounds} perfectly ordered rounds`}>
-          <strong>{score.toLocaleString()}</strong><span>points</span><small>{exactRounds} / {POPULATION_PYRAMID_ROUNDS} exact</small>
+        <div className="population-pyramid-score" aria-label={`${score.toLocaleString()} of 1,500 points, ${exactRounds} of ${POPULATION_PYRAMID_ROUNDS} perfect rounds`}>
+          <strong>{score.toLocaleString()}</strong><span> / 1,500 points</span><small>{exactRounds} of {POPULATION_PYRAMID_ROUNDS} perfect rounds</small>
         </div>
       </header>
 

@@ -4,7 +4,7 @@
 
 Population Pyramid Sort is a five-round Free Play game. Each round presents three anonymous, consistently scaled 2023 population pyramids. The player reorders them from lowest to highest population share aged 65 or older. After checking, the game names the countries, displays the exact 65+ shares, and shows the correct order. The keyboard and touch controls are explicit Earlier/Later buttons; dragging is not required.
 
-The set contains 15 different country identities. Each round awards 100 points for each correctly ordered country pair, for a maximum of 300 points per round and 1,500 per set. The rounds tighten their adjacent 65+ share gaps in this order: 8–18, 6–14, 4–10, 2.5–7, and 1–4 percentage points. These are generator bands selected after checking available source data, not empirically validated player-difficulty levels. Keep the game in Free Play until players have been observed and its comprehension and spacing have been assessed.
+The set contains 15 different country identities. Each round awards 100 points for each correctly ordered country pair, for a maximum of 300 points per round and 1,500 per set. The game states this scoring rule before the first choice and shows the running score out of 1,500 plus the number of perfect rounds. The rounds tighten their adjacent 65+ share gaps in this order: 8–18, 6–14, 4–10, 2.5–7, and 1–4 percentage points. These are generator bands selected after checking available source data, not empirically validated player-difficulty levels. Keep the game in Free Play until players have been observed and its comprehension and spacing have been assessed.
 
 ## Source and method
 

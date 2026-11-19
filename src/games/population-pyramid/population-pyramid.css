@@ -2,6 +2,7 @@
 .population-pyramid-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .population-pyramid-heading h2 { margin: 3px 0 5px; font-size: clamp(1.4rem, 3vw, 2rem); }
 .population-pyramid-heading p { max-width: 720px; color: var(--muted); font-size: .83rem; line-height: 1.5; }
+.population-pyramid-heading .population-pyramid-scoring-rule { margin: 0; font-size: .7rem; }
 .population-pyramid-score { min-width: 115px; display: flex; flex-direction: column; align-items: flex-end; padding: 8px 11px; border: 1px solid var(--border); background: var(--surface); }
 .population-pyramid-score strong { font-size: 1.15rem; line-height: 1.15; }
 .population-pyramid-score span, .population-pyramid-score small { color: var(--muted); font-size: .65rem; }
@@ -62,9 +63,10 @@
   .population-pyramid-heading { gap: 10px; }
   .population-pyramid-heading h2 { font-size: 1.4rem; }
   .population-pyramid-heading p { font-size: .74rem; }
-  .population-pyramid-score { min-width: 82px; padding: 6px 7px; }
+  .population-pyramid-score { min-width: 98px; padding: 6px 7px; }
   .population-pyramid-score strong { font-size: .95rem; }
   .population-pyramid-score small { font-size: .56rem; }
+  .population-pyramid-heading .population-pyramid-scoring-rule { font-size: .66rem; }
   .population-pyramid-progress { font-size: .62rem; }
   .population-pyramid-key { flex-wrap: wrap; gap: 5px 12px; }
   .population-pyramid-key p { flex-basis: 100%; margin-left: 0; text-align: left; }
