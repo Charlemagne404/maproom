@@ -93,3 +93,9 @@ The audit sampled the existing Free Play eligibility rules: GeoNames cities with
 | South America | West–east | 15.7% | 27.1% | 45.8% |
 
 Europe and Oceania produce more close pairs on some axes, while world west–east rounds are usually more widely spaced. A universal degree threshold would therefore change meaning by region; longitude degrees also represent shorter ground distances closer to the poles. The current sampler remains unchanged. Moderated play should record order accuracy, confidence and completion by scope/axis before any difficulty labels or spacing constraints are introduced.
+
+## 19 November 2026 — Terrain Profile elevation sources
+
+- Reviewed NOAA ETOPO 2022's current product page, metadata and user guide; its 15-arc-second global surface grid is CC0 and referenced to EGM2008. The guide says final vertical-accuracy assessments were still being compiled in its 2022 revision.
+- Reviewed USGS SRTM 1 Arc-Second Global and GeoNames feature definitions. SRTM is public domain and globally distributed with some voids and higher-latitude 2-by-1-arc-second sampling. GeoNames is CC BY 4.0, defines peak/pass feature codes and supplies coordinates plus elevation fields, but disclaims accuracy and does not provide per-record provenance for its named-feature elevation field.
+- Licensing is workable for a small attributed offline sample, but a DEM cell at a gazetteer point is not automatically an authoritative summit height. No DEM was downloaded. Terrain Profile remains a candidate pending a bounded cross-check of feature coordinates and elevations against independent authoritative records; details are in [the source review](STUDIES/terrain-profile-source-review.md).
