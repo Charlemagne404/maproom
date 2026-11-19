@@ -203,3 +203,9 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 - Reviewing the marker-first flow found that a map click stored an exact point but also copied two-decimal coordinates into the secondary keyboard inputs. Submission preferred those rounded fields, so the scored location and reveal marker could shift from the pin the player placed.
 - Map submissions now retain the exact clicked point unless a player edits either coordinate field; explicit coordinate entry still takes precedence. The edit state is saved with Daily progress so a reload does not discard the player's coordinate choice.
 - Added a production-preview regression asserting that a map pin's transform is unchanged after submission. The existing end-to-end city flow also passed with coordinates entered after map placement. Typecheck, lint, all 145 unit tests, production build/artifact validation and both focused browser checks passed. No player study or new mode was added; evaluate difficulty and reveal with new players before further mode work. No deployment occurred.
+
+## Capitals & Cities map-placement player pilot — 19 November 2026
+
+- Prepared a first-read protocol for 6–8 casual players using one ordinary ten-question City Location set. It checks task interpretation, map focus, pin placement, score understanding, reveal timing, coordinate-panel discovery and replay interest across desktop and touch input where recruitment permits.
+- The moderator does not prime the secondary coordinate panel or change the normal quick-feedback timing. The record sheet omits submitted latitude/longitude and participant identity; the protocol does not authorize a mode or scoring change.
+- No participants have been recruited and no responses have been collected. Next evidence is an actual session; the documented blind-coordinate idea remains conditional on players describing a distinct skill.

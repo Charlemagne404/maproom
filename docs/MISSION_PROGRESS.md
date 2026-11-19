@@ -495,3 +495,9 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Fixed scoring to use the exact point selected on the map instead of the two-decimal coordinate text synchronized for keyboard access. Editing either coordinate input still uses the entered pair; that edit state is included in Daily progress restoration.
 - Added a production-preview check that the guess marker does not shift after map submission. The existing city end-to-end flow also passed when explicit coordinates replace a prior map pin. Typecheck, lint, all 145 unit tests, production build/artifact validation and both focused browser checks passed.
 - New-player evaluation of map focus, score bands and the result reveal remains open. No game mode or source data changed; the game remains in its current Daily/free-play formats and has not been deployed.
+
+## Capitals & Cities placement pilot protocol — 19 November 2026
+
+- Prepared a concise 6–8 person first-read study for one normal ten-question City Location Free Play set. It covers task comprehension, map focus, pin correction, score interpretation, fast reveal timing, coordinate-panel discovery and replay interest, with desktop/touch input noted.
+- The protocol avoids priming the coordinate option, does not collect names or submitted coordinates, and does not treat a small convenience sample as score-calibration evidence. No participants have been recruited and no responses have been collected.
+- Updated the study index, game audit, backlog and blind-coordinate concept note. No gameplay code, source data, Daily rules or deployment state changed.

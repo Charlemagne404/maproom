@@ -129,7 +129,7 @@ Audit started 18 November 2026 and updated 19 November across all sixteen regist
 
 ## Follow-up priorities
 
-1. Run moderated play sessions for Geography Grid, Geography Connections, Riverways, Latitude Ladder, Population Pyramid Sort, Map Projection Match and Watershed Match to measure first-read clarity, difficulty and replay interest; existing self-play is not independent player evidence. The Watershed Match protocol is ready in `research/competitive-landscape/STUDIES/watershed-match-player-pilot.md`.
+1. Run moderated play sessions for Capitals & Cities, Geography Grid, Geography Connections, Riverways, Latitude Ladder, Population Pyramid Sort, Map Projection Match and Watershed Match to measure first-read clarity, difficulty and replay interest; existing self-play is not independent player evidence. Protocols are ready for Capitals & Cities and Watershed Match in `research/competitive-landscape/STUDIES/`.
 2. Continue assistive-technology review, especially the final spoken casing of the Grid counter and screen-reader operation of map-heavy games. Voice control, braille, human listening and other assistive technologies remain untested.
 3. Measure cold-load, storage and touch behavior on physical mobile devices and on a hosted connection; current performance evidence is local Chromium evidence.
 4. Revisit country population questions only when a new, versioned source year is deliberately adopted. Keep speculative physical-geography concepts conditional on data, license and pedagogical review.
