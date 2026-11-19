@@ -524,3 +524,8 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 
 - Queried four fixed 2010–2019 M4.5+ rectangles through USGS FDSN with `contributor=us`; only event counts and depth-band summaries were retained. The Japan window had 3,285 events, San Andreas 48, Mid-Atlantic Ridge 192 and East Pacific Rise 38. All events in the selected transform/spreading windows were shallower than 70 km.
 - These exploratory frames do not establish a fair event-pattern clue or solve per-event reuse rights. Kept the game gated, recorded the evidence in the source study, research log and decision table, and deferred implementation. No event records or app data were saved.
+
+## Time-Zone Relay source and mechanic gate — 19 November 2026
+
+- Verified GeoNames city records include coordinates and IANA time-zone IDs under CC BY 4.0; the IANA time-zone database is public domain, while its rules change with government decisions. Exact timezone polygons would add an ODbL boundary dataset.
+- The city/time-zone data can be bundled, but sorting clocks repeats current ordering games and a single conversion question uses the map weakly. Deferred implementation until a route/date-line action offers distinct, fair decisions with pinned time-zone rules. See the source review and decision log.
