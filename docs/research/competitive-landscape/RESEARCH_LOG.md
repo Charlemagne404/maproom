@@ -265,3 +265,9 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 
 - In fixed-seed developer self-play, the four tiles Finland, France, Ireland and the Netherlands were submitted as euro-area members and received “No match.” The current [official European Union list](https://european-union.europa.eu/institutions-law-budget/euro/countries-using-euro_en) names all four among the 21 euro-area members. A separate island-country guess received “One away”; this is consistent with the authored “end in land” quartet, but the game did not identify the outlier.
 - **Assessment:** This is a plausible exact alternative not covered by the current known-fact audit, not participant evidence. No board content changed. The blinded pilot now prioritizes at least two Atlas 04 observations without disclosing the proposed grouping. Focused Connections content validation passed (10/10). Screenshots: [euro-area no-match](STUDIES/evidence/connections-atlas-04-euro-area-no-match.png) and [island one-away](STUDIES/evidence/connections-atlas-04-island-one-away.png).
+
+## 19 November 2026 — Riverways trace visibility self-play
+
+- One Medium Free Play round showed a short far-northern trace measuring about 10 × 1 screen pixels at 1.4× zoom. A center-anchored zoom initially moved it out of view; dragging the map brought it back. Guesses of Yukon and Mississippi yielded centre-distance/direction feedback, followed by the Russia centre-country clue. This is developer self-play, not participant evidence.
+- Added a dark casing under the orange trace and a concise pan/zoom instruction. No clue, answer pool, scoring or attempt rule changed. The planned independent study remains necessary for comprehension and perceived visibility.
+- Production build/artifact validation and lint passed; two focused production-preview browser cases passed (2/2), covering the trace styling, guess flow, saved progress and narrow dark-mode play. No deployment occurred.

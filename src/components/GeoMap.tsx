@@ -1,4 +1,4 @@
-import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react'
+import { Fragment, useCallback, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react'
 import { geoCentroid, geoEqualEarth, geoMercator, geoPath, type GeoPermissibleObjects, type GeoProjection } from 'd3-geo'
 import { LocateFixed, Minus, Plus } from 'lucide-react'
 import type { Coordinates, GeoFeature } from '../geography/types'
@@ -458,13 +458,20 @@ export function GeoMap({
             })}
           </g>}
           {lineFeatures.map((feature, index) => (
-            <path
-              key={`line-${String(feature.id ?? index)}`}
-              d={path(feature as unknown as GeoPermissibleObjects) ?? undefined}
-              className="map-line-feature"
-              aria-hidden="true"
-              vectorEffect="non-scaling-stroke"
-            />
+            <Fragment key={`line-${String(feature.id ?? index)}`}>
+              <path
+                d={path(feature as unknown as GeoPermissibleObjects) ?? undefined}
+                className="map-line-casing"
+                aria-hidden="true"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d={path(feature as unknown as GeoPermissibleObjects) ?? undefined}
+                className="map-line-feature"
+                aria-hidden="true"
+                vectorEffect="non-scaling-stroke"
+              />
+            </Fragment>
           ))}
           {routePath && <path className="map-route-line" d={routePath} aria-hidden="true" />}
           {markerPoints.map((marker, index) => marker.screen && (

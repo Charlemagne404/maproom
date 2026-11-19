@@ -558,3 +558,9 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - A fixed-seed direct-play pass submitted Finland, France, Ireland and the Netherlands as euro-area members; Atlas 04 returned “No match.” The current official European Union list includes all four. An island-country guess returned “One away,” matching three countries in the authored “end in land” answer. Screenshots are retained in the [study evidence folder](research/competitive-landscape/STUDIES/evidence/).
 - This indicates a possible exact alternate connection that the current known-fact audit does not cover; it is not independent-player evidence. Corrected Atlas 04's stale internal editorial note. No puzzle groups or gameplay rules changed. The blinded review protocol now prioritizes two observations of Atlas 04 without revealing the candidate association.
 - Focused Connections content validation passed (10/10).
+
+## Riverways trace visibility — 19 November 2026
+
+- A direct Medium Free Play round showed that a short far-northern trace was difficult to inspect at world scale and moved out of view after a centre-anchored zoom. After dragging it back into view, the path measured about 10 × 1 pixels at 1.4× zoom. Two wrong guesses gave centre-distance/direction clues and then the Russia centre-country clue.
+- Added a dark 5px casing under the orange 3px trace and told players they can drag to pan and use +/− to zoom. Answer pools, clue calculations, attempts and scoring remain unchanged. This is developer self-play, not the human comprehension study; the 6–8 participant review remains open.
+- Production build and artifact validation, lint, and the focused Riverways/touch browser cases passed (2/2). The production-preview checks cover the line casing and core widths, decorative accessibility state, pan instruction, guess feedback, saved progress and mobile dark-mode play. No deployment occurred.

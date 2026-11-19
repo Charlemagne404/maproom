@@ -2055,7 +2055,8 @@ html[data-theme='dark'] .setup-choice.is-selected { background: color-mix(in srg
 }
 
 /* Physical rivers and city ordering use the same world map at two different scales. */
-.map-line-feature { fill: none; stroke: #f29a62; stroke-width: 2.35px; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 1.5px #2b241e); pointer-events: none; }
+.map-line-casing { fill: none; stroke: #292622; stroke-width: 5px; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.map-line-feature { fill: none; stroke: #f29a62; stroke-width: 3px; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 .riverways-game-body, .latitude-ladder-game-body { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 0; }
 .riverways-prompt { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; margin: 2px 0 11px; }
 .riverways-prompt h2, .latitude-ladder-prompt h2 { margin: 1px 0 3px; font-family: var(--sans); font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 700; letter-spacing: -.035em; line-height: 1.12; }

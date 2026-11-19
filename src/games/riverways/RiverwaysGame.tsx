@@ -133,7 +133,7 @@ function RiverRound({ data, difficulty, mode, pool, question, round, session, on
   return (
     <div className="game-body riverways-game-body">
       <div className="riverways-prompt">
-        <div><span className="eyebrow">{pool.length} named rivers · round {round + 1}</span><h2>Follow the river</h2><p>Trace the orange watercourse across the map, then name it. You have six guesses. Misses show line-centre distance and direction; after two, the target centre’s country is revealed.</p></div>
+        <div><span className="eyebrow">{pool.length} named rivers · round {round + 1}</span><h2>Follow the river</h2><p>Trace the orange watercourse across the map, then name it. Drag to pan and use +/− to zoom. You have six guesses. Misses show line-centre distance and direction; after two, the target centre’s country is revealed.</p></div>
         {mode === 'freeplay' && <GameSettingsMenu><div className="practice-config">
           <GameSettingSelect label="River pool" value={difficulty} options={difficultyOptions} onChange={(value) => onDifficulty(value as RiverDifficulty)} />
           <AdvancedGameSettings><span className="practice-config-note">The pool expands from the largest rivers to more regional waterways. Wrong guesses compare the calculated centres of both mapped lines; after two misses, the highlighted line’s centre country is shown. Centre-to-centre distance is a clue, not the shortest distance between river courses.</span></AdvancedGameSettings>
