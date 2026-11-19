@@ -6,12 +6,12 @@ Boards are fixed editorial content in `src/puzzles/connections-content.ts`. The 
 
 The opening library contains 24 boards: 8 each in the Easy, Medium, and Hard pools. Each board has four separately ranked groups (tiers 1–4). Overall difficulty describes the combined board; tier describes a group's intended reveal color/order. Both assignments are editorial judgments and need a human play-through before a new board is added.
 
-Each group records its visible label, explanation, four ISO3 entries, tier, and a machine-readable fact rule. The rule and selected country codes must agree exactly on that board. Where an organization has more than four members, the label says **among** and the explanation states the full set size; the remaining members must not be extra tiles on that board.
+Each group records its visible label, explanation, four ISO3 entries, tier, and a machine-readable fact rule. The rule and selected country codes must agree exactly on that board. For a finite membership set with more than four members, the label says **among** and the explanation states the full set size; the remaining members must not be extra tiles on that board.
 
 ## Authoring checklist
 
 1. Choose four relationships that use different kinds of geography knowledge. Avoid a board made only of continents, broad subregions, or easy name endings.
-2. Give every group four distinct ISO3 codes from the bundled country catalogue. Across the four groups, all 16 codes must be unique and appear once.
+2. Give every group four distinct ISO3 codes from the bundled country catalogue. Across the four groups, all 16 codes must be unique and appear once. Do not repeat the same four-country answer set within an overall difficulty pool; rotate valid subsets when a larger source set allows it.
 3. Write a short category label and a one-sentence reveal that states the actual rule, its boundary, and any date or subset limit.
 4. Record the exact fact rule. Add a named set when membership requires a human-authored list; give that set a source and a note in `CONNECTIONS_NAMED_FACT_SETS`.
 5. Put plausible decoys on the same board, then check what else the 16 entries share: borders, continents, subregions, landlocked status, names, capital names, coast sets, history lists, and any relevant data band.
@@ -29,7 +29,7 @@ The 24-board audit reports no unassigned exact quartet. The following broad matc
 | Atlas 02 | landlocked (5); Europe (5); Africa (5) |
 | Atlas 03 | landlocked (6); Asia (7); Europe (6) |
 | Atlas 04 | Asia (6); Europe (8); Northern Europe (5) |
-| Atlas 05 | Asia (5); South-Eastern Asia (5) |
+| Atlas 05 | Asia (7); South-Eastern Asia (5) |
 | Atlas 06 | landlocked (5); Africa (7) |
 | Atlas 07 | Asia (12); Western Asia (6) |
 | Atlas 08 | Europe (6); Africa (6) |
@@ -42,14 +42,20 @@ The 24-board audit reports no unassigned exact quartet. The following broad matc
 | Atlas 16 | Asia (8) |
 | Atlas 17 | landlocked (8); Asia (6); Europe (6) |
 | Atlas 18 | landlocked (5); Asia (6); Africa (6) |
-| Atlas 19 | Asia (7) |
+| Atlas 19 | Asia (7); Europe (5) |
 | Atlas 20 | Asia (6); Africa (6) |
 | Atlas 21 | landlocked (6); Asia (6); Europe (6) |
 | Atlas 22 | Europe (8) |
-| Atlas 23 | Europe (11) |
+| Atlas 23 | Asia (5); Europe (8) |
 | Atlas 24 | Asia (7) |
 
 Atlas 01 and Atlas 10 produce no broad-match warning under the checked rule set. The audit intentionally avoids treating arbitrary population or area cutoffs as plausible alternatives: such bins can be invented endlessly and are not clues unless the board names and dates them. It does check authored bands, the recurring under-1,000 km² and above-100-million thresholds, country and capital initials, name patterns, all catalogue borders and regions, landlocked status, and every named set.
+
+### Answer-set repetition review
+
+No exact four-country answer set is repeated within an Easy, Medium, or Hard pool. Across difficulty pools, three exact repeats remain: Atlas 01/24's four country names containing “Guinea,” Atlas 03/21's four national capitals on the Danube, and Atlas 08/17's four Lake Chad shoreline countries. Each underlying fact has exactly four members in the sources used here, so a different four-country subset would be inaccurate. The test suite records these exceptions and rejects any other cross-pool duplicate until it receives editorial review.
+
+Groups drawn from larger finite membership sets now say “among” and name the total size, including ASEAN's five founders, the five sovereign Nordic Council members, the seven G7 members, and the named historical organizations. When a set has more than four valid members, the library rotates the selected quartet where the board's other facts allow it.
 
 ## Fact sources and interpretation
 

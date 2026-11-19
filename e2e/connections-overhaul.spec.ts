@@ -1,7 +1,12 @@
 import { expect, test, type Page } from '@playwright/test'
 import { CONNECTIONS_PUZZLES } from '../src/puzzles/connections-content'
 
-async function startConnections(page: Page) {
+async function startConnections(page: Page, seed?: string) {
+  if (seed) {
+    await page.addInitScript((value) => {
+      Object.defineProperty(window.crypto, 'randomUUID', { configurable: true, value: () => value })
+    }, seed)
+  }
   await page.goto('/games/connections?mode=freeplay')
   const setup = page.getByRole('dialog')
   await expect(setup).toBeVisible()
@@ -146,6 +151,45 @@ test('free-play difficulty settings switch to a board in the selected tier', asy
   await settings.getByLabel('Difficulty').selectOption('hard')
   await expect(page.locator('.connection-board button')).toHaveCount(16)
   expect((await activePuzzle(page)).difficulty).toBe('hard')
+})
+
+test('the revised medium board reveals its Nordic subset and France border group', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 })
+  await startConnections(page, 'connection-audit-2')
+  await page.getByRole('button', { name: 'Game settings' }).click()
+  await page.locator('.game-settings-panel').getByLabel('Difficulty').selectOption('medium')
+  const puzzle = await activePuzzle(page)
+  expect(puzzle.id).toBe('atlas-14')
+
+  for (const id of ['atlas-14-nordic', 'atlas-14-france']) {
+    const group = puzzle.groups.find((candidate) => candidate.id === id)
+    expect(group).toBeDefined()
+    await selectCodes(page, group!.countryCodes)
+    await page.getByRole('button', { name: 'Check group' }).click()
+    await expect(page.locator('.connection-solved-row').last()).toContainText(group!.label)
+    await expect(page.locator('.connection-solved-row').last()).toContainText(group!.explanation)
+  }
+  await page.screenshot({ path: 'artifacts/qa/product-quality/connections-atlas-14-revealed.png', fullPage: true })
+})
+
+test('the revised hard board completes with its four authored groups', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 })
+  await startConnections(page, 'connection-audit-11')
+  await page.getByRole('button', { name: 'Game settings' }).click()
+  await page.locator('.game-settings-panel').getByLabel('Difficulty').selectOption('hard')
+  const puzzle = await activePuzzle(page)
+  expect(puzzle.id).toBe('atlas-23')
+
+  for (const [index, group] of puzzle.groups.entries()) {
+    await selectCodes(page, group.countryCodes)
+    await page.getByRole('button', { name: 'Check group' }).click()
+    await expect(page.locator('.connection-solved-row').last()).toContainText(group.label)
+    await expect(page.locator('.connection-solved-row').last()).toContainText(group.explanation)
+    await expect(page.locator('.connection-solved-row')).toHaveCount(index + 1)
+  }
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-summary')).toContainText('4 / 4 correct')
+  await page.screenshot({ path: 'artifacts/qa/product-quality/connections-atlas-23-complete.png', fullPage: true })
 })
 
 test('mobile dark theme has no horizontal overflow and honors reduced motion', async ({ browser }) => {

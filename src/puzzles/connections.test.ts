@@ -24,6 +24,60 @@ describe('Geography Connections editorial boards', () => {
     }
   })
 
+  it('does not repeat an exact country quartet within a difficulty pool', () => {
+    const groupsByDifficultyAndQuartet = new Map<string, string[]>()
+    for (const puzzle of CONNECTIONS_PUZZLES) {
+      for (const group of puzzle.groups) {
+        const quartet = [...group.countryCodes].sort().join(',')
+        const key = `${puzzle.difficulty}:${quartet}`
+        const groups = groupsByDifficultyAndQuartet.get(key) ?? []
+        groups.push(`${puzzle.id}/${group.id}`)
+        groupsByDifficultyAndQuartet.set(key, groups)
+      }
+    }
+    const repeated = [...groupsByDifficultyAndQuartet.entries()].filter(([, groups]) => groups.length > 1)
+    expect(repeated, repeated.map(([key, groups]) => `${key}: ${groups.join(' and ')}`).join('\n')).toEqual([])
+  })
+
+  it('keeps only the three documented exact-quartet repeats across difficulty pools', () => {
+    const groupsByQuartet = new Map<string, string[]>()
+    for (const puzzle of CONNECTIONS_PUZZLES) {
+      for (const group of puzzle.groups) {
+        const quartet = [...group.countryCodes].sort().join(',')
+        const groups = groupsByQuartet.get(quartet) ?? []
+        groups.push(`${puzzle.id}/${group.id}`)
+        groupsByQuartet.set(quartet, groups)
+      }
+    }
+    const repeated = Object.fromEntries([...groupsByQuartet.entries()]
+      .filter(([, groups]) => groups.length > 1)
+      .map(([quartet, groups]) => [quartet, groups.sort()]))
+    expect(repeated).toEqual({
+      'AUT,HUN,SRB,SVK': ['atlas-03/atlas-03-danube', 'atlas-21/atlas-21-danube'],
+      'CMR,NER,NGA,TCD': ['atlas-08/atlas-08-lake-chad', 'atlas-17/atlas-17-lake-chad'],
+      'GIN,GNB,GNQ,PNG': ['atlas-01/atlas-01-guinea', 'atlas-24/atlas-24-guinea'],
+    })
+  })
+
+  it('makes larger named membership sets explicit in their group labels', () => {
+    const fullMembershipGroups = new Set([
+      'asean-founding-members',
+      'eec-founding-members',
+      'former-yugoslav-republics',
+      'g7-members',
+      'nordic-sovereign-states',
+      'opec-founding-members',
+      'sacu-members',
+    ])
+    for (const puzzle of CONNECTIONS_PUZZLES) {
+      for (const group of puzzle.groups) {
+        if (group.fact.type !== 'named-set' || !fullMembershipGroups.has(group.fact.id)) continue
+        expect(group.label.toLocaleLowerCase('en').startsWith('among '), `${puzzle.id}/${group.id} label`).toBe(true)
+        expect(group.explanation.toLocaleLowerCase('en'), `${puzzle.id}/${group.id} explanation`).toMatch(/five|six|seven/)
+      }
+    }
+  })
+
   it('validates every country code, answer group, declared fact and exact alternative quartet', () => {
     const result = auditConnectionsLibrary(catalog.countries)
     expect(result.issues, result.issues.join('\n')).toEqual([])

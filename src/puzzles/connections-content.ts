@@ -190,7 +190,7 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
     g('atlas-01-guinea', 'Names containing “Guinea”', 'The country name itself contains Guinea.', 1, ['GIN', 'GNB', 'GNQ', 'PNG'], { type: 'country-name-contains', value: 'Guinea' }),
     g('atlas-01-germany', 'Share a land border with Germany', 'Each country shares a land border with Germany.', 2, ['AUT', 'NLD', 'FRA', 'POL'], { type: 'border-country', countryCode: 'DEU' }),
     g('atlas-01-equator', 'The Equator crosses their land', 'The Equator crosses dry land in each of these countries.', 3, ['BRA', 'COL', 'ECU', 'IDN'], setFact('equator-land-crossings')),
-    g('atlas-01-central-america', 'In Central America', 'Each is catalogued in the Central America subregion.', 4, ['NIC', 'CRI', 'HND', 'SLV'], { type: 'subregion', value: 'Central America' }),
+    g('atlas-01-central-america', 'In Central America', 'Each is catalogued in the Central America subregion.', 4, ['GTM', 'HND', 'NIC', 'SLV'], { type: 'subregion', value: 'Central America' }),
   ], 'The name pattern is the entry point; the remaining groups move from border knowledge to physical geography and a regional label.'),
   puzzle('atlas-02', 'easy', [
     g('atlas-02-stan', 'End in “-stan”', 'The common country name ends with the letters stan.', 1, ['KAZ', 'AFG', 'TJK', 'UZB'], { type: 'country-name-suffix', value: 'stan' }),
@@ -211,14 +211,14 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
     g('atlas-04-north-sea', 'Have a North Sea shoreline', 'Each has a shoreline on the North Sea.', 4, ['GBR', 'NOR', 'NLD', 'FRA'], setFact('north-sea-coast')),
   ], 'The numeric clue is explicit on reveal; country borders and capital naming provide two different kinds of geographic knowledge.'),
   puzzle('atlas-05', 'easy', [
-    g('atlas-05-land', 'End in the letters “land”', 'The common country name ends with land.', 1, ['POL', 'IRL', 'ISL', 'NZL'], { type: 'country-name-suffix', value: 'land' }),
-    g('atlas-05-brazil', 'Share a land border with Brazil', 'Each country shares a land border with Brazil.', 2, ['ARG', 'PER', 'URY', 'VEN'], { type: 'border-country', countryCode: 'BRA' }),
-    g('atlas-05-asean', 'Founding members of ASEAN', 'Each signed the 1967 Bangkok Declaration as a founding ASEAN member.', 3, ['IDN', 'MYS', 'PHL', 'SGP'], setFact('asean-founding-members')),
+    g('atlas-05-name-a', 'Country names beginning with A', 'Each country name starts with the letter A.', 1, ['AFG', 'ALB', 'ARM', 'AUS'], { type: 'country-name-initial', initial: 'A' }),
+    g('atlas-05-brazil', 'Share a land border with Brazil', 'Each country shares a land border with Brazil.', 2, ['BOL', 'PER', 'URY', 'VEN'], { type: 'border-country', countryCode: 'BRA' }),
+    g('atlas-05-asean', 'Among ASEAN’s five founding members', 'These four were among the five countries that signed the 1967 Bangkok Declaration as ASEAN founders.', 3, ['IDN', 'MYS', 'SGP', 'THA'], setFact('asean-founding-members')),
     g('atlas-05-lusophone', 'Portuguese is an official language', 'Portuguese is an official language in each country.', 4, ['CPV', 'GNB', 'STP', 'TLS'], setFact('cplp-portuguese-official')),
-  ], 'The board includes two non-obvious shared-language/history sets alongside recognizable name and border patterns.'),
+  ], 'A country-name warm-up leads into a Brazil border set, an ASEAN founding subset, and Portuguese official-language clues.'),
   puzzle('atlas-06', 'easy', [
     g('atlas-06-landlocked-africa', 'Landlocked in Africa', 'Each is landlocked and catalogued in Africa.', 1, ['BFA', 'NER', 'TCD', 'UGA'], { type: 'landlocked-continent', continent: 'Africa' }),
-    g('atlas-06-g7', 'G7 member countries', 'Each is a member country of the G7.', 2, ['CAN', 'FRA', 'ITA', 'USA'], setFact('g7-members')),
+    g('atlas-06-g7', 'Among the seven G7 members', 'These four are among the seven G7 member countries.', 2, ['CAN', 'FRA', 'ITA', 'USA'], setFact('g7-members')),
     g('atlas-06-capricorn', 'The Tropic of Capricorn crosses their land', 'The Tropic of Capricorn crosses dry land in each country.', 3, ['ZAF', 'MDG', 'MOZ', 'PRY'], setFact('tropic-capricorn-land-crossings')),
     g('atlas-06-capital-b', 'Their capitals begin with B', 'Brussels, Beijing, Baghdad, and Bangkok all begin with B.', 4, ['BEL', 'CHN', 'IRQ', 'THA'], { type: 'capital-initial', initial: 'B' }),
   ], 'This set blends an attribute, a political group, a latitude, and a capital-city pattern.'),
@@ -239,12 +239,12 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
     g('atlas-09-small', 'Countries under 1,000 km²', 'Each country has a catalogued area below 1,000 square kilometres.', 1, ['BHR', 'SGP', 'DMA', 'GRD'], { type: 'area-under', value: 1_000 }),
     g('atlas-09-china', 'Share a land border with China', 'Each country shares a land border with China.', 2, ['AFG', 'IND', 'LAO', 'MNG'], { type: 'border-country', countryCode: 'CHN' }),
     g('atlas-09-population', 'Between 10 and 20 million people in 2023', 'Each had a 2023 population from 10 million up to, but not including, 20 million.', 3, ['BEL', 'CHL', 'ECU', 'ROU'], { type: 'population-band', minimum: 10_000_000, maximum: 20_000_000, year: '2023' }),
-    g('atlas-09-nordic', 'Nordic sovereign states', 'Each is one of the five sovereign Nordic Council member countries.', 4, ['DNK', 'FIN', 'ISL', 'NOR'], setFact('nordic-sovereign-states')),
+    g('atlas-09-nordic', 'Among the five Nordic sovereign states', 'These four are among the five Nordic Council member countries that are sovereign states.', 4, ['DNK', 'FIN', 'ISL', 'NOR'], setFact('nordic-sovereign-states')),
   ], 'Measured area and dated population clues are balanced with a border set and a political geography set.'),
   puzzle('atlas-10', 'medium', [
     g('atlas-10-central-america', 'In Central America', 'Each is catalogued in the Central America subregion.', 1, ['CRI', 'HND', 'NIC', 'SLV'], { type: 'subregion', value: 'Central America' }),
-    g('atlas-10-brazil', 'Share a land border with Brazil', 'Each country shares a land border with Brazil.', 2, ['ARG', 'PER', 'URY', 'VEN'], { type: 'border-country', countryCode: 'BRA' }),
-    g('atlas-10-asean', 'Founding members of ASEAN', 'Each signed the 1967 Bangkok Declaration as a founding ASEAN member.', 3, ['IDN', 'MYS', 'PHL', 'SGP'], setFact('asean-founding-members')),
+    g('atlas-10-brazil', 'Share a land border with Brazil', 'Each country shares a land border with Brazil.', 2, ['GUY', 'SUR', 'URY', 'VEN'], { type: 'border-country', countryCode: 'BRA' }),
+    g('atlas-10-asean', 'Among ASEAN’s five founding members', 'These four were among the five countries that signed the 1967 Bangkok Declaration as ASEAN founders.', 3, ['IDN', 'PHL', 'SGP', 'THA'], setFact('asean-founding-members')),
     g('atlas-10-visegrad', 'The Visegrad Four', 'Czechia, Hungary, Poland and Slovakia form the Visegrad Four.', 4, ['CZE', 'HUN', 'POL', 'SVK'], setFact('visegrad-four')),
   ], 'A regional clue and a border clue share the board with founding memberships from two distant regions.'),
   puzzle('atlas-11', 'medium', [
@@ -267,14 +267,14 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
   ], 'A dated population band and two border/physical clues are paired with a capital relationship.'),
   puzzle('atlas-14', 'medium', [
     g('atlas-14-population', 'Between 1 and 5 million people in 2023', 'Each had a 2023 population from 1 million up to, but not including, 5 million.', 1, ['ALB', 'BHR', 'BIH', 'ERI'], { type: 'population-band', minimum: 1_000_000, maximum: 5_000_000, year: '2023' }),
-    g('atlas-14-nordic', 'Nordic sovereign states', 'Each is one of the five sovereign Nordic Council member countries.', 2, ['DNK', 'FIN', 'ISL', 'NOR'], setFact('nordic-sovereign-states')),
-    g('atlas-14-caribbean', 'In the Caribbean', 'Each is catalogued in the Caribbean subregion.', 3, ['ATG', 'DOM', 'BRB', 'CUB'], { type: 'subregion', value: 'Caribbean' }),
-    g('atlas-14-visegrad', 'The Visegrad Four', 'Czechia, Hungary, Poland and Slovakia form the Visegrad Four.', 4, ['CZE', 'HUN', 'POL', 'SVK'], setFact('visegrad-four')),
-  ], 'A dated population interval meets the five Nordic states, Caribbean island countries, and the Visegrad Four.'),
+    g('atlas-14-nordic', 'Among the five Nordic sovereign states', 'These four are among the five Nordic Council member countries that are sovereign states.', 2, ['DNK', 'ISL', 'NOR', 'SWE'], setFact('nordic-sovereign-states')),
+    g('atlas-14-caribbean', 'In the Caribbean', 'Each is catalogued in the Caribbean subregion.', 3, ['CUB', 'DMA', 'GRD', 'HTI'], { type: 'subregion', value: 'Caribbean' }),
+    g('atlas-14-france', 'Share a land border with France', 'Each country shares a land border with France.', 4, ['CHE', 'DEU', 'ITA', 'LUX'], { type: 'border-country', countryCode: 'FRA' }),
+  ], 'A dated population interval meets a Nordic subset, Caribbean island countries, and a French border set.'),
   puzzle('atlas-15', 'medium', [
     g('atlas-15-population', 'Between 1 and 5 million people in 2023', 'Each had a 2023 population from 1 million up to, but not including, 5 million.', 1, ['ALB', 'BHR', 'BIH', 'BWA'], { type: 'population-band', minimum: 1_000_000, maximum: 5_000_000, year: '2023' }),
     g('atlas-15-black-sea', 'Have a Black Sea shoreline', 'Each has a shoreline on the Black Sea.', 2, ['BGR', 'RUS', 'TUR', 'UKR'], setFact('black-sea-coast')),
-    g('atlas-15-asean', 'Founding members of ASEAN', 'Each signed the 1967 Bangkok Declaration as a founding ASEAN member.', 3, ['IDN', 'MYS', 'PHL', 'SGP'], setFact('asean-founding-members')),
+    g('atlas-15-asean', 'Among ASEAN’s five founding members', 'These four were among the five countries that signed the 1967 Bangkok Declaration as ASEAN founders.', 3, ['IDN', 'MYS', 'PHL', 'SGP'], setFact('asean-founding-members')),
     g('atlas-15-capital-b', 'Their capitals begin with B', 'Beijing, Brussels, Bridgetown, and Brasília begin with B.', 4, ['CHN', 'BEL', 'BRB', 'BRA'], { type: 'capital-initial', initial: 'B' }),
   ], 'The dated data band is deliberately mixed across continents; other clues use a sea, history, and capital names.'),
   puzzle('atlas-16', 'medium', [
@@ -296,8 +296,8 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
     g('atlas-18-capital-name', 'Capital and country share a name', 'The national capital has the same name as its country.', 4, ['DJI', 'LUX', 'SGP', 'VAT'], { type: 'capital-country-name' }),
   ], 'A subregion, two precise geographic relations, and capital-name initials form the four links.'),
   puzzle('atlas-19', 'hard', [
-    g('atlas-19-asean', 'Founding members of ASEAN', 'Each signed the 1967 Bangkok Declaration as a founding ASEAN member.', 1, ['IDN', 'MYS', 'PHL', 'THA'], setFact('asean-founding-members')),
-    g('atlas-19-direction', 'Begin with north or south', 'The common country name begins with North or South.', 2, ['KOR', 'PRK', 'SSD', 'ZAF'], { type: 'country-name-direction' }),
+    g('atlas-19-asean', 'Among ASEAN’s five founding members', 'These four were among the five countries that signed the 1967 Bangkok Declaration as ASEAN founders.', 1, ['IDN', 'MYS', 'PHL', 'THA'], setFact('asean-founding-members')),
+    g('atlas-19-direction', 'Begin with north or south', 'The common country name begins with North or South.', 2, ['KOR', 'PRK', 'MKD', 'ZAF'], { type: 'country-name-direction' }),
     g('atlas-19-small', 'Countries under 1,000 km²', 'Each country has a catalogued area below 1,000 square kilometres.', 3, ['BHR', 'BRB', 'DMA', 'GRD'], { type: 'area-under', value: 1_000 }),
     g('atlas-19-eec', 'Among the six EEC founding states', 'These four were among the six states that signed the Treaty of Rome to establish the EEC.', 4, ['DEU', 'NLD', 'FRA', 'ITA'], setFact('eec-founding-members')),
   ], 'A name pattern, two founding or membership histories, and a small-country area threshold pull in different directions.'),
@@ -305,7 +305,7 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
     g('atlas-20-portuguese', 'Portuguese is an official language', 'Portuguese is an official language in each state.', 1, ['CPV', 'AGO', 'PRT', 'TLS'], setFact('cplp-portuguese-official')),
     g('atlas-20-equator', 'The Equator crosses their land', 'The Equator crosses dry land in each country.', 2, ['COL', 'ECU', 'GAB', 'KEN'], setFact('equator-land-crossings')),
     g('atlas-20-population', 'Above 100 million people in 2023', 'Each had a 2023 population above 100 million in the World Bank series.', 3, ['EGY', 'IND', 'NGA', 'USA'], over100m()),
-    g('atlas-20-opec', 'Among OPEC’s five founding members', 'These four were among the five countries that founded OPEC in 1960.', 4, ['IRN', 'IRQ', 'KWT', 'SAU'], setFact('opec-founding-members')),
+    g('atlas-20-opec', 'Among OPEC’s five founding members', 'These four were among the five countries that founded OPEC in 1960.', 4, ['IRN', 'KWT', 'SAU', 'VEN'], setFact('opec-founding-members')),
   ], 'Language, latitude, population scale, and an explicitly partial founding membership each supply a different clue.'),
 
   puzzle('atlas-21', 'hard', [
@@ -316,16 +316,16 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
   ], 'Each clue points to a distinct scale: one border, capital river, marginal sea, or a dated population interval.'),
   puzzle('atlas-22', 'hard', [
     g('atlas-22-sacu', 'Among SACU’s five member states', 'These four are members of the five-country Southern African Customs Union.', 1, ['BWA', 'LSO', 'NAM', 'ZAF'], setFact('sacu-members')),
-    g('atlas-22-eec', 'Among the six EEC founding states', 'These four were among the six states that signed the Treaty of Rome to establish the EEC.', 2, ['ITA', 'NLD', 'FRA', 'LUX'], setFact('eec-founding-members')),
+    g('atlas-22-eec', 'Among the six EEC founding states', 'These four were among the six states that signed the Treaty of Rome to establish the EEC.', 2, ['BEL', 'FRA', 'ITA', 'LUX'], setFact('eec-founding-members')),
     g('atlas-22-opec', 'Among OPEC’s five founding members', 'These four were among the five countries that founded OPEC in 1960.', 3, ['IRN', 'IRQ', 'SAU', 'VEN'], setFact('opec-founding-members')),
     g('atlas-22-black-sea', 'Have a Black Sea shoreline', 'Each has a shoreline on the Black Sea.', 4, ['BGR', 'ROU', 'RUS', 'UKR'], setFact('black-sea-coast')),
   ], 'Customs, European integration and oil-export histories compete with a generalized Black Sea shoreline.'),
   puzzle('atlas-23', 'hard', [
-    g('atlas-23-yugoslav', 'Among the former Yugoslav republics', 'These four were among the six republics of the Socialist Federal Republic of Yugoslavia.', 1, ['BIH', 'HRV', 'MKD', 'MNE'], setFact('former-yugoslav-republics')),
-    g('atlas-23-g7', 'G7 member countries', 'Each is a member country of the G7.', 2, ['CAN', 'ITA', 'JPN', 'USA'], setFact('g7-members')),
-    g('atlas-23-north-sea', 'Have a North Sea shoreline', 'Each has a shoreline on the North Sea.', 3, ['BEL', 'DNK', 'NLD', 'NOR'], setFact('north-sea-coast')),
-    g('atlas-23-capital', 'Capital and country share a name', 'The national capital has the same name as its country.', 4, ['DJI', 'MCO', 'SGP', 'VAT'], { type: 'capital-country-name' }),
-  ], 'Four official or physical reference sets overlap at the country level; the fixed board is checked for alternate exact quartets.'),
+    g('atlas-23-yugoslav', 'Among the former Yugoslav republics', 'These four were among the six republics of the Socialist Federal Republic of Yugoslavia.', 1, ['HRV', 'MNE', 'SRB', 'SVN'], setFact('former-yugoslav-republics')),
+    g('atlas-23-g7', 'Among the seven G7 members', 'These four are among the seven G7 member countries.', 2, ['CAN', 'FRA', 'GBR', 'USA'], setFact('g7-members')),
+    g('atlas-23-india', 'Share a land border with India', 'Each country shares a land border with India.', 3, ['BGD', 'MMR', 'NPL', 'PAK'], { type: 'border-country', countryCode: 'IND' }),
+    g('atlas-23-capital', 'Capital and country share a name', 'The national capital has the same name as its country.', 4, ['DJI', 'LUX', 'MCO', 'SGP'], { type: 'capital-country-name' }),
+  ], 'A history set, an explicitly partial G7 set, a border clue and matching capital names form four different kinds of link.'),
   puzzle('atlas-24', 'hard', [
     g('atlas-24-guinea', 'Names containing “Guinea”', 'The country name itself contains Guinea.', 1, ['GIN', 'GNB', 'GNQ', 'PNG'], { type: 'country-name-contains', value: 'Guinea' }),
     g('atlas-24-india', 'Share a land border with India', 'Each country shares a land border with India.', 2, ['BGD', 'BTN', 'NPL', 'PAK'], { type: 'border-country', countryCode: 'IND' }),
