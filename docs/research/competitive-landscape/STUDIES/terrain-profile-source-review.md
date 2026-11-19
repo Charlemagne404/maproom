@@ -2,7 +2,7 @@
 
 **Reviewed:** 19 November 2026
 
-**Status:** Candidate; source licensing is workable, but point-elevation accuracy needs a pilot before implementation.
+**Status:** Candidate; curated official summit heights look promising, but a broader content audit is needed before implementation.
 
 ## Question
 
@@ -18,17 +18,32 @@ Can Maproom build a replayable game about ordering named summits or passes from 
 
 The [GeoNames feature-code list](https://www.geonames.org/export/codes.html) defines a peak as a pointed elevation atop a mountain, ridge or other feature, and a pass as a break in a mountain range or other high obstruction used for travel. These codes can seed a candidate gazetteer, but their presence does not by itself establish the point's positional accuracy or the correctness of its height.
 
+## Small summit pilot
+
+For a bounded check, four named summits were sampled at the coordinates shown on their current GeoNames records. A single multi-point request to the [Open Topo Data public SRTM30m API](https://www.opentopodata.org/datasets/srtm/) returned its `srtm30m` dataset values. Published heights below come from government or national mapping sources. Differences are the sampled raster value minus the cited published height, rounded to the nearest metre.
+
+| Summit | GeoNames coordinate | GeoNames elevation field | Published reference | SRTM30m sample | Difference |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Mount Everest | 27.98791, 86.92529 | 8,848 m | 8,848.86 m ([Nepal government factsheet](https://giwmscdnone.gov.np/media/pdf_upload/Facts%202025%20Final_jktttlf.pdf)) | 8,706 m | -143 m |
+| Kilimanjaro | -3.07583, 37.35333 | 5,895 m | 5,895 m ([Tanzania National Parks](https://www.tanzaniaparks.go.tz/uploads/publications/en-1730810409-QUICKREFERENCEGUIDEFINAL.pdf)) | 5,865 m | -30 m |
+| Aconcagua | -32.65383, -70.01141 | 6,959 m | 6,961 m ([Argentina government, 2026](https://www.argentina.gob.ar/noticias/tropas-argentinas-y-chilenas-volvieron-hacer-cumbre-juntas-en-el-aconcagua)) | 6,910 m | -51 m |
+| Mont Blanc | 45.83300, 6.86400 | 4,806 m | 4,805.59 m ([French IGN](https://www.ign.fr/mag/une-expedition-pour-mesurer-la-pesanteur-sur-le-mont-Blanc)) | 4,779 m | -27 m |
+
+GeoNames' integer height field is close to these four published values, while the SRTM30m samples are 27–143 m lower. The sampled values preserve the broad ordering in this small set, but these four examples cannot establish dataset-wide accuracy. SRTM point values should not be presented as official summit heights. GeoNames' height field is a promising discovery aid, not a source to trust without per-feature review: the gazetteer does not provide source provenance for that field and disclaims accuracy. This pilot also says nothing about mountain passes, which need separate validation.
+
+Published heights can also change with snow and ice. The French IGN source identifies Mont Blanc's 4,805.59 m value as the 2023 measurement, and notes that satellite-supported field measurements have been taken every two years since 2001. A curated game record should preserve its source and measurement year rather than imply that every height is timeless.
+
 ## Assessment
 
-There is a clear licensing path for a small offline dataset: use NOAA's CC0 ETOPO surface grid, or USGS public-domain SRTM where its coverage and voids are suitable, and attribute GeoNames for names and point locations if that gazetteer is used. No full DEM needs to ship with the game; a build-time extraction could retain only validated records and the small amount of derived elevation data needed for rounds.
+There is a clear licensing path for a small offline dataset: use a curated set of published summit elevations, and attribute GeoNames for names and point locations if that gazetteer is used. The source links should be retained for each feature. NOAA's CC0 ETOPO surface grid and USGS public-domain SRTM remain useful for map-profile imagery or rough cross-checking, but the pilot does not support using their point samples as canonical heights. No full DEM needs to ship with the game.
 
-The remaining risk is gameplay fairness. DEM values at named peak coordinates are approximate grid elevations, not necessarily the accepted height of the summit. Differences in source quality, point placement, vegetation or snow, local relief, and vertical reference can affect close rankings. This is an inference from the products' documented grids, coverage and source variation; no summit samples have yet been compared.
+The remaining risk is content quality and gameplay fairness. A curated list can be accurate, but it needs enough globally varied features, consistent height conventions, and carefully spaced comparisons to support replay. Height conventions may differ for ice and snow. This matches USGS guidance that elevations interpolated from terrain grids are approximate and may not reflect a peak's highest point; its Denali survey also found airborne radar did not provide precise spot elevations in very steep terrain. The small pilot does not establish the right clue format or difficulty.
 
 ## Recommendation
 
-Keep Terrain Profile as a candidate and do a bounded data pilot before writing a game. Sample a small, geographically varied set of named peaks and passes from a DEM, record the source cell and datum, and compare the point locations and measured values against independent authoritative feature records. Reject or round values where the comparison does not support a fair order. If only broad relief differences validate, design tasks around those wider gaps and describe the result as approximate terrain elevation. Keep it out of Daily until content quality and player comprehension are separately assessed.
+Keep Terrain Profile as a candidate. Before writing a game, expand the summit sample to a small curated pool with one authoritative height citation per feature, then measure the distribution of usable ordering gaps. Do not use the DEM value as the displayed summit height. Treat passes as a separate content set until their official heights and feature positions are similarly checked. If the curated pool is varied and supports several gap bands, a Free Play prototype is justified; keep it out of Daily until content quality and player comprehension are separately assessed.
 
-No DEM or new game data was downloaded or added to Maproom during this source review.
+No raster tiles or new game data were downloaded or added to Maproom during this source review; the four SRTM point samples were obtained from the public API.
 
 ## Sources
 
@@ -36,5 +51,8 @@ No DEM or new game data was downloaded or added to Maproom during this source re
 - NOAA NCEI, [ETOPO 2022 User Guide](https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO2022/docs/1.2%20ETOPO%202022%20User%20Guide.pdf), revision 1.2, 13 October 2022.
 - NOAA NCEI, [ETOPO 2022 metadata](https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.dem%3Aetopo_2022), accessed 19 November 2026.
 - USGS EROS, [SRTM 1 Arc-Second Global](https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-1), accessed 19 November 2026.
+- USGS, [mountain peak elevation guidance](https://www.usgs.gov/faqs/there-a-list-mountain-peak-elevations-united-states) and [Denali's official summit measurement](https://www.usgs.gov/news/national-news-release/new-elevation-nations-highest-peak), accessed 19 November 2026.
+- Open Topo Data, [SRTM dataset and public point API](https://www.opentopodata.org/datasets/srtm/), accessed 19 November 2026; queried the SRTM 30m endpoint for the four GeoNames coordinates above.
 - GeoNames, [gazetteer readme and field definitions](https://download.geonames.org/export/dump/readme.txt), accessed 19 November 2026.
 - GeoNames, [feature codes](https://www.geonames.org/export/codes.html), accessed 19 November 2026.
+- GeoNames feature records: [Mount Everest](https://www.geonames.org/NP/highest-mountains-in-nepal.html), [Kilimanjaro](https://www.geonames.org/157452/kilimanjaro.html), [Aconcagua](https://www.geonames.org/3866949/cerro-aconcagua.html), and [Mont Blanc](https://www.geonames.org/3181986/mont-blanc.html), accessed 19 November 2026.
