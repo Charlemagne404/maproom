@@ -397,3 +397,15 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Sampled four summit coordinates with the public SRTM30m point API and compared them with government or national-mapping references. The raster samples were 27–143 m lower; GeoNames' integer elevation values were close in these four examples. This small sample is not a global accuracy estimate, and SRTM cell values should not be used as official summit heights.
 - The candidate remains research-only. A curated set of published heights may be viable, but the next gate is to assemble more globally varied peaks with one authoritative height citation each and measure the ordering-gap pool. Validate passes separately. The source record and values are in the [Terrain Profile study](research/competitive-landscape/STUDIES/terrain-profile-source-review.md).
 - No raster tiles or game data were added. No code, tests, or deployment changed.
+
+## Terrain Profile distinctness review — 19 November 2026
+
+- Reviewed the Geospatial Information Authority of Japan's 1,003-mountain list and terms. The 31 March 2026 source gives each mountain's highest point and elevation; its 3D record page exposes coordinates and measurement type. Four prominent peaks include adjacent height differences of 0, 3, and 10 m, so a sort game would need explicit tie and near-tie handling. GSI is a viable attributed Japan-only source but does not supply cross-section profiles. Only selected HTML records were checked; the 1,003-row file was not parsed.
+- Checked the proposed order-by-height mechanic against Maproom's Latitude Ladder and Population Pyramid Sort, and official catalog descriptions for Geocore Rank It, Higher Ground and Guess the Height and Worldly Rankings. The current concept adds too little new player action, so it is deferred; source viability alone does not justify implementation.
+- No code or data changed. No tests or deployment were run. Sources, access labels and the decision are recorded in the [Terrain Profile study](research/competitive-landscape/STUDIES/terrain-profile-source-review.md).
+
+## Worldly Rankings live practice — 19 November 2026
+
+- Completed a public six-country GDP puzzle in three guesses. Position feedback improved from 2/6 to 4/6 to 6/6; tap-to-swap worked. The result displayed each GDP figure but did not show its source or year.
+- The round exposed guess-history buttons and a prompt to revisit earlier guesses; restore behavior and drag were not tested. Country rows appeared as generic text in the browser accessibility tree, so keyboard and assistive-technology operation remain unverified.
+- Added the observation and limits to the [Worldly Rankings deep dive](research/competitive-landscape/DEEP_DIVES/worldly-rankings.md) and mechanic library. This direct-play sample supports the decision to defer another Maproom order-by-number game.

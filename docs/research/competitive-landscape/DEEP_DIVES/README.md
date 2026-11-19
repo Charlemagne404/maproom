@@ -18,4 +18,5 @@ Reviewed 19 November 2026. Each note distinguishes a round actually played from 
 | [Globle](globle.md) | One wrong country and closeness feedback. |
 | [GeoGuessr](geoguessr.md) | Guest daily landing reviewed; play led to account creation. |
 | [World Geography Games](world-geography-games.md) | Catalog and one canvas quiz opened; test click did not register. |
+| [Worldly Games — Rankings](worldly-rankings.md) | One GDP ordering puzzle solved in three guesses; positional feedback and tap-to-swap observed. |
 | [NYT Games](nyt-games.md) | Browser safety blocked access; no game observations. |

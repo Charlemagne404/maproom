@@ -2,7 +2,7 @@
 
 **Reviewed:** 19 November 2026
 
-**Status:** Candidate; curated official summit heights look promising, but a broader content audit is needed before implementation.
+**Status:** Summit-height sourcing is viable for Japan, but defer the current ordering concept: its core action overlaps with existing Maproom and competitor ranking games. Reconsider only with a distinct terrain-reading interaction.
 
 ## Question
 
@@ -33,15 +33,31 @@ GeoNames' integer height field is close to these four published values, while th
 
 Published heights can also change with snow and ice. The French IGN source identifies Mont Blanc's 4,805.59 m value as the 2023 measurement, and notes that satellite-supported field measurements have been taken every two years since 2001. A curated game record should preserve its source and measurement year rather than imply that every height is timeless.
 
+## Curated national source and comparison spacing
+
+The Geospatial Information Authority of Japan (GSI) publishes a current list of 1,003 principal Japanese mountains. GSI says the list is based on 1:25,000 topographic maps and basic survey results, with the location and elevation of each mountain's highest point; it updates values as tectonic or terrain changes are reflected. The page offers CSV and GeoJSON editions dated 31 March 2026. Its notes define the height reference as Tokyo Bay mean sea level, with a possible local mean-sea-level basis for some islands; values are reported to whole metres. The record type distinguishes triangulation points, photo-measured elevation points and points measured in the field.
+
+GSI's related [3D mountain record list](https://maps.gsi.go.jp/3d/mountain/mountain.html) gives a useful close-spacing example: Kita-dake 3,193 m, Aino-dake 3,190 m, Okuhotaka-dake 3,190 m and Yari-gatake 3,180 m. Adjacent gaps are 3 m, 0 m and 10 m. These are well-described official records, but a strict sort puzzle would need a deliberate tie rule and could still ask players to distinguish differences smaller than the source's whole-metre reporting. The national set is promising for a Japan-specific collection, not evidence of a globally varied pool.
+
+This was a targeted source check, not a full audit of all 1,003 records: the CSV and GeoJSON were not parsed, so the full height distribution, duplicate summit identities and replay pool remain unmeasured.
+
+GSI's current content terms apply Public Data License 1.0 unless a page states otherwise. They allow reuse, including commercial use, with source attribution; edited or adapted content must be labeled as such, and third-party rights must be checked. The height list provides names, point coordinates and elevations, not cross-section profiles. Any profile imagery would require a separate source and accuracy review.
+
+## Gameplay distinctness check
+
+The proposed core action—putting geographic items in order by a number—already appears in Maproom's Latitude Ladder and Population Pyramid Sort. It also sits beside Higher or Lower's pairwise numeric comparisons. The current competitor review found Geocore's Rank It (drag countries into order), Higher Ground (compare two map pins by height) and Guess the Height (estimate a lit point's elevation), plus Worldly Games' six-country Rankings puzzles. I completed one Worldly GDP practice round: position feedback moved from 2/6 to 4/6 to 6/6 over three guesses. The Geocore catalog marks its elevation modes as requiring a free account, so those remain catalog descriptions rather than direct-play observations in this review.
+
+This leaves little room for another game whose main decision is ordering known peaks by height. A profile graphic alone does not create a distinct learning action, and GSI's table does not provide such profiles. A different terrain-reading task could be considered later, but it would need its own source and rule study.
+
 ## Assessment
 
-There is a clear licensing path for a small offline dataset: use a curated set of published summit elevations, and attribute GeoNames for names and point locations if that gazetteer is used. The source links should be retained for each feature. NOAA's CC0 ETOPO surface grid and USGS public-domain SRTM remain useful for map-profile imagery or rough cross-checking, but the pilot does not support using their point samples as canonical heights. No full DEM needs to ship with the game.
+There is a clear licensing path for a small offline dataset: use a curated set of published summit elevations, and attribute GeoNames for names and point locations if that gazetteer is used. GSI also supplies a well-documented Japan-only source under PDL1.0. The source links should be retained for each feature. NOAA's CC0 ETOPO surface grid and USGS public-domain SRTM remain useful for rough profile imagery or cross-checking, but the pilot does not support using their point samples as canonical summit heights. No full DEM needs to ship with a game.
 
-The remaining risk is content quality and gameplay fairness. A curated list can be accurate, but it needs enough globally varied features, consistent height conventions, and carefully spaced comparisons to support replay. Height conventions may differ for ice and snow. This matches USGS guidance that elevations interpolated from terrain grids are approximate and may not reflect a peak's highest point; its Denali survey also found airborne radar did not provide precise spot elevations in very steep terrain. The small pilot does not establish the right clue format or difficulty.
+Source risks are manageable for a curated set, though global coverage, consistent height conventions and close comparisons would need attention. The larger reason to defer is gameplay distinctness: a summit ordering game would repeat a familiar Maproom action and established competitor formats. Height conventions may also differ for ice and snow. This matches USGS guidance that elevations interpolated from terrain grids are approximate and may not reflect a peak's highest point; its Denali survey also found airborne radar did not provide precise spot elevations in very steep terrain. The small pilot does not establish an alternative terrain-reading loop.
 
 ## Recommendation
 
-Keep Terrain Profile as a candidate. Before writing a game, expand the summit sample to a small curated pool with one authoritative height citation per feature, then measure the distribution of usable ordering gaps. Do not use the DEM value as the displayed summit height. Treat passes as a separate content set until their official heights and feature positions are similarly checked. If the curated pool is varied and supports several gap bands, a Free Play prototype is justified; keep it out of Daily until content quality and player comprehension are separately assessed.
+Do not prototype Terrain Profile as a summit/pass sorting game. Keep the research record, but revisit only if a distinct terrain-reading interaction is defined and its data can be sourced accurately. If summit heights are later used, retain per-feature citations and source dates, handle equal or near-equal values explicitly, and do not use DEM point samples as official heights. Treat passes as a separate content set. Any future prototype should begin in Free Play and remain out of Daily until content quality and player comprehension are separately assessed.
 
 No raster tiles or new game data were downloaded or added to Maproom during this source review; the four SRTM point samples were obtained from the public API.
 
@@ -56,3 +72,6 @@ No raster tiles or new game data were downloaded or added to Maproom during this
 - GeoNames, [gazetteer readme and field definitions](https://download.geonames.org/export/dump/readme.txt), accessed 19 November 2026.
 - GeoNames, [feature codes](https://www.geonames.org/export/codes.html), accessed 19 November 2026.
 - GeoNames feature records: [Mount Everest](https://www.geonames.org/NP/highest-mountains-in-nepal.html), [Kilimanjaro](https://www.geonames.org/157452/kilimanjaro.html), [Aconcagua](https://www.geonames.org/3866949/cerro-aconcagua.html), and [Mont Blanc](https://www.geonames.org/3181986/mont-blanc.html), accessed 19 November 2026.
+- Geospatial Information Authority of Japan, [1,003 Japanese mountains](https://web2.gsi.go.jp/kihonjohochousa/kihonjohochousa41139.html), version 31 March 2026, and [3D mountain record list](https://maps.gsi.go.jp/3d/mountain/mountain.html), accessed 19 November 2026.
+- Geospatial Information Authority of Japan, [content terms](https://web2.gsi.go.jp/kikakuchousei/kikakuchousei40182.html), amended 20 November 2025; Digital Agency, [Public Data License 1.0](https://www.digital.go.jp/resources/open_data/public_data_license_v1.0), accessed 19 November 2026.
+- Geocore, [game catalogue](https://www.geocore.fun/game), accessed 19 November 2026; Worldly Games, [Rankings practice](https://worldly.games/rankings/practice) and [official instructions](https://worldly.games/faq), accessed 19 November 2026.
