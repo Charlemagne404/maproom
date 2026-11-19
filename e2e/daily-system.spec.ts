@@ -19,11 +19,12 @@ test('restores the same seeded daily puzzle after an offline reload', async ({ p
   await expect(page.locator('.game-body h2').first()).toHaveText(firstQuestion)
 })
 
-test('Daily shows six ordered cards from the eight-game pool and launches Riverways and Latitude Ladder from those cards', async ({ page }) => {
-  const firstDateWithBoth = Array.from({ length: 28 }, (_, offset) => {
+test('Daily shows six ordered cards and launches all eight eligible games on scheduled dates', async ({ page, browser }) => {
+  const firstTwentyEightDates = Array.from({ length: 28 }, (_, offset) => {
     const date = new Date(Date.parse('2026-01-01T12:00:00.000Z') + offset * 86_400_000).toISOString().slice(0, 10)
     return { date, lineup: getDailyGameLineup(date) }
-  }).find(({ lineup }) => lineup.includes('rivers') && lineup.includes('latitude-ladder'))
+  })
+  const firstDateWithBoth = firstTwentyEightDates.find(({ lineup }) => lineup.includes('rivers') && lineup.includes('latitude-ladder'))
   expect(firstDateWithBoth).toBeDefined()
 
   await page.clock.install({ time: new Date(`${firstDateWithBoth!.date}T12:00:00.000Z`) })
@@ -44,5 +45,25 @@ test('Daily shows six ordered cards from the eight-game pool and launches Riverw
     await expect(page.locator('.game-body')).toBeVisible()
     await page.goto('/')
     await expect(page.locator('.daily-grid .game-card')).toHaveCount(6)
+  }
+
+  const firstScheduledDate = new Map<string, string>()
+  for (const { date, lineup } of firstTwentyEightDates) {
+    for (const gameId of lineup) if (!firstScheduledDate.has(gameId)) firstScheduledDate.set(gameId, date)
+  }
+  expect(new Set(firstScheduledDate.keys())).toEqual(new Set(DAILY_GAME_IDS))
+
+  for (const [gameId, date] of firstScheduledDate) {
+    const context = await browser.newContext()
+    const scheduledPage = await context.newPage()
+    await scheduledPage.clock.install({ time: new Date(`${date}T12:00:00.000Z`) })
+    await scheduledPage.goto('/')
+    const scheduledCard = scheduledPage.locator(`.daily-grid a[href^="/games/${gameId}?mode=daily"]`)
+    await expect(scheduledCard).toBeVisible()
+    await scheduledCard.click()
+    await expect(scheduledPage.locator(`.game-page-${gameId}`)).toBeVisible()
+    await expect(scheduledPage.locator('.game-context-daily')).toHaveText('Today’s puzzle')
+    await expect(scheduledPage.locator('.game-body')).toBeVisible()
+    await context.close()
   }
 })

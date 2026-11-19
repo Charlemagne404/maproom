@@ -130,10 +130,10 @@ grep -Fq 'id="root"' "$BUILD_SOURCE/index.html" || fail 'dist/index.html has no 
 [[ -d "$BUILD_SOURCE/assets" ]] || fail 'dist/assets is missing.'
 find "$BUILD_SOURCE/assets" -maxdepth 1 -type f -name '*.js' -print -quit | grep -q . || fail 'No compiled JavaScript bundle was found.'
 find "$BUILD_SOURCE/assets" -maxdepth 1 -type f -name '*.css' -print -quit | grep -q . || fail 'No compiled stylesheet was found.'
-for relative in manifest.webmanifest sw.js offline.html precache-manifest.json robots.txt sitemap.xml social/maproom-preview.png icons/maproom.svg data/countries.json data/countries.topo.json data/countries-outline.topo.json data/cities.json data/cities-major.json data/rivers.json data/population-age-profiles.json data/data-manifest.json data/coverage.json data/region-index.json data/historical/manifest.json; do
+for relative in manifest.webmanifest sw.js offline.html precache-manifest.json robots.txt sitemap.xml social/maproom-preview.png icons/maproom.svg data/countries.json data/countries.topo.json data/countries-outline.topo.json data/cities.json data/cities-major.json data/rivers.json data/population-age-profiles.json data/watershed-match.json data/data-manifest.json data/coverage.json data/region-index.json data/historical/manifest.json; do
   [[ -s "$BUILD_SOURCE/$relative" ]] || fail "Required production file is missing or empty: dist/$relative"
 done
-for relative in explore about data privacy statistics settings 404 games/countries games/outlines games/routes games/flags games/grid games/cities games/connections games/higher-lower games/neighbours games/distance games/rivers games/latitude-ladder games/historical-geography; do
+for relative in explore about data privacy statistics settings 404 games/countries games/outlines games/routes games/flags games/grid games/cities games/connections games/higher-lower games/neighbours games/distance games/rivers games/latitude-ladder games/historical-geography games/projection-match games/population-pyramid games/watershed-match; do
   [[ -s "$BUILD_SOURCE/$relative/index.html" ]] || fail "Required route snapshot is missing or empty: dist/$relative/index.html"
 done
 for map_number in {1..20}; do
@@ -219,7 +219,7 @@ maproom.continental-hub.com {
 	@revalidate path / /index.html /explore /explore/index.html /about /about/index.html /data /data/index.html /privacy /privacy/index.html /statistics /statistics/index.html /settings /settings/index.html /404 /404/index.html /games/* /sw.js /manifest.webmanifest /precache-manifest.json /data/*
 	header @revalidate Cache-Control "no-cache"
 
-	@spa path / /explore /about /data /privacy /statistics /settings /404 /games/countries /games/outlines /games/routes /games/flags /games/grid /games/cities /games/connections /games/higher-lower /games/neighbours /games/distance /games/rivers /games/latitude-ladder /games/historical-geography
+	@spa path / /explore /about /data /privacy /statistics /settings /404 /games/countries /games/outlines /games/routes /games/flags /games/grid /games/cities /games/connections /games/higher-lower /games/neighbours /games/distance /games/rivers /games/latitude-ladder /games/historical-geography /games/projection-match /games/population-pyramid /games/watershed-match
 	handle @spa {
 		try_files {path}/index.html {path} /index.html
 		file_server

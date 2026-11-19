@@ -86,7 +86,7 @@ for (const asset of precache.assets) {
   await requiredFile(asset.slice(1))
 }
 const compiledFiles = await readdir(path.join(dist, 'assets'))
-for (const chunk of ['CountryIdentificationGame', 'OutlineGame', 'BorderRouteGame', 'FlagGame', 'GeographyGridGame', 'CitiesGame', 'ConnectionsGame', 'HigherLowerGame', 'NeighbourGame', 'DistanceGame', 'RiverwaysGame', 'LatitudeLadderGame', 'HistoricalGeographyGame', 'ProjectionMatchGame', 'WatershedMatchGame']) {
+for (const chunk of ['CountryIdentificationGame', 'OutlineGame', 'BorderRouteGame', 'FlagGame', 'GeographyGridGame', 'CitiesGame', 'ConnectionsGame', 'HigherLowerGame', 'NeighbourGame', 'DistanceGame', 'RiverwaysGame', 'LatitudeLadderGame', 'HistoricalGeographyGame', 'ProjectionMatchGame', 'PopulationPyramidGame', 'WatershedMatchGame']) {
   if (!compiledFiles.some((file) => file.startsWith(`${chunk}-`) && file.endsWith('.js'))) fail(`lazy game chunk is missing for ${chunk}`)
 }
 const worker = await readFile(await requiredFile('sw.js'), 'utf8')
