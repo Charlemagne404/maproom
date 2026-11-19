@@ -64,6 +64,13 @@
 - A temporary extraction audit matched the files to 11,577 current whole settlements in Maproom's 12,405-record major-city file: 11,559 had all twelve months; 18 nearest cells were masked. The broad pool had 6,344 valid cells, 2,003 shared by several records, and 6,330 profiles after rounding temperature to 1°C and precipitation to 10 mm. All 179 capital-marked records had data and yielded 178 profiles; Brazzaville and Kinshasa shared one cell/profile. This favors a curated capital-only sample if rights clear and shows the broad pool needs substantial de-duplication.
 - Analysis files and the NetCDF dependency stayed in `/tmp`; no climate data or dependency was added to the project. The candidate remains held rather than implemented.
 
+## 19 November 2026 — Climate Twins ERA5 alternative
+
+- Reviewed the official CCKP ERA5 collection documentation, World Bank dataset record and download terms. The record assigns CC BY 4.0; the CCKP terms add mandatory dispute-resolution language and attribution requirements. The 1991–2020 monthly climatology is available at 0.25° in public NetCDF files.
+- Downloaded the temperature and precipitation files temporarily and inspected their metadata: 12 months, °C average for `tas`, mm sum for `pr`, 0.25° grid, period 1991–2020, raw source ECMWF/Copernicus and CCKP processing. Recorded file hashes in the [source study](STUDIES/climate-twins-source-review.md); the full rasters remain in `/tmp` and are not part of Maproom.
+- Nearest-grid sampling of 179 capital-marked Maproom records found complete values for all, 178 distinct cells and 178 unique profiles after rounding to 1°C/10 mm per month. Brazzaville and Kinshasa remain the only collision; it is stable under tested 0.5°C/5 mm and 2°C/20 mm rounding. Coastal/elevation review is still needed.
+- Decision: CCKP ERA5 is a source path for a curated Free Play prototype, provided its attribution and terms are disclosed. CRU TS remains held; Climate Twins remains outside Daily pending player evaluation. No game code or data was added.
+
 ## 19 November 2026 — Higher or Lower life-expectancy measure
 
 - Completed the backlog's content review for WDI `SP.DYN.LE00.IN`. The 2023 API response covers 194/195 Standard identities and 215/243 Extended identities; only Vatican City lacks a Standard observation. The API was last updated 11 November 2026. The World Bank indicator page lists CC BY 4.0 and attributes data to UN World Population Prospects, national statistical offices and Eurostat.
