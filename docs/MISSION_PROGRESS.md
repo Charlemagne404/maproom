@@ -295,5 +295,5 @@ Updated 18 November 2026. All changes remain local. No remote push, deployment, 
 
 - The check result previously reported matched/missed/extra counts and the full answer list, but hid the selected countries. It now names the found, missed and incorrect countries, helping a player see the specific set difference after the check.
 - Expanded the browser flow to submit one missing neighbor and one valid non-neighbor, verify both names in the reveal, then complete the remaining four rounds exactly. The final score summary correctly reports four of five exact sets.
-- Validation passed: full unit suite (119/119), typecheck, lint, production build, and the focused Neighbour Challenge production-preview test (1/1). The check confirms the feedback flow, not later player recall.
-- This follow-up is ready for the next mission-branch checkpoint. No deployment or production action was performed.
+- Validation passed: full unit suite (119/119), typecheck, lint, production build, and the focused Neighbour Challenge production-preview test (1/1). Desktop and 390px screenshots show the named lists wrap within the feedback panel; the browser check found no horizontal overflow. This confirms the feedback flow, not later player recall.
+- The updated gap analysis and ranked backlog record the change. No deployment or production action was performed.

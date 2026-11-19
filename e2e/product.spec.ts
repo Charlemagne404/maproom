@@ -1620,6 +1620,12 @@ test('Neighbour Challenge evaluates the complete neighbor set without answer lea
       await expect(page.locator('.answer-feedback.is-incorrect')).toBeVisible()
       await expect(page.locator('.neighbour-reveal-list')).toContainText(`Missed: ${missed!.name}.`)
       await expect(page.locator('.neighbour-reveal-list')).toContainText(`Incorrect: ${nonNeighbour!.name}.`)
+      await page.screenshot({ path: 'artifacts/qa/product-consistency/neighbour-set-difference.png', fullPage: true })
+      await page.setViewportSize({ width: 390, height: 844 })
+      await expect(page.locator('.neighbour-reveal-list')).toBeVisible()
+      const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+      expect(pageWidth).toBeLessThanOrEqual(390)
+      await page.screenshot({ path: 'artifacts/qa/product-consistency/neighbour-set-difference-mobile.png', fullPage: true })
     } else await expect(page.locator('.answer-feedback.is-correct')).toBeVisible()
     if (index < 4) {
       await waitForRoundProgress(page, 'countries', index + 2)
