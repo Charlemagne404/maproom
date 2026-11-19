@@ -501,3 +501,9 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Prepared a concise 6–8 person first-read study for one normal ten-question City Location Free Play set. It covers task comprehension, map focus, pin correction, score interpretation, fast reveal timing, coordinate-panel discovery and replay interest, with desktop/touch input noted.
 - The protocol avoids priming the coordinate option, does not collect names or submitted coordinates, and does not treat a small convenience sample as score-calibration evidence. No participants have been recruited and no responses have been collected.
 - Updated the study index, game audit, backlog and blind-coordinate concept note. No gameplay code, source data, Daily rules or deployment state changed.
+
+## Biomes Mosaic source and mechanic gate — 19 November 2026
+
+- Verified RESOLVE's 2017 source and terms: 846 terrestrial ecoregions, 14 biome classes, eight realms and CC BY 4.0. The current public polygon mirror returns one additional Rock and Ice feature outside those 14 biome classes; it is not versioned. The official source warns of polygons with more than one million vertices.
+- Compared this with the public-domain USGS World Terrestrial Ecosystems alternative. RESOLVE is the more direct broad-biome classification, but its complex polygons need a pinned source snapshot and simplification audit before offline use.
+- Kept the candidate gated: outline naming would repeat Country Outlines, and biome grouping would repeat Connections. No data or code changed; first define and review a distinct spatial action and learning goal.

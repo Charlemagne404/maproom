@@ -209,3 +209,9 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 - Prepared a first-read protocol for 6–8 casual players using one ordinary ten-question City Location set. It checks task interpretation, map focus, pin placement, score understanding, reveal timing, coordinate-panel discovery and replay interest across desktop and touch input where recruitment permits.
 - The moderator does not prime the secondary coordinate panel or change the normal quick-feedback timing. The record sheet omits submitted latitude/longitude and participant identity; the protocol does not authorize a mode or scoring change.
 - No participants have been recruited and no responses have been collected. Next evidence is an actual session; the documented blind-coordinate idea remains conditional on players describing a distinct skill.
+
+## Biomes Mosaic source and mechanic gate — 19 November 2026
+
+- Verified RESOLVE Ecoregions 2017 in the Google Earth Engine catalog: 846 terrestrial ecoregions, 14 biomes, eight realms and CC BY 4.0. A public ArcGIS feature layer currently returns 847 distinct-ID polygons: the 14 named biome classes plus one separate `N/A` Rock and Ice feature. The mirror says its data is not versioned.
+- The official dataset documentation warns that some polygons exceed one million vertices. Offline geometry therefore needs a pinned download, controlled generalization and bundle-size audit. The layer classifies terrestrial ecoregions and biodiversity assemblages; it should not be described simply as a vegetation or climate map.
+- Source readiness improved, but a simple outline-identification or category-grouping loop would overlap existing Maproom games. No data was downloaded; implementation remains deferred until a distinct spatial action and learning goal are defined. See the [source review](STUDIES/biomes-mosaic-source-review.md).
