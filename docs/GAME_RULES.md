@@ -1,6 +1,6 @@
 # Game rules and scoring
 
-Maproom has fifteen registered games. Each Daily lineup selects six of eight eligible games: Find the country, Country Outline Quiz, Border Route, Flag Match, Geography Grid, Capitals & Cities, Riverways and Latitude Ladder. Geography Connections, Higher or Lower: Countries, Neighbour Challenge, City Distance & Direction, When Was This Map?, Map Projection Match and Population Pyramid Sort are Free Play experiences and remain outside the Daily rotation. Daily dates use the time zone in Settings. In-progress daily sessions are saved locally and reopen with the same question sequence; completed results remain available from the puzzle and Statistics.
+Maproom has sixteen registered games. Each Daily lineup selects six of eight eligible games: Find the country, Country Outline Quiz, Border Route, Flag Match, Geography Grid, Capitals & Cities, Riverways and Latitude Ladder. Geography Connections, Higher or Lower: Countries, Neighbour Challenge, City Distance & Direction, When Was This Map?, Map Projection Match, Population Pyramid Sort and Watershed Match are Free Play experiences and remain outside the Daily rotation. Daily dates use the time zone in Settings. In-progress daily sessions are saved locally and reopen with the same question sequence; completed results remain available from the puzzle and Statistics.
 
 ## Country pools
 
@@ -65,6 +65,14 @@ Each SVG is a Maproom-generated 31 December snapshot from CShapes 2.1, not an ar
 ## Map Projection Match
 
 Match each mapping task to one of four rendered views: Equal Earth, Mercator, Equirectangular or Orthographic. Every Free Play set asks once about each projection in a shuffled order. Choose one of the four maps and check it to reveal the recommended match and its properties. A correct answer earns 250 points, up to 1,000 across the four tasks. Task wording describes a common strength; it does not claim a projection preserves every map property or suits every scale and region. Map shapes use Maproom's bundled Natural Earth country boundaries and D3's local projection implementations. The game is Free Play only and remains outside Daily while prompt clarity and difficulty are evaluated.
+
+## Population Pyramid Sort
+
+In each of five Free Play rounds, reorder three anonymous country profiles from lowest to highest population share aged 65 or older. Each round uses a different trio, for 15 countries across a full set. Earlier/Later buttons support keyboard and touch. After checking, the result names the countries, shows their 65+ shares and awards 100 points for each correctly ordered pair, up to 1,500 points for the set. The mirrored pyramid bars show each age band's share of total population; the ordering target is the 2023 World Bank WDI 65+ indicator. The game uses a bundled offline dataset and remains outside Daily while first-read clarity and the five gap bands are evaluated. See the [source and rules review](research/competitive-landscape/STUDIES/population-pyramid-sort.md).
+
+## Watershed Match
+
+For each of five Free Play questions, choose which of three adjacent HUC12 units is the source area's recorded downstream `ToHUC` neighbor. The prompt describes it as the unit receiving the greatest share of mapped flow. Each correct answer earns 100 points, up to 500 per set. The map shows the source in blue and lettered candidate areas; after checking, it highlights the recorded destination and draws a schematic relationship arrow, not a river trace. Every set includes all three sample areas: an Appalachian window, the Columbia and the Susquehanna. The bundled 2025 USGS WBD sample is limited to these local windows, works offline and remains outside Daily. The 60-question pool and map-reading task need editorial and player review; see the [source study](research/competitive-landscape/STUDIES/watershed-match-source-review.md) and [first-read pilot protocol](research/competitive-landscape/STUDIES/watershed-match-player-pilot.md).
 
 ## Local results and review
 

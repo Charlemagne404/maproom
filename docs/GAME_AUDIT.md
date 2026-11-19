@@ -1,6 +1,6 @@
 # Maproom game audit
 
-Audit started 18 November 2026 and updated 19 November across all fifteen registered game implementations, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
+Audit started 18 November 2026 and updated 19 November across all sixteen registered game implementations, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
 
 ## Game-by-game review
 
@@ -109,9 +109,16 @@ Audit started 18 November 2026 and updated 19 November across all fifteen regist
 - **Visual, mobile and accessibility:** Mirrored male/female bars use one shared 0–8% scale across all 17 age cohorts. Earlier/Later controls provide keyboard and touch reordering. Screen readers receive cohort values in a table while the visual chart is hidden from the accessibility tree; mobile and dark-theme layouts were browser-checked. A player study and broader assistive-technology review remain open. One product question is whether the result should show an optional visible cohort table to help sighted players connect the silhouette with its lesson.
 - **Performance and geographic accuracy:** A local, offline-cached bundle contains 194 complete 2023 Standard country profiles; Vatican City has no complete source observation and is omitted without fallback. Sex-specific age-band percentages are weighted by each sex's population total, so the mirrored bars represent shares of total country population. The separately sourced 65+ series matches the summed older cohorts within 0.00008 percentage points. This is a one-year ordering puzzle, not a measure of demographic change or a forecast.
 
+### Watershed Match
+
+- **Gameplay, rules and balance:** Each five-question Free Play set asks which of three adjacent HUC12 units is the source unit's recorded `ToHUC` destination. Every set includes all three sample areas; 100 points are awarded per correct answer. The current 60-question sample covers an Appalachian window, the Columbia and the Susquehanna, and remains outside Daily.
+- **Feedback and replay:** After checking, the map highlights the recorded destination and draws a schematic link arrow; the copy states that it is not a river trace and explains the WBD majority-flow rule. The five-question generator avoids repeating a correct destination within a set. Answers and progress restore, and replay advances to a new seeded set.
+- **Visual, mobile and accessibility:** The Albers map places a blue source polygon and lettered adjacent candidates; a full-pool layout pass repaired three callout collisions. Named choice buttons work with keyboard and touch. The SVG exposes a general source-and-candidates description, while individual marker positions are hidden from the accessibility tree; screen-reader map use remains unverified. Browser checks cover the tightest marker frame and 390px/mobile dark-mode layouts.
+- **Performance and geographic accuracy:** A local 2025 USGS WBD HUC12 TopoJSON sample with 118 polygons and 60 questions loads for this game and is cached for offline play. Its manifest records CC0 terms and attribution. The first sample window crosses four HUC8 basins and is labeled “Appalachians”; the three windows are samples, not complete river basins or national coverage. The heuristic question pool, small polygons, decoy fairness and player understanding still need editorial and player review. The [first-read pilot protocol](research/competitive-landscape/STUDIES/watershed-match-player-pilot.md) is prepared; no participants have been tested.
+
 ## Shared findings and changes from this mission
 
-- The original ten games already used shared session/result paths, reusable settings, local persistence and a curated daily allowlist. Riverways, Latitude Ladder, Historical Geography and Map Projection Match keep those boundaries through independent puzzle modules rather than a universal game engine.
+- The original ten games already used shared session/result paths, reusable settings, local persistence and a curated daily allowlist. Riverways, Latitude Ladder, Historical Geography, Map Projection Match, Population Pyramid Sort and Watershed Match keep those boundaries through independent puzzle modules rather than a universal game engine.
 - Game metadata and setup formats now live in one catalog, while a separate exhaustive lazy component registry owns the UI imports. Adding a Free Play game can no longer require editing unrelated navigation switches and the registry is checked against the stable ID union.
 - The baseline browser suite found the autocomplete Enter edge case in Country Outlines. The shared input now remembers an accepted label and submits on the next Enter, preserving the familiar two-step keyboard action. Targeted regression tests cover it.
 - Interactive country maps now expose a single Tab stop. Arrow keys move focus to the nearest country in that screen direction; Enter and Space select it, and Home/End move to the first/last country. An associated instruction gives these controls to assistive technology. Keyboard selection and the one-stop tab order have browser coverage.
@@ -122,7 +129,7 @@ Audit started 18 November 2026 and updated 19 November across all fifteen regist
 
 ## Follow-up priorities
 
-1. Run moderated play sessions for Geography Grid, Geography Connections, Riverways, Latitude Ladder, Population Pyramid Sort and Map Projection Match to measure first-read clarity, difficulty and replay interest; existing self-play is not independent player evidence.
+1. Run moderated play sessions for Geography Grid, Geography Connections, Riverways, Latitude Ladder, Population Pyramid Sort, Map Projection Match and Watershed Match to measure first-read clarity, difficulty and replay interest; existing self-play is not independent player evidence. The Watershed Match protocol is ready in `research/competitive-landscape/STUDIES/watershed-match-player-pilot.md`.
 2. Continue assistive-technology review, especially the final spoken casing of the Grid counter and screen-reader operation of map-heavy games. Voice control, braille, human listening and other assistive technologies remain untested.
 3. Measure cold-load, storage and touch behavior on physical mobile devices and on a hosted connection; current performance evidence is local Chromium evidence.
 4. Revisit country population questions only when a new, versioned source year is deliberately adopted. Keep speculative physical-geography concepts conditional on data, license and pedagogical review.

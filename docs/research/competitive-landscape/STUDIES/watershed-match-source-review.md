@@ -67,9 +67,9 @@ The same static content pass found no repeated source/choice names within any of
 
 ## Remaining gates
 
-- Review all 60 source and answer names, distractor pairs and map extents; reject ambiguous choices, confusing labels and hard-to-see polygons.
+- Review all 60 source and answer names, distractor pairs and map extents; reject ambiguous choices, confusing labels and hard-to-see polygons. The [first-read player pilot](watershed-match-player-pilot.md) records question-level fairness and clarity without exposing the intended answer before each response.
 - The prototype currently filters to numeric 12-digit `ToHUC` destinations and excludes ocean, Canada, Mexico, closed-basin and other exceptional outlet codes. Keep that rule in place if the source pool expands.
-- Test the action with players against Riverways and a river-location competitor. Check whether the plain-language majority-flow prompt teaches a useful idea and whether five rounds feel fair.
+- Test the action with players against Riverways and a river-location competitor. Check whether the plain-language majority-flow prompt teaches a useful idea and whether five rounds feel fair. The first-read pilot is a qualitative check of this game, not a controlled comparison with Riverways.
 - Expand geographic coverage only after the limited sample passes question and comprehension review.
 
 Daily eligibility remains explicitly false until the question pool, persistence, fairness and learning value receive a separate review.

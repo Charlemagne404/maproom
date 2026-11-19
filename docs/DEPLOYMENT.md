@@ -19,7 +19,7 @@ npm run build
 npx playwright test --workers=1
 ```
 
-The build generates route HTML snapshots, `sitemap.xml`, `robots.txt`, and `precache-manifest.json`, then runs `scripts/validate-production-artifacts.mjs`. That validation checks required shell/data assets, all 23 route snapshots, 20 indexable sitemap routes, every precache reference and the matching service-worker build ID, lazy chunks for all fifteen games, source-data hashes, all 198 regional package hashes, all 20 historical SVG hashes, the viewport declaration, and the CSP hash. The deployment finalizer also has explicit required-file checks for route snapshots and the historical manifest/maps.
+The build generates route HTML snapshots, `sitemap.xml`, `robots.txt`, and `precache-manifest.json`, then runs `scripts/validate-production-artifacts.mjs`. In the current product-quality worktree, validation checks required shell/data assets, all 24 route snapshots, 21 indexable sitemap routes, every precache reference and the matching service-worker build ID, lazy chunks for all sixteen games, source-data hashes, all 198 regional package hashes, all 20 historical SVG hashes, the viewport declaration, and the CSP hash. The deployment finalizer also has explicit required-file checks for route snapshots and the historical manifest/maps.
 
 The service worker precaches the compiled shell assets and a small set of core data on install. Successful same-origin `/data/` requests, including a historical map SVG, are cached after first online use. A fresh installation does not contain every optional game dataset or all historical maps.
 
