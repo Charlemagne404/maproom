@@ -20,7 +20,7 @@ Connect the fixed start and destination with intermediate countries that share r
 
 ## Flag Match
 
-Daily gives eight four-choice questions. Practice offers 10, 20, 50, or unlimited questions, region, Standard or Extended country pools, flag-to-country or country-to-flag direction, and typed or multiple-choice answers where applicable. Distractors prefer the same continent, then draw from the selected pool if needed. Optional progressive reveal gives another chance after each of the first two wrong answers, then shows the answer. A wrong selection highlights both the selected option and the correct answer; resolved questions advance automatically after brief feedback. Optional review puts previously missed flags first. Correct answers earn 100 points; missed flag codes are saved in local history.
+Daily gives eight four-choice questions. Practice offers 10, 20, 50, or unlimited questions, region, Standard or Extended country pools, flag-to-country or country-to-flag direction, and typed or multiple-choice answers where applicable. Distractors prefer the same continent, then draw from the selected pool if needed. Optional progressive reveal gives another chance after each of the first two wrong answers, exposing one more equal-width flag slice each time; the first slice's position is balanced across the round. A third wrong answer shows the answer. A wrong selection highlights both the selected option and the correct answer; resolved questions advance automatically after brief feedback. Optional review puts previously missed flags first. Correct answers earn 100 points; missed flag codes are saved in local history.
 
 ## Geography grid
 

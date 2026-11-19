@@ -1,7 +1,27 @@
 import type { Country } from '../../geography/types'
 import { eligibleCountries, type GeographyEligibility } from '../../geography/eligibility'
+import { seededShuffle } from '../../puzzles/engine'
 
 export type PracticeQuestionCount = '10' | '20' | '50' | 'infinite'
+export const FLAG_REVEAL_SLICES = ['left', 'center', 'right'] as const
+export type FlagRevealSlice = (typeof FLAG_REVEAL_SLICES)[number]
+
+export function flagRevealOrders(questionCodes: readonly string[], seed: string): FlagRevealSlice[][] {
+  const slotOrder = seededShuffle(questionCodes.map((_, index) => index), `${seed}:reveal-slots`)
+  const sliceOrder = seededShuffle(FLAG_REVEAL_SLICES, `${seed}:reveal-slices`)
+  const orders: FlagRevealSlice[][] = Array.from({ length: questionCodes.length }, () => [...FLAG_REVEAL_SLICES])
+
+  slotOrder.forEach((slot, rank) => {
+    const first = sliceOrder[rank % FLAG_REVEAL_SLICES.length]!
+    const remaining = seededShuffle(
+      FLAG_REVEAL_SLICES.filter((slice) => slice !== first),
+      `${seed}:reveal-order:${slot}:${questionCodes[slot]}`,
+    )
+    orders[slot] = [first, ...remaining]
+  })
+
+  return orders
+}
 
 export function flagCountryPool(countries: readonly Country[], region: string, eligibility: GeographyEligibility = 'standard'): Country[] {
   return eligibleCountries([...countries], eligibility).filter((country) => country.flagCode && country.flagEligible !== false && (region === 'All regions' || country.continent === region))

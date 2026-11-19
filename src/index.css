@@ -278,7 +278,9 @@ p { margin-bottom: 0; }
 .flag-frame { width: 100px; height: 70px; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(41,39,35,.16); background: #fff; box-shadow: 0 2px 7px rgba(41,39,35,.1); }
 .flag-frame .fi { width: 100%; height: 100%; display: block; background-position: center; background-repeat: no-repeat; background-size: cover; }
 .flag-frame-large { width: min(280px, 68vw); height: min(184px, 44vw); }
-.flag-display .flag-cover { position: absolute; inset: 8px; background: repeating-linear-gradient(135deg, #e7dfd2 0 9px, #eee9e0 9px 18px); transition: clip-path .28s ease; }
+.flag-display .flag-cover { position: absolute; inset: 8px; overflow: hidden; background: none; }
+.flag-display .flag-cover-slice { position: absolute; top: 0; bottom: 0; width: 33.333333%; background: repeating-linear-gradient(135deg, #e7dfd2 0 9px, #eee9e0 9px 18px); opacity: 1; transition: opacity .28s ease; }
+.flag-display .flag-cover-slice.is-revealed { opacity: 0; }
 .flag-reveal-note { position: absolute; bottom: 8px; color: var(--muted); font-size: .64rem; }
 .flag-choice-grid, .capital-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .flag-choice, .answer-choice { min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 13px; border: 1px solid var(--border); background: var(--surface); text-align: left; cursor: pointer; }

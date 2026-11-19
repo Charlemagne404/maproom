@@ -11,7 +11,7 @@ import { seededShuffle } from '../../puzzles/engine'
 import { useAppData } from '../../app/useAppData'
 import { missedCountryCodes } from '../../statistics/mistakes'
 import { useGameSession } from '../session'
-import { adaptiveFlagQuestionSequence, flagAnswerChoices, flagCountryPool, type PracticeQuestionCount } from './questionPool'
+import { adaptiveFlagQuestionSequence, flagAnswerChoices, flagCountryPool, flagRevealOrders, FLAG_REVEAL_SLICES, type PracticeQuestionCount } from './questionPool'
 import { initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
 import './FlagGame.css'
 
@@ -125,6 +125,7 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, eligibility, 
   })
   const questions = mode === 'daily' ? dailyQuestions : practiceQuestions
   const infinitePractice = mode === 'freeplay' && questionCount === 'infinite'
+  const revealOrders = useMemo(() => flagRevealOrders(questions.map((item) => item.iso3), seed), [questions, seed])
   const [index, setIndex] = useState(() => readNumber('index', 0))
   const [questionNumber, setQuestionNumber] = useState(() => readNumber('questionNumber', 1))
   const [locked, setLocked] = useState(() => readBoolean('locked', false))
@@ -144,6 +145,7 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, eligibility, 
   const completionStarted = useRef(false)
   const { save, saveError, saveProgress } = session
   const question = questions[index]
+  const revealOrder = revealOrders[index] ?? [...FLAG_REVEAL_SLICES]
   const choiceCount = 4
   const choices = useMemo(() => {
     if (!question) return []
@@ -289,7 +291,14 @@ function FlagRound({ data, mode, date, seed, dailySeed, continent, eligibility, 
         </div>}
         {direction === 'flag-to-country' && <div className={`flag-display${reveal ? ' has-reveal' : ''}`}>
           <FlagIcon country={question} size="large" accessibleLabel={locked ? `Flag of ${question.name}` : 'National flag to identify'} />
-          {progressive && reveal > 0 && <div className="flag-cover" aria-hidden="true" style={{ clipPath: `inset(0 0 0 ${Math.min(100, reveal * 34)}%)` }} />}
+          {progressive && reveal > 0 && <div className="flag-cover" aria-hidden="true">
+            {FLAG_REVEAL_SLICES.map((slice, sliceIndex) => <span
+              key={slice}
+              className={`flag-cover-slice${revealOrder.slice(0, reveal).includes(slice) ? ' is-revealed' : ''}`}
+              data-slice={slice}
+              style={{ left: `${sliceIndex * 100 / FLAG_REVEAL_SLICES.length}%` }}
+            />)}
+          </div>}
         </div>}
         {direction === 'country-to-flag' || answerStyle === 'choices' ? (
           <div className={`flag-choice-grid${direction === 'country-to-flag' ? ' image-choice-grid' : ''}`} role="group" aria-label="Choose an answer">

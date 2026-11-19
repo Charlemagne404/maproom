@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { Country } from '../src/geography/types'
-import { adaptiveFlagQuestionSequence, flagAnswerChoices, flagCountryPool, practiceQuestionSequence, shuffleFlagPool } from '../src/games/flags/questionPool'
+import { adaptiveFlagQuestionSequence, flagAnswerChoices, flagCountryPool, flagRevealOrders, FLAG_REVEAL_SLICES, practiceQuestionSequence, shuffleFlagPool } from '../src/games/flags/questionPool'
 
 const catalog = JSON.parse(readFileSync(join(process.cwd(), 'public', 'data', 'countries.json'), 'utf8')) as { countries: Country[] }
 
@@ -23,6 +23,30 @@ describe('flag practice question pools', () => {
     expect(new Set(first)).toEqual(new Set(pool))
     expect(new Set(second)).toEqual(new Set(pool))
     expect(first).not.toEqual(second)
+  })
+
+  it('reveals equal-width flag slices in a stable order balanced across each round', () => {
+    for (const eligibility of ['standard', 'extended'] as const) {
+      const pool = flagCountryPool(catalog.countries, 'All regions', eligibility)
+      const questionCodes = practiceQuestionSequence(pool, 50, randomFrom(2026)).map((country) => country.iso3)
+      const orders = flagRevealOrders(questionCodes, `flags:reveal-audit:${eligibility}`)
+      const firstSliceCounts = new Map(FLAG_REVEAL_SLICES.map((slice) => [slice, 0]))
+
+      for (const order of orders) {
+        expect(order).toHaveLength(3)
+        expect(new Set(order)).toEqual(new Set(FLAG_REVEAL_SLICES))
+        firstSliceCounts.set(order[0]!, firstSliceCounts.get(order[0]!)! + 1)
+      }
+
+      const counts = [...firstSliceCounts.values()]
+      expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1)
+      expect(flagRevealOrders(questionCodes, `flags:reveal-audit:${eligibility}`)).toEqual(orders)
+    }
+
+    const mixedDesignCodes = ['FRA', 'ITA', 'IRL', 'NLD', 'AUS', 'GBR', 'CHE', 'NPL', 'USA', 'ZAF']
+    const mixedDesignOrders = flagRevealOrders(mixedDesignCodes, 'flags:reveal-mixed-designs')
+    const mixedDesignCounts = new Map(FLAG_REVEAL_SLICES.map((slice) => [slice, mixedDesignOrders.filter((order) => order[0] === slice).length]))
+    expect([...mixedDesignCounts.values()].sort()).toEqual([3, 3, 4])
   })
 
   it('gives every eligible bundled country one turn per shuffled deck before cycling', () => {
