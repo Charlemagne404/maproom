@@ -189,11 +189,13 @@ test('City Location places a marker on the map and keeps coordinate entry second
   expect(await page.locator('.coordinate-tools').evaluate((node) => (node as HTMLDetailsElement).open)).toBe(false)
   await map.click({ position: { x: bounds.width * .5, y: bounds.height * .5 } })
   await expect(map.locator('.map-marker-guess')).toHaveCount(1)
+  const markerPositionBeforeSubmit = await map.locator('.map-marker-guess').getAttribute('transform')
   const placeMarker = page.getByRole('button', { name: 'Place marker' })
   await placeMarker.focus()
   await page.keyboard.press('Enter')
   await expect(page.locator('.cities-map-game-body > .answer-feedback')).toBeVisible()
   await expect(map.locator('.map-marker-answer')).toHaveCount(1)
+  await expect(map.locator('.map-marker-guess')).toHaveAttribute('transform', markerPositionBeforeSubmit!)
   await page.screenshot({ path: `${screenshotDirectory}/city-location-marker-feedback.png`, fullPage: true })
 })
 

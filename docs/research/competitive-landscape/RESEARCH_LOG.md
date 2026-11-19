@@ -197,3 +197,9 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 - Each answer button now has a nonvisual description of its polygon center relative to the blue starting-area center, using eight screen-relative directions or an overlap description. The map's decorative letter markers remain hidden from the accessibility tree; the letter and area name stay in the button's accessible name.
 - Unit checks cover all three candidate positions in all 60 questions, all eight directions and overlapping centers. A focused browser assertion checks the accessible description. This confirms the browser accessibility tree only; screen-reader and physical-device use remain open.
 - Typecheck, lint, full unit suite, production build/artifact audit and the focused Watershed Match browser suite passed. No source data or gameplay rules changed; the game remains outside Daily and has not been deployed.
+
+## Capitals & Cities map-placement precision — 19 November 2026
+
+- Reviewing the marker-first flow found that a map click stored an exact point but also copied two-decimal coordinates into the secondary keyboard inputs. Submission preferred those rounded fields, so the scored location and reveal marker could shift from the pin the player placed.
+- Map submissions now retain the exact clicked point unless a player edits either coordinate field; explicit coordinate entry still takes precedence. The edit state is saved with Daily progress so a reload does not discard the player's coordinate choice.
+- Added a production-preview regression asserting that a map pin's transform is unchanged after submission. The existing end-to-end city flow also passed with coordinates entered after map placement. Typecheck, lint, all 145 unit tests, production build/artifact validation and both focused browser checks passed. No player study or new mode was added; evaluate difficulty and reveal with new players before further mode work. No deployment occurred.

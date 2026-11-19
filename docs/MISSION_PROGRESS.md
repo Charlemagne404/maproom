@@ -489,3 +489,9 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Added nonvisual descriptions to answer buttons locating each candidate polygon center in one of eight screen-relative directions from the blue starting-area center; coincident centers are described as overlapping. The letter and candidate name remain the accessible button name, while the decorative marker SVG remains hidden.
 - Added full-pool unit coverage for all 180 candidate positions across 60 questions, all eight direction sectors and overlapping centers. Added a production-preview browser assertion for the accessible description. This is browser-tree verification, not a physical screen-reader review.
 - Typecheck, lint, all 145 unit tests, production build/artifact validation and the focused Watershed Match Playwright suite passed. No source data or gameplay rules changed; the game remains outside Daily and has not been deployed.
+
+## Capitals & Cities map-placement precision — 19 November 2026
+
+- Fixed scoring to use the exact point selected on the map instead of the two-decimal coordinate text synchronized for keyboard access. Editing either coordinate input still uses the entered pair; that edit state is included in Daily progress restoration.
+- Added a production-preview check that the guess marker does not shift after map submission. The existing city end-to-end flow also passed when explicit coordinates replace a prior map pin. Typecheck, lint, all 145 unit tests, production build/artifact validation and both focused browser checks passed.
+- New-player evaluation of map focus, score bands and the result reveal remains open. No game mode or source data changed; the game remains in its current Daily/free-play formats and has not been deployed.

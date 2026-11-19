@@ -130,6 +130,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
   const [guess, setGuess] = useState<Coordinates | null>(() => progress?.guess && typeof progress.guess === 'object' && typeof (progress.guess as Coordinates).lat === 'number' && typeof (progress.guess as Coordinates).lon === 'number' ? progress.guess as Coordinates : null)
   const [latitude, setLatitude] = useState(() => readString('latitude', ''))
   const [longitude, setLongitude] = useState(() => readString('longitude', ''))
+  const [coordinatesEdited, setCoordinatesEdited] = useState(() => readBoolean('coordinatesEdited', false))
   const questionHeading = useRef<HTMLHeadingElement>(null)
   const focusPromptOnAdvance = useRef(false)
   const advanceQuestion = useRef<() => void>(() => {})
@@ -183,8 +184,8 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
 
   useEffect(() => {
     if (mode !== 'daily' || finished) return
-    void saveProgress({ index, cycle, locked, finished, correct, score, resolved, seconds, message, input, selected, questionCorrect, guess, latitude, longitude, questions: questions.map((item) => ({ kind: item.kind, country: item.country?.iso3, city: item.city?.id })) })
-  }, [mode, finished, index, cycle, locked, correct, score, resolved, seconds, message, input, selected, questionCorrect, guess, latitude, longitude, questions, saveProgress])
+    void saveProgress({ index, cycle, locked, finished, correct, score, resolved, seconds, message, input, selected, questionCorrect, guess, latitude, longitude, coordinatesEdited, questions: questions.map((item) => ({ kind: item.kind, country: item.country?.iso3, city: item.city?.id })) })
+  }, [mode, finished, index, cycle, locked, correct, score, resolved, seconds, message, input, selected, questionCorrect, guess, latitude, longitude, coordinatesEdited, questions, saveProgress])
   function setCorrectAnswer(points: number, text: string) {
     setCorrect((value) => value + 1)
     setResolved((value) => value + 1)
@@ -253,17 +254,21 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
     setGuess(point)
     setLatitude(point.lat.toFixed(2))
     setLongitude(point.lon.toFixed(2))
+    setCoordinatesEdited(false)
   }
 
   function submitLocation() {
     if (!question.city || locked) return
     const hasLatitude = latitude.trim() !== ''
     const hasLongitude = longitude.trim() !== ''
-    if (hasLatitude !== hasLongitude || (!guess && (!hasLatitude || !hasLongitude))) {
+    const hasCoordinatePair = hasLatitude && hasLongitude
+    if (hasLatitude !== hasLongitude || (!guess && !hasCoordinatePair)) {
       setMessage('Add both coordinates or place a marker on the map.')
       return
     }
-    const point = hasLatitude && hasLongitude ? { lat: Number(latitude), lon: Number(longitude) } : guess
+    const point = hasCoordinatePair && (coordinatesEdited || !guess)
+      ? { lat: Number(latitude), lon: Number(longitude) }
+      : guess
     if (!point || !Number.isFinite(point.lat) || !Number.isFinite(point.lon) || point.lat < -90 || point.lat > 90 || point.lon < -180 || point.lon > 180) {
       setMessage('Enter a latitude from −90 to 90 and a longitude from −180 to 180.')
       return
@@ -291,6 +296,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
       setGuess(null)
       setLatitude('')
       setLongitude('')
+      setCoordinatesEdited(false)
       return
     }
     if (infinitePractice) {
@@ -305,6 +311,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
       setGuess(null)
       setLatitude('')
       setLongitude('')
+      setCoordinatesEdited(false)
       return
     }
     setFinished(true)
@@ -377,7 +384,7 @@ function CitiesRound({ data, cities, mode, date, seed, task, eligibility, contin
           <div className="game-map-stage city-map-stage"><GeoMap features={data.features} focusCodes={[question.city.countryIso3]} focusPadding={88} localFit onPointSelect={recordLocation} markers={guess ? [{ point: guess, kind: 'guess', label: 'Your marker' }, ...(locked ? [{ point: question.city, kind: 'answer' as const, label: 'City location' }] : [])] : []} ariaLabel="Map focused on the named country. Click or tap to place or move your marker." showHoverLabels={state.settings.mapLabels} /></div>
           <div className="map-answer-dock city-marker-dock">
             <button className="button button-dark city-place-button" type="button" disabled={locked || (!guess && (!latitude.trim() || !longitude.trim()))} onClick={submitLocation}><MapPin size={16} /> Place marker</button>
-            <details className="coordinate-tools"><summary>Enter coordinates</summary><div className="coordinate-fields"><label>Latitude<input type="number" min="-90" max="90" step="0.01" value={latitude} onChange={(event) => setLatitude(event.target.value)} placeholder="e.g. 59.33" /></label><label>Longitude<input type="number" min="-180" max="180" step="0.01" value={longitude} onChange={(event) => setLongitude(event.target.value)} placeholder="e.g. 18.07" /></label></div><p className="coordinate-help">Enter latitude and longitude for a keyboard-accessible guess.</p></details>
+            <details className="coordinate-tools"><summary>Enter coordinates</summary><div className="coordinate-fields"><label>Latitude<input type="number" min="-90" max="90" step="0.01" value={latitude} onChange={(event) => { setLatitude(event.target.value); setCoordinatesEdited(true) }} placeholder="e.g. 59.33" /></label><label>Longitude<input type="number" min="-180" max="180" step="0.01" value={longitude} onChange={(event) => { setLongitude(event.target.value); setCoordinatesEdited(true) }} placeholder="e.g. 18.07" /></label></div><p className="coordinate-help">Enter latitude and longitude for a keyboard-accessible guess.</p></details>
           </div>
         </div>
       </>}
