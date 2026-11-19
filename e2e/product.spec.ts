@@ -13,6 +13,7 @@ import { exploreExperienceCount, freePlayCardCount } from './gameCatalogCounts'
 test.beforeAll(() => {
   mkdirSync('artifacts/qa/product-consistency', { recursive: true })
   mkdirSync('artifacts/qa/maps-gameplay-ux', { recursive: true })
+  mkdirSync('artifacts/qa/product-quality', { recursive: true })
 })
 
 interface CountryRecord {
@@ -88,6 +89,13 @@ async function answerOnMapByKeyboard(page: Page, answer: string) {
   const index = await mapCountries.evaluateAll((elements, name) => elements.findIndex((element) => element.getAttribute('aria-label') === name), answer)
   expect(index, `map country ${answer}`).toBeGreaterThanOrEqual(0)
   await mapCountries.nth(index).evaluate((element) => (element as SVGElement).focus())
+  await page.keyboard.press('Enter')
+}
+
+async function answerMapCountryByCode(page: Page, code: string) {
+  const country = page.locator(`.geo-map path[role="button"][data-country-code="${code}"]`).first()
+  await expect(country).toBeVisible()
+  await country.evaluate((element) => (element as SVGElement).focus())
   await page.keyboard.press('Enter')
 }
 
@@ -726,6 +734,47 @@ test('country identification advances automatically and returns focus to the pro
     const rect = element.getBoundingClientRect()
     return rect.top >= 0 && rect.bottom <= window.innerHeight && rect.left >= 0 && rect.right <= window.innerWidth
   })).toBe(true)
+})
+
+test('country map multi-guess practice gives spatial clues and ends after four tries', async ({ page }) => {
+  await openGame(page, 'countries')
+  const settingsButton = page.getByRole('button', { name: 'Game settings' })
+  await settingsButton.click()
+  await page.getByLabel('Multi-guess mode (4 tries)').check()
+  await page.keyboard.press('Escape')
+
+  const countries = eligibleCountries(await countryData(page) as unknown as Country[], 'standard').filter((country) => country.hasGeometry && country.coordinates)
+  const firstTarget = await page.locator('.question-toolbar h2 em').innerText()
+  const firstWrong = countries.find((country) => country.name !== firstTarget)!
+  await answerMapCountryByCode(page, firstWrong.iso3)
+  await expect(page.locator('.country-guess-feedback')).toContainText(/about [\d,]+ km (north|north-east|east|south-east|south|south-west|west|north-west)\. 3 tries left\./)
+  await expect(page.locator('.map-country.is-wrong')).toHaveCount(1)
+  await expect(page.locator('.map-country.is-wrong')).toHaveAttribute('aria-label', /incorrect guess$/)
+  await expect(page.locator('.map-country.is-wrong')).toBeFocused()
+  await expect(page.locator('.country-answer-feedback')).toBeHidden()
+  await expect(page.locator('.question-toolbar h2 em')).toHaveText(firstTarget)
+  await page.screenshot({ path: 'artifacts/qa/product-quality/find-country-multi-guess-first-miss.png' })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.getByRole('button', { name: 'Switch to dark appearance' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await expect(page.locator('.country-guess-feedback')).toBeVisible()
+
+  await answerOnMapByKeyboard(page, firstTarget)
+  await expect(page.locator('.country-answer-feedback')).toContainText('Correct in 2 tries.')
+  await expect(page.locator('.country-practice-status')).toContainText('75 points')
+  await waitForRoundProgress(page, 'countries', 2)
+
+  const secondTarget = await page.locator('.question-toolbar h2 em').innerText()
+  const wrongCountries = countries.filter((country) => country.name !== secondTarget).slice(0, 4)
+  expect(wrongCountries).toHaveLength(4)
+  for (const [index, country] of wrongCountries.entries()) {
+    await answerMapCountryByCode(page, country.iso3)
+    if (index < 3) await expect(page.locator('.country-guess-feedback')).toContainText(`${3 - index} ${index === 2 ? 'try' : 'tries'} left.`)
+  }
+  await expect(page.locator('.country-answer-feedback')).toContainText('No tries left.')
+  await expect(page.locator('.country-answer-feedback')).toContainText(secondTarget)
+  await expect(page.locator('.map-country.is-wrong')).toHaveCount(4)
 })
 
 test('country catalogue games avoid map boundaries while map games load them', async ({ page }) => {

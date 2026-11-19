@@ -11,6 +11,7 @@ import { loadRegions } from '../../geography/data'
 import { pickCountries, seededShuffle } from '../../puzzles/engine'
 import { missedCountryCodes } from '../../statistics/mistakes'
 import { useGameSession } from '../session'
+import { countryGuessFeedback, countryGuessPoints, MULTI_GUESS_LIMIT } from './guessing'
 import { eligibleCountries, initialGeographyEligibility, type GeographyEligibility } from '../../geography/eligibility'
 import './CountryIdentificationGame.css'
 
@@ -32,6 +33,8 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
   const [round, setRound] = useState(0)
   const [questionCount, setQuestionCount] = useState<QuestionCount>('10')
   const [timed, setTimed] = useState(false)
+  const [multiGuess, setMultiGuess] = useState(false)
+  const [wrongGuesses, setWrongGuesses] = useState<string[]>([])
   const [reviewMissed, setReviewMissed] = useState(false)
   const [deckCycle, setDeckCycle] = useState(0)
   const [loadedRegions, setLoadedRegions] = useState<{ iso3: string; collection: RegionCollection } | null>(null)
@@ -114,6 +117,7 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
   function resetRound() {
     setIndex(0)
     setSelected('')
+    setWrongGuesses([])
     setAnswerLocked(false)
     setFeedback('')
     setInput('')
@@ -146,14 +150,14 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
       if (seconds <= 1) {
         setSeconds(0)
         setFinished(true)
-        if (resolved > 0) void save(score, correct, resolved, { scope, continent, regionCountry, questionCodes: questions.map((item) => item.code), missedCountries: missedQuestions, questionCount, timed, reviewMissed })
+        if (resolved > 0) void save(score, correct, resolved, { scope, continent, regionCountry, questionCodes: questions.map((item) => item.code), missedCountries: missedQuestions, questionCount, timed, reviewMissed, multiGuess })
       } else setSeconds((value) => value - 1)
     }, 1000)
     return () => window.clearTimeout(timer)
-  }, [mode, timed, finished, seconds, score, correct, resolved, scope, continent, regionCountry, questions, missedQuestions, questionCount, reviewMissed, save])
+  }, [mode, timed, finished, seconds, score, correct, resolved, scope, continent, regionCountry, questions, missedQuestions, questionCount, reviewMissed, multiGuess, save])
 
   function submit(code: string) {
-    if (!question || answerLocked) return
+    if (!question || answerLocked || finished) return
     if (scope === 'regions') {
       const regionCode = (feature: GeoFeature) => String(feature.properties.id ?? feature.id ?? '')
       if (!question.feature || !regions?.features.some((feature) => regionCode(feature) === code)) return
@@ -161,17 +165,48 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
       const country = data.countriesByCode.get(code)
       if (!country || (scope === 'continent' && country.continent !== continent)) return
     }
-    const isCorrect = code === question.code
-    setResolved((value) => value + 1)
     setSelected(code)
-    setAnswerLocked(true)
-    setFeedback(isCorrect ? 'Correct.' : 'The country was:')
-    if (isCorrect) {
-      setCorrect((value) => value + 1)
-      setScore((value) => value + 100)
-    } else if (scope !== 'regions') {
-      setMissedQuestions((current) => current.includes(question.code) ? current : [...current, question.code])
+    if (multiGuess && scope !== 'regions' && wrongGuesses.includes(code)) {
+      const country = data.countriesByCode.get(code)
+      setFeedback(`${country?.name ?? 'That country'} has already been tried. Choose another country.`)
+      return
     }
+
+    const isCorrect = code === question.code
+    if (isCorrect) {
+      setResolved((value) => value + 1)
+      setCorrect((value) => value + 1)
+      setScore((value) => value + (multiGuess && scope !== 'regions' ? countryGuessPoints(wrongGuesses.length) : 100))
+      setAnswerLocked(true)
+      setFeedback(multiGuess && scope !== 'regions'
+        ? `Correct in ${wrongGuesses.length + 1} ${wrongGuesses.length === 0 ? 'try' : 'tries'}.`
+        : 'Correct.')
+      return
+    }
+
+    if (multiGuess && scope !== 'regions') {
+      const nextWrongGuesses = [...wrongGuesses, code]
+      setWrongGuesses(nextWrongGuesses)
+      const triesRemaining = MULTI_GUESS_LIMIT - nextWrongGuesses.length
+      if (triesRemaining > 0) {
+        const guessCountry = data.countriesByCode.get(code)
+        const targetCountry = data.countriesByCode.get(question.code)
+        if (!guessCountry || !targetCountry) return
+        setFeedback(countryGuessFeedback(guessCountry, targetCountry, triesRemaining))
+        return
+      }
+
+      setResolved((value) => value + 1)
+      setAnswerLocked(true)
+      setMissedQuestions((current) => current.includes(question.code) ? current : [...current, question.code])
+      setFeedback('No tries left. The country was:')
+      return
+    }
+
+    setResolved((value) => value + 1)
+    setAnswerLocked(true)
+    if (scope !== 'regions') setMissedQuestions((current) => current.includes(question.code) ? current : [...current, question.code])
+    setFeedback('The country was:')
   }
 
   async function nextQuestion() {
@@ -179,6 +214,7 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
       focusPromptOnAdvance.current = true
       setIndex((value) => value + 1)
       setSelected('')
+      setWrongGuesses([])
       setAnswerLocked(false)
       setFeedback('')
       setInput('')
@@ -189,13 +225,14 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
       setDeckCycle((value) => value + 1)
       setIndex(0)
       setSelected('')
+      setWrongGuesses([])
       setAnswerLocked(false)
       setFeedback('')
       setInput('')
       return
     }
     setFinished(true)
-    await save(score, correct, resolved, { scope, continent, regionCountry, questionCodes: questions.map((item) => item.code), missedCountries: missedQuestions, questionCount, reviewMissed })
+    await save(score, correct, resolved, { scope, continent, regionCountry, questionCodes: questions.map((item) => item.code), missedCountries: missedQuestions, questionCount, reviewMissed, multiGuess })
   }
 
   useLayoutEffect(() => {
@@ -220,10 +257,12 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
         <div><span className="eyebrow">{scope === 'regions' ? question.detail : 'Find the country'}</span><h2 ref={questionHeading} tabIndex={-1}><em>{question.name}</em></h2></div>
         <div className="question-toolbar-tools">
           {showOptions && <GameSettingsMenu><div className="practice-config">
-            <GameSettingSelect label="Scope" value={scope} options={[{ value: 'world', label: 'Worldwide' }, { value: 'continent', label: 'One continent' }, { value: 'regions', label: 'Subdivisions' }]} onChange={(value) => { resetRound(); setScope(value as Scope) }} />
+            <GameSettingSelect label="Scope" value={scope} options={[{ value: 'world', label: 'Worldwide' }, { value: 'continent', label: 'One continent' }, { value: 'regions', label: 'Subdivisions' }]} onChange={(value) => { resetRound(); if (value === 'regions') setMultiGuess(false); setScope(value as Scope) }} />
             {scope === 'continent' && <GameSettingSelect label="Continent" value={continent} control="select" options={continents.map((item) => ({ value: item, label: item }))} onChange={(value) => { resetRound(); setContinent(value) }} />}
             <GameSettingSelect label="Questions" value={questionCount} options={[{ value: '10', label: '10' }, { value: '20', label: '20' }, { value: '50', label: '50' }, { value: 'infinite', label: 'Infinite' }]} onChange={(value) => { resetRound(); setQuestionCount(value as QuestionCount) }} />
             <GameSettingToggle label="60-second speed round" checked={timed} onChange={(value) => { resetRound(); setTimed(value) }} />
+            {scope !== 'regions' && <GameSettingToggle label="Multi-guess mode (4 tries)" checked={multiGuess} onChange={(value) => { resetRound(); setMultiGuess(value) }} />}
+            {scope !== 'regions' && multiGuess && <p className="practice-config-note">Wrong guesses reveal the approximate centre-to-centre distance and direction. Earlier correct answers earn more points.</p>}
             <AdvancedGameSettings>
               <GameSettingSelect label="Country pool" value={eligibility} options={[{ value: 'standard', label: 'Standard · 195 states' }, { value: 'extended', label: 'Extended · territories included' }]} onChange={(value) => { resetRound(); setEligibility(value as GeographyEligibility) }} />
               {missedCodes.length > 0 && scope !== 'regions' && <GameSettingToggle label="Review previously missed countries first" checked={reviewMissed} onChange={(value) => { resetRound(); setReviewMissed(value) }} />}
@@ -234,7 +273,8 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
           {infinitePractice && <span className="sr-only" role="status" aria-live="polite">Country {resolved + 1}</span>}
         </div>
       </div>
-      {showOptions && <div className="country-practice-status"><span><strong>{score.toLocaleString()}</strong> points · <strong>{correct}</strong> correct</span>{timed && <span>{seconds}s left</span>}{infinitePractice && resolved > 0 && <button className="button button-outline" type="button" disabled={answerLocked} onClick={() => { setFinished(true); void save(score, correct, resolved, { scope, continent, regionCountry, missedCountries: missedQuestions, questionCount, timed, reviewMissed }) }}>End session</button>}</div>}
+      {showOptions && <div className="country-practice-status"><span><strong>{score.toLocaleString()}</strong> points · <strong>{correct}</strong> correct</span>{timed && <span>{seconds}s left</span>}{infinitePractice && resolved > 0 && <button className="button button-outline" type="button" disabled={answerLocked} onClick={() => { setFinished(true); void save(score, correct, resolved, { scope, continent, regionCountry, missedCountries: missedQuestions, questionCount, timed, reviewMissed, multiGuess }) }}>End session</button>}</div>}
+      {multiGuess && scope !== 'regions' && feedback && !answerLocked && <p className="country-guess-feedback" role="status">{feedback}</p>}
       <div className="map-playfield find-country-playfield">
         <div className="game-map-stage find-country-map-stage">
           <GeoMap
@@ -242,9 +282,10 @@ export function CountryIdentificationGame({ data, mode, date, seed }: { data: Ge
             onSelectCode={submit}
             selectableCodes={selectableCodes}
             smallHitTargetCodes={selectableCodes}
-            activeCodes={selected ? [selected] : []}
+            activeCodes={multiGuess && scope !== 'regions' ? wrongGuesses : selected ? [selected] : []}
             correctCode={answerLocked ? question.code : null}
             wrongCode={answerLocked && selected !== question.code ? selected : null}
+            wrongCodes={multiGuess && scope !== 'regions' ? wrongGuesses : []}
             ariaLabel={scope === 'regions' ? `Map of ${question.detail}` : 'World map; choose a country'}
             showHoverLabels={state.settings.mapLabels}
           />

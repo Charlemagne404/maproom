@@ -37,6 +37,7 @@ interface GeoMapProps {
   destinationCode?: string | null
   correctCode?: string | null
   wrongCode?: string | null
+  wrongCodes?: string[]
   smallHitTargetCodes?: string[]
   onSelectCode?: (iso3: string) => void
   onPointSelect?: (point: Coordinates) => void
@@ -90,6 +91,7 @@ export function GeoMap({
   destinationCode = null,
   correctCode = null,
   wrongCode = null,
+  wrongCodes = [],
   smallHitTargetCodes = [],
   onSelectCode,
   onPointSelect,
@@ -137,6 +139,7 @@ export function GeoMap({
   }, [])
   const keyboardHelpId = useId()
   const active = useMemo(() => new Set(activeCodes), [activeCodes])
+  const incorrect = useMemo(() => new Set(wrongCodes), [wrongCodes])
   const selectable = useMemo(() => selectableCodes ? new Set(selectableCodes) : null, [selectableCodes])
   const smallHitTargets = useMemo(() => new Set(smallHitTargetCodes), [smallHitTargetCodes])
   const collection = useMemo<GeoJSON.FeatureCollection>(() => ({
@@ -400,7 +403,7 @@ export function GeoMap({
             const isStart = code === startCode
             const isDestination = code === destinationCode
             const isCorrect = code === correctCode
-            const isWrong = code === wrongCode
+            const isWrong = code === wrongCode || incorrect.has(code)
             const canSelect = isSelectableFeature(feature) && (!selectable || selectable.has(code))
             const hiddenStaticPath = hideFeatureNames && !onSelectCode
             const pathClass = `map-country${isActive ? ' is-active' : ''}${canSelect ? ' is-selectable' : ' is-unavailable'}${isStart ? ' is-map-start' : ''}${isDestination ? ' is-map-destination' : ''}${isCorrect ? ' is-correct' : ''}${isWrong ? ' is-wrong' : ''}${hovered === code ? ' is-hovered' : ''}`
@@ -412,7 +415,7 @@ export function GeoMap({
                 d={path(feature as unknown as GeoPermissibleObjects) ?? undefined}
                 className={pathClass}
                 aria-hidden={hiddenStaticPath || undefined}
-                aria-label={hiddenStaticPath ? undefined : hideFeatureNames ? `Unlabelled map region ${index + 1}${isActive ? ', selected' : ''}` : `${feature.properties.name}${isActive ? ', in the current route' : ''}`}
+                aria-label={hiddenStaticPath ? undefined : hideFeatureNames ? `Unlabelled map region ${index + 1}${isWrong ? ', incorrect guess' : isActive ? ', selected' : ''}` : `${feature.properties.name}${isWrong ? ', incorrect guess' : isActive ? ', in the current route' : ''}`}
                 aria-pressed={onSelectCode && canSelect ? isActive : undefined}
                 role={onSelectCode && canSelect ? 'button' : undefined}
                 tabIndex={onSelectCode && canSelect ? index === focusableIndex ? 0 : -1 : -1}

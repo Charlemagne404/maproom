@@ -14,7 +14,7 @@ This comparison builds on the fourteen-game [engineering audit](../../GAME_AUDIT
 
 | Maproom game | Existing strength | Highest-value gap to investigate | Current disposition |
 | --- | --- | --- | --- |
-| Find the country | Quick map-selection round, region modes, missed-country review. | One wrong click resolves the question; test whether an optional multi-guess mode would add useful reasoning without slowing Daily. | Backlog; don't change default one-click Daily flow without player evidence. |
+| Find the country | Quick map-selection round, region modes, missed-country review. | Compare the one-click loop with a slower spatial-reasoning practice option without slowing Daily. | **Optional Free Play prototype implemented:** four map guesses with rounded centre-distance and direction feedback; one-click default and Daily unchanged. Player clarity and round-length comparison remains open. |
 | Country Outlines | Fairness-screened silhouettes, rotating option, distance/direction, progressive region hints. | Perceived difficulty can differ from data-derived difficulty; collect completion/attempt data in moderated play. | User research. |
 | Border Route | Accepts intermediate entries in any order and validates a complete border path. | Check whether players understand route length compared with the shortest benchmark. | **Implemented:** results state both border counts and any extra stops; player comprehension remains unmeasured. |
 | Flag Study | Text and choice formats, progressive reveal option, missed-flag review. | Validate whether tile-by-tile reveal meaningfully changes recognition difficulty across flag designs. | Backlog/research. |
@@ -54,3 +54,13 @@ The old check state reported how many neighbors matched, were missed, or were ex
 ### Map Projection Match
 
 Map Projection Match adds a visual map-reading action that was missing from the existing library: choose a projection from four rendered options based on a practical mapping task. A four-question seeded Free Play set covers Equal Earth, Mercator, Equirectangular and Orthographic once each. The prompt copy follows USGS guidance about projection properties and limitations; no flat map is presented as preserving every property. The maps use bundled Natural Earth geometry and `d3-geo`, with no new external data. The game stays outside Daily. Unit and production-preview browser checks verify task variety, feedback, saved progress, completion and replay; human understanding remains unmeasured.
+
+### Find the country multi-guess practice
+
+**Problem.** Find the country asked the player to select the named country once. An incorrect click ended that question immediately, leaving no spatial decision for the next attempt.
+
+**Evidence.** In a live Worldle sample, an incorrect guess returned distance and direction. The displayed percentage could not be interpreted, so it was not reused. This supports adding a concrete next-step clue while keeping Maproom's map selection as the primary action.
+
+**Change.** Free Play can opt into four map guesses for country scopes. Each miss marks the guessed country and reports approximate catalog-centre distance rounded to 50 km plus direction from that country to the target. Correct answers earn 100/75/50/25 points by attempt; four misses reveal the answer. The fast one-click default, Daily questions and subdivision practice remain unchanged. No proximity percentage is shown.
+
+**Validation.** Unit tests cover distance rounding, direction, missing coordinate fallback and attempt scoring. Production-preview browser checks complete a two-guess answer and a four-miss round, confirm the question remains active after early misses, and check the mobile layout and dark theme. Existing one-click gameplay and focus tests also pass. The screenshot of the first-miss feedback is stored at `artifacts/qa/product-quality/find-country-multi-guess-first-miss.png`. These checks establish flow and presentation, not that players enjoy the slower mode or understand the clue; compare both modes in player sessions before any Daily change.

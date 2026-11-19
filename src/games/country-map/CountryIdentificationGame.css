@@ -63,6 +63,19 @@
   font-size: .72rem;
 }
 
+.find-country-game-body .country-guess-feedback {
+  width: fit-content;
+  max-width: min(860px, 100%);
+  margin: 0 auto 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--ink);
+  font-size: .78rem;
+  text-align: center;
+}
+
 .find-country-game-body .find-country-playfield,
 .find-country-game-body .find-country-map-stage {
   width: 100%;
@@ -141,6 +154,12 @@
   .find-country-game-body > .country-practice-status {
     margin-bottom: 6px;
     font-size: .66rem;
+  }
+
+  .find-country-game-body .country-guess-feedback {
+    margin-bottom: 6px;
+    padding: 7px 10px;
+    font-size: .7rem;
   }
 
   .find-country-game-body .country-answer-reveal {
