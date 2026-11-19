@@ -2,7 +2,7 @@
 
 **Reviewed:** 19 November 2026
 
-**Status:** A limited WBD-only Free Play prototype is implemented with 60 screened questions and 118 HUC12 geometries from three sample systems. It remains outside Daily. Question fairness, map legibility across the full pool and player understanding still need review.
+**Status:** A limited WBD-only Free Play prototype is implemented with 60 screened questions and 118 HUC12 geometries from three sample systems. It remains outside Daily. A full-pool marker-spacing audit is complete; question fairness, small-polygon legibility and player understanding still need review.
 
 ## Question
 
@@ -53,9 +53,15 @@ This is a product hypothesis, not a validated rule set. Keep it U.S.-only and ou
 
 The three named systems are sample windows, not complete river basins or national coverage. The 60-question set is selected by a name-token similarity heuristic from candidate adjacency; it has not received editorial review. The map does not include river lines or a larger downstream network.
 
+## Map label spacing audit — 19 November 2026
+
+I projected all 60 source-plus-choice frames using the same Albers USA fit as gameplay. Three frames had at least one pair of marker centers closer than the 38-viewBox-unit spacing needed for the 32-unit badges. The map now moves only colliding badges, draws a connector back to each affected polygon centroid, and uses a compact `S` badge for the starting area. Across the pool, the final minimum badge-center gap is 38.25 units and the largest marker move is 38 units. The regression test checks the projected layout and safe bounds for every frame; the production-preview browser check exercises the tightest one, Little River. Its screenshot is `artifacts/qa/product-quality/watershed-match-marker-spacing.png`.
+
+This repairs callout collisions, not the underlying scale of the polygons. A and B can still label small or narrow areas, and the spacing pass does not establish that the name-based distractors feel fair or that players understand the majority-flow rule.
+
 ## Remaining gates
 
-- Review all 60 source and answer names and map extents; reject ambiguous choices, confusing labels and hard-to-see polygons.
+- Review all 60 source and answer names, distractor pairs and map extents; reject ambiguous choices, confusing labels and hard-to-see polygons.
 - The prototype currently filters to numeric 12-digit `ToHUC` destinations and excludes ocean, Canada, Mexico, closed-basin and other exceptional outlet codes. Keep that rule in place if the source pool expands.
 - Test the action with players against Riverways and a river-location competitor. Check whether the plain-language majority-flow prompt teaches a useful idea and whether five rounds feel fair.
 - Expand geographic coverage only after the limited sample passes question and comprehension review.

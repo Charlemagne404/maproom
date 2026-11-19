@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import rawDataText from '../../../public/data/watershed-match.json?raw'
 import { parseWatershedMatchData } from './data'
+import { makeWatershedMapShapes, WATERSHED_MAP_HEIGHT, WATERSHED_MAP_WIDTH, WATERSHED_MARKER_MIN_SPACING, WATERSHED_MARKER_SAFE_INSET } from './map-layout'
 import { createWatershedMatchDeck, scoreWatershedMatchAnswer, WATERSHED_MATCH_ROUNDS } from './puzzle'
 
 const rawData = JSON.parse(rawDataText) as {
@@ -22,6 +23,36 @@ describe('Watershed Match', () => {
         expect(shareArc(sourceArcs ?? new Set(), geometries.get(optionId) ?? new Set())).toBe(true)
       }
     }
+  })
+
+  it('keeps source and option markers separate across every map in the pilot pool', () => {
+    let crowdedFrames = 0
+    let movedMarkers = 0
+
+    for (const questionData of data.questions) {
+      const question = { ...questionData, choices: questionData.optionIds }
+      const shapes = makeWatershedMapShapes(data, question)
+      expect(shapes).toHaveLength(4)
+      const originalPoints = shapes.map(({ x, y }) => ({ x, y }))
+      if (hasCrowdedMarkers(originalPoints)) crowdedFrames += 1
+
+      for (let index = 0; index < shapes.length; index += 1) {
+        const shape = shapes[index]!
+        if (Math.hypot(shape.markerX - shape.x, shape.markerY - shape.y) > 1) movedMarkers += 1
+        expect(shape.markerX).toBeGreaterThanOrEqual(WATERSHED_MARKER_SAFE_INSET)
+        expect(shape.markerX).toBeLessThanOrEqual(WATERSHED_MAP_WIDTH - WATERSHED_MARKER_SAFE_INSET)
+        expect(shape.markerY).toBeGreaterThanOrEqual(WATERSHED_MARKER_SAFE_INSET)
+        expect(shape.markerY).toBeLessThanOrEqual(WATERSHED_MAP_HEIGHT - WATERSHED_MARKER_SAFE_INSET)
+
+        for (const other of shapes.slice(index + 1)) {
+          expect(Math.hypot(shape.markerX - other.markerX, shape.markerY - other.markerY))
+            .toBeGreaterThanOrEqual(WATERSHED_MARKER_MIN_SPACING - 0.01)
+        }
+      }
+    }
+
+    expect(crowdedFrames).toBeGreaterThan(0)
+    expect(movedMarkers).toBeGreaterThan(0)
   })
 
   it('builds deterministic five-question sets across three US regions with balanced answer positions', () => {
@@ -54,6 +85,11 @@ describe('Watershed Match', () => {
     expect(scoreWatershedMatchAnswer(question, question.choices.find((id) => id !== question.answerId)!)).toBe(0)
   })
 })
+
+function hasCrowdedMarkers(points: Array<{ x: number; y: number }>): boolean {
+  return points.some((point, index) => points.slice(index + 1).some((other) =>
+    Math.hypot(point.x - other.x, point.y - other.y) < WATERSHED_MARKER_MIN_SPACING))
+}
 
 function arcIds(arcs: unknown): Set<number> {
   const ids = new Set<number>()

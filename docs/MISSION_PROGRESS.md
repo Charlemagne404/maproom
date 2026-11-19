@@ -451,3 +451,14 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 
 - Prepared a 6–8 person qualitative protocol for the 24 authored boards. Each participant reviews six boards, two per overall difficulty pool; the facilitator records solve order, time, mistakes, one-away events, alternate groupings, ratings and explanation clarity.
 - The facilitator keeps the intended difficulty private and withholds answer labels and overlap notes until the normal reveal. The protocol tracks Atlas set coverage so repeated or unseen boards can be followed up. This makes the player review ready to run but supplies no participant evidence; no product code, tests, data or deployment changed.
+
+## Climate Twins source terms review — 19 November 2026
+
+- Follow-up review of the current World Bank/CCKP download terms found that they claim to apply to use of the dataset and derived presentations, with additional mandatory mediation/arbitration and attribution requirements. The two CCKP ERA5 files had already been downloaded and used for the earlier technical feasibility audit before this terms review; the applicability/status of that prior use is unresolved.
+- No CCKP-derived profile or game asset is bundled, and no further CCKP use was undertaken. Climate Twins remains a candidate but product work is deferred until the earlier use and terms are resolved or another source path is verified. Direct Copernicus ECV access was not available for this follow-up. See the [source study](research/competitive-landscape/STUDIES/climate-twins-source-review.md) and [World Bank terms](https://climateknowledgeportal.worldbank.org/download-data). No code, tests, data asset or deployment changed.
+
+## Watershed Match map label spacing — 19 November 2026
+
+- Reviewed all 60 source-and-choice frames with the gameplay Albers projection. Three frames had marker centers closer than the 38-unit badge spacing. The map now separates those badges with centroid connectors, and marks the starting area with a compact `S`; the measured final minimum gap is 38.25 units and maximum shift is 38 units.
+- Added a full-pool layout regression and a deterministic production-preview browser check of the tightest Little River frame. The screenshot is `artifacts/qa/product-quality/watershed-match-marker-spacing.png`. Typecheck, lint, all 141 unit tests, production build/artifact validation and the Watershed Match Playwright suite (3/3) passed.
+- This is an annotation repair, not an editorial approval: the name-based distractors, small polygon legibility and player understanding of the majority-flow rule still need review. The pilot remains Free Play only and outside Daily. No deployment occurred.

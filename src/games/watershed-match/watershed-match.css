@@ -27,16 +27,18 @@
 .watershed-flow-arrow { stroke: #215c37; stroke-width: 3.4; stroke-linecap: round; marker-end: url(#watershed-arrowhead); vector-effect: non-scaling-stroke; pointer-events: none; }
 .watershed-flow-arrow + marker path,
 .watershed-map marker path { fill: #215c37; }
+.watershed-marker-connection { fill: #506268; stroke: #506268; stroke-width: 1.4; opacity: .85; vector-effect: non-scaling-stroke; pointer-events: none; }
+.watershed-marker-connection.is-source { fill: #396c82; stroke: #396c82; }
 .watershed-map-marker circle { fill: #39453f; stroke: #f5f1e8; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.watershed-map-marker.is-source circle { fill: #396c82; }
 .watershed-map-marker text { fill: #fff; font-size: 13px; font-weight: 800; text-anchor: middle; pointer-events: none; }
 .watershed-map-marker.is-correct circle { fill: #28643b; }
 .watershed-map-marker.is-incorrect circle { fill: #8e3b32; }
-.watershed-source-label { fill: #1f3037; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-anchor: middle; paint-order: stroke; stroke: rgba(255,255,255,.8); stroke-width: 3px; stroke-linejoin: round; }
 .watershed-map-figure figcaption { padding: 6px 3px 3px; color: var(--muted); font-size: .7rem; }
 .watershed-map-legend { display: flex; flex-wrap: wrap; gap: 13px; padding: 4px 3px 1px; color: var(--muted); font-size: .66rem; }
 .watershed-map-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .watershed-map-legend i { width: 11px; height: 11px; border: 1px solid var(--watershed-outline); background: var(--watershed-option); }
-.watershed-map-legend i.is-source { background: var(--watershed-source); }
+.watershed-map-legend-source { width: 14px; height: 14px; display: grid; place-items: center; border-radius: 50%; background: #396c82; color: white; font-size: .58rem; line-height: 1; }
 .watershed-choice-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
 .watershed-choice { min-width: 0; display: flex; align-items: flex-start; gap: 9px; padding: 10px; border: 1px solid var(--border); background: var(--surface-raised); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .14s ease, background-color .14s ease; }
 .watershed-choice:hover:not(:disabled) { border-color: var(--control-border); }
@@ -85,4 +87,6 @@ html[data-theme='dark'] .watershed-match-game { --watershed-option: #857b68; --w
 html[data-theme='dark'] .watershed-map-marker circle { fill: #303d3e; stroke: #f2e7d9; }
 html[data-theme='dark'] .watershed-map-marker.is-correct circle { fill: #246239; }
 html[data-theme='dark'] .watershed-map-marker.is-incorrect circle { fill: #843d36; }
-html[data-theme='dark'] .watershed-source-label { fill: #122128; stroke: rgba(255,255,255,.9); }
+html[data-theme='dark'] .watershed-map-marker.is-source circle { fill: #4c8196; }
+html[data-theme='dark'] .watershed-map-legend-source { background: #4c8196; }
+html[data-theme='dark'] .watershed-marker-connection.is-source { fill: #79a9bb; stroke: #79a9bb; }

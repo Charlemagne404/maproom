@@ -10,6 +10,31 @@ async function openGame(page: Page) {
   await expect(page.locator('.watershed-match-game')).toBeVisible({ timeout: 30_000 })
 }
 
+test('Watershed Match separates markers on its tightest map frame', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.addInitScript((seedToken) => {
+    Object.defineProperty(Crypto.prototype, 'randomUUID', { configurable: true, value: () => seedToken })
+  }, 'audit-53')
+  await openGame(page)
+  await expect(page.locator('#watershed-task-title')).toHaveText('Little River')
+  await expect(page.locator('.watershed-map-marker')).toHaveCount(4)
+  await expect(page.locator('.watershed-map-marker.is-source text')).toHaveText('S')
+  await expect(page.locator('.watershed-marker-connection')).toHaveCount(1)
+
+  const markerPoints = await page.locator('.watershed-map-marker').evaluateAll((markers) => markers.map((marker) => {
+    const match = marker.getAttribute('transform')?.match(/translate\(([-\d.]+)\s+([-\d.]+)\)/)
+    return match ? [Number(match[1]), Number(match[2])] : null
+  }))
+  expect(markerPoints.every((point) => point !== null)).toBe(true)
+  const points = markerPoints as Array<[number, number]>
+  for (let index = 0; index < points.length; index += 1) {
+    for (const other of points.slice(index + 1)) {
+      expect(Math.hypot(points[index]![0] - other[0], points[index]![1] - other[1])).toBeGreaterThanOrEqual(37.99)
+    }
+  }
+  await page.screenshot({ path: 'artifacts/qa/product-quality/watershed-match-marker-spacing.png', fullPage: true })
+})
+
 test('Watershed Match reveals ToHUC answers, saves a round, scores five questions and replays', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 })
   await openGame(page)

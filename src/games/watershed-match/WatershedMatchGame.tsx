@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { geoAlbersUsa, geoPath } from 'd3-geo'
 import { GameResultsDialog } from '../../components/GameResults'
 import { InlineNotice, LoadingState } from '../../components/Kit'
 import type { GeographyData, GameMode } from '../../geography/types'
 import { useGameSession } from '../session'
-import { loadWatershedMatchData, type WatershedMatchData, type WatershedUnitProperties } from './data'
+import { loadWatershedMatchData, type WatershedMatchData } from './data'
+import { makeWatershedMapShapes, WATERSHED_MAP_HEIGHT, WATERSHED_MAP_WIDTH } from './map-layout'
 import { createWatershedMatchDeck, scoreWatershedMatchAnswer, WATERSHED_POINTS_PER_QUESTION, WATERSHED_MATCH_ROUNDS, type WatershedQuestion } from './puzzle'
 import './watershed-match.css'
-
-const MAP_WIDTH = 760
-const MAP_HEIGHT = 400
 
 interface SavedWatershedProgress {
   setIndex?: unknown
@@ -17,15 +14,6 @@ interface SavedWatershedProgress {
   selected?: unknown
   answers?: unknown
   finished?: unknown
-}
-
-interface WatershedMapShape {
-  id: string
-  name: string
-  path: string
-  x: number
-  y: number
-  optionIndex: number
 }
 
 export function WatershedMatchGame({ mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
@@ -63,7 +51,7 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
   const currentAnswer = answers[round]
   const correctCount = answers.reduce((count, answer, index) => count + Number(deck[index] && scoreWatershedMatchAnswer(deck[index]!, answer) > 0), 0)
   const score = correctCount * WATERSHED_POINTS_PER_QUESTION
-  const shapes = useMemo(() => question ? makeMapShapes(data, question) : [], [data, question])
+  const shapes = useMemo(() => question ? makeWatershedMapShapes(data, question) : [], [data, question])
 
   useEffect(() => {
     if (finished) return
@@ -127,8 +115,8 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
       </section>
 
       <figure className="watershed-map-figure" aria-labelledby="watershed-map-caption">
-        <svg className="watershed-map" viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} role="img" aria-label={`Map of ${source.properties.name} and three adjacent candidate subwatersheds`}>
-          <rect className="watershed-map-water" width={MAP_WIDTH} height={MAP_HEIGHT} />
+        <svg className="watershed-map" viewBox={`0 0 ${WATERSHED_MAP_WIDTH} ${WATERSHED_MAP_HEIGHT}`} role="img" aria-label={`Map of ${source.properties.name} and three adjacent candidate subwatersheds`}>
+          <rect className="watershed-map-water" width={WATERSHED_MAP_WIDTH} height={WATERSHED_MAP_HEIGHT} />
           <defs><marker id="watershed-arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" /></marker></defs>
           {shapes.filter((shape) => shape.optionIndex < 0).map((shape) => <path key={shape.id} className="watershed-shape is-source" d={shape.path} />)}
           {shapes.filter((shape) => shape.optionIndex >= 0).map((shape) => <path
@@ -144,22 +132,27 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
             y2={shapes.find((shape) => shape.id === question.answerId)!.y}
             markerEnd="url(#watershed-arrowhead)"
           />}
-          {shapes.filter((shape) => shape.optionIndex >= 0).map((shape) => {
+          {shapes.map((shape) => {
+            const isSource = shape.optionIndex < 0
             const isSelected = checked && chosenId === shape.id
-            const isCorrect = checked && shape.id === question.answerId
+            const isCorrect = !isSource && checked && shape.id === question.answerId
             const isIncorrect = isSelected && !isCorrect
             const optionClass = isCorrect ? 'is-correct' : isIncorrect ? 'is-incorrect' : ''
-            return <g key={shape.id}>
-              <g className={`watershed-map-marker ${optionClass}`} transform={`translate(${shape.x} ${shape.y})`} aria-hidden="true">
+            const hasLeader = Math.hypot(shape.markerX - shape.x, shape.markerY - shape.y) > 1
+            return <g key={`${shape.id}-marker`}>
+              {hasLeader && <g className={`watershed-marker-connection${isSource ? ' is-source' : ''}`} aria-hidden="true">
+                <line x1={shape.x} y1={shape.y} x2={shape.markerX} y2={shape.markerY} />
+                <circle cx={shape.x} cy={shape.y} r="2.5" />
+              </g>}
+              <g className={`watershed-map-marker${isSource ? ' is-source' : ''} ${optionClass}`} transform={`translate(${shape.markerX} ${shape.markerY})`} aria-hidden="true">
                 <circle r="16" />
-                <text y="5">{String.fromCharCode(65 + shape.optionIndex)}</text>
+                <text y="5">{isSource ? 'S' : String.fromCharCode(65 + shape.optionIndex)}</text>
               </g>
             </g>
           })}
-          {shapes.filter((shape) => shape.optionIndex < 0).map((shape) => <text key={`${shape.id}-label`} className="watershed-source-label" x={shape.x} y={shape.y}>SOURCE</text>)}
         </svg>
         <figcaption id="watershed-map-caption">The source area is shown in blue. After checking, the arrow marks the recorded link; it is not a river trace.</figcaption>
-        <div className="watershed-map-legend"><span><i className="is-source" />Starting subwatershed</span><span><i />Candidate downstream area</span></div>
+        <div className="watershed-map-legend"><span><b className="watershed-map-legend-source">S</b>Starting subwatershed</span><span><i />Candidate downstream area</span></div>
       </figure>
 
       <div className="watershed-choice-list" role="group" aria-label="Choose the downstream subwatershed">
@@ -214,27 +207,6 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
       />
     </div>
   )
-}
-
-function makeMapShapes(data: WatershedMatchData, question: WatershedQuestion): WatershedMapShape[] {
-  const source = data.unitsById.get(question.sourceId)
-  const choices = question.choices.map((id) => data.unitsById.get(id))
-  if (!source || choices.some((feature) => !feature)) return []
-  const features = [source, ...choices] as GeoJSON.Feature<GeoJSON.Geometry, WatershedUnitProperties>[]
-  const collection: GeoJSON.FeatureCollection<GeoJSON.Geometry, WatershedUnitProperties> = { type: 'FeatureCollection', features }
-  const projection = geoAlbersUsa().fitExtent([[24, 22], [MAP_WIDTH - 24, MAP_HEIGHT - 22]], collection)
-  const path = geoPath(projection)
-  return features.map((feature, index) => {
-    const [x, y] = path.centroid(feature)
-    return {
-      id: feature.properties.huc12,
-      name: feature.properties.name,
-      path: path(feature) ?? '',
-      x: Number.isFinite(x) ? x : MAP_WIDTH / 2,
-      y: Number.isFinite(y) ? y : MAP_HEIGHT / 2,
-      optionIndex: index - 1,
-    }
-  })
 }
 
 function restoreAnswers(value: unknown, deck: readonly WatershedQuestion[]): string[] {
