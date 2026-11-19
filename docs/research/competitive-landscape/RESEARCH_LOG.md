@@ -37,6 +37,11 @@
 - In the Hard pool, rounding to 250 km with eight directions drops first-miss uniqueness to 37.6%; 500 km drops it to 20.8%. These are exhaustive, equally weighted clue combinations, not simulated player behavior or difficulty ratings. No clue precision changed.
 - Recorded methodology, precision sensitivity and a 6–8 person moderated pilot protocol in the [Riverways feedback audit](STUDIES/riverways-feedback-audit.md). Player understanding, whether the clue makes targets too obvious, fairness and completion remain unmeasured.
 
+## 19 November 2026 — Geography Connections review protocol
+
+- Prepared a blinded qualitative review for all 24 authored boards. Six to eight casual players each play two boards from each overall difficulty pool; the protocol captures solve order and time, mistakes, one-away events, perceived challenge and fairness, alternative groupings, and explanation clarity.
+- The board's answer labels and editorial overlap notes remain hidden until the normal reveal. The study treats repeated participant concerns as editorial leads, not population-level evidence. No participant sessions or content changes occurred; see the [review protocol](STUDIES/connections-content-review.md).
+
 ## 19 November 2026 — Higher or Lower source coverage
 
 - Queried five World Development Indicators series for the exact 2023 observation and matched them by ISO3 to Maproom's 195 Standard and 243 Extended identities. The API data metadata reported a last update of 11 November 2026. Coverage, positive-value counts, possible pair totals under the existing ratio bands, sources and interpretation limits are recorded in [GAME_RESEARCH.md](../../GAME_RESEARCH.md).

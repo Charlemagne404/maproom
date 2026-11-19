@@ -6,6 +6,8 @@ Boards are fixed editorial content in `src/puzzles/connections-content.ts`. The 
 
 The opening library contains 24 boards: 8 each in the Easy, Medium, and Hard pools. Each board has four separately ranked groups (tiers 1–4). Overall difficulty describes the combined board; tier describes a group's intended reveal color/order. Both assignments are editorial judgments and need a human play-through before a new board is added.
 
+A blinded qualitative review protocol for the current library is ready in [the study pack](../../../docs/research/competitive-landscape/STUDIES/connections-content-review.md); no participant sessions have been run yet.
+
 Each group records its visible label, explanation, four ISO3 entries, tier, and a machine-readable fact rule. The rule and selected country codes must agree exactly on that board. For a finite membership set with more than four members, the label says **among** and the explanation states the full set size; the remaining members must not be extra tiles on that board.
 
 ## Authoring checklist
