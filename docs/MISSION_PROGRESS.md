@@ -552,3 +552,9 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 
 - A desktop keyboard check showed that moving a profile to the first position disabled the focused Earlier button and left focus on the page body. The same endpoint pattern existed in Latitude Ladder and Historical Geography sequence mode. A shared focus helper now follows each moved item and selects its opposite enabled control when the preferred direction becomes unavailable.
 - Production-preview browser checks cover endpoint fallback and continued focus during an interior move in all three games. Lint, production build/artifact validation and the three relevant Playwright files passed (12/12). No scores, ordering rules, source data or Daily eligibility changed; no deployment occurred.
+
+## Geography Connections Atlas 04 developer self-play — 19 November 2026
+
+- A fixed-seed direct-play pass submitted Finland, France, Ireland and the Netherlands as euro-area members; Atlas 04 returned “No match.” The current official European Union list includes all four. An island-country guess returned “One away,” matching three countries in the authored “end in land” answer. Screenshots are retained in the [study evidence folder](research/competitive-landscape/STUDIES/evidence/).
+- This indicates a possible exact alternate connection that the current known-fact audit does not cover; it is not independent-player evidence. Corrected Atlas 04's stale internal editorial note. No puzzle groups or gameplay rules changed. The blinded review protocol now prioritizes two observations of Atlas 04 without revealing the candidate association.
+- Focused Connections content validation passed (10/10).

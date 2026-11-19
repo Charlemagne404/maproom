@@ -209,7 +209,7 @@ export const CONNECTIONS_PUZZLES: ConnectionsEditorialPuzzle[] = [
     g('atlas-04-india', 'Share a land border with India', 'Each country shares a land border with India.', 2, ['BGD', 'CHN', 'MMR', 'PAK'], { type: 'border-country', countryCode: 'IND' }),
     g('atlas-04-land', 'End in the letters “land”', 'The common country name ends with land.', 3, ['FIN', 'IRL', 'ISL', 'NZL'], { type: 'country-name-suffix', value: 'land' }),
     g('atlas-04-north-sea', 'Have a North Sea shoreline', 'Each has a shoreline on the North Sea.', 4, ['GBR', 'NOR', 'NLD', 'FRA'], setFact('north-sea-coast')),
-  ], 'The numeric clue is explicit on reveal; country borders and capital naming provide two different kinds of geographic knowledge.'),
+  ], 'The board combines landlocked status, a border with India, a country-name ending, and a North Sea shoreline.'),
   puzzle('atlas-05', 'easy', [
     g('atlas-05-name-a', 'Country names beginning with A', 'Each country name starts with the letter A.', 1, ['AFG', 'ALB', 'ARM', 'AUS'], { type: 'country-name-initial', initial: 'A' }),
     g('atlas-05-brazil', 'Share a land border with Brazil', 'Each country shares a land border with Brazil.', 2, ['BOL', 'PER', 'URY', 'VEN'], { type: 'border-country', countryCode: 'BRA' }),

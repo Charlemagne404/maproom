@@ -16,7 +16,7 @@ Each group records its visible label, explanation, four ISO3 entries, tier, and 
 2. Give every group four distinct ISO3 codes from the bundled country catalogue. Across the four groups, all 16 codes must be unique and appear once. Do not repeat the same four-country answer set within an overall difficulty pool; rotate valid subsets when a larger source set allows it.
 3. Write a short category label and a one-sentence reveal that states the actual rule, its boundary, and any date or subset limit.
 4. Record the exact fact rule. Add a named set when membership requires a human-authored list; give that set a source and a note in `CONNECTIONS_NAMED_FACT_SETS`.
-5. Put plausible decoys on the same board, then check what else the 16 entries share: borders, continents, subregions, landlocked status, names, capital names, coast sets, history lists, and any relevant data band.
+5. Put plausible decoys on the same board, then check what else the 16 entries share: borders, continents, subregions, landlocked status, names, capital names, coast sets, history lists, current currency areas or political memberships, flag patterns, and any relevant data band.
 6. Run `npm test -- --run src/puzzles/connections.test.ts`. Every board must pass the structural, country-code, declared-fact and exact-alternative checks. Read all reported overlaps and decide whether they are broad red herrings or a second usable four-country answer.
 7. Play every category both before and after another category is solved. Check that a knowledgeable player can infer the label from the reveal, that the wording is defensible, and that the group is challenging without requiring a trick definition.
 
@@ -52,6 +52,12 @@ The 24-board audit reports no unassigned exact quartet. The following broad matc
 | Atlas 24 | Asia (7) |
 
 Atlas 01 and Atlas 10 produce no broad-match warning under the checked rule set. The audit intentionally avoids treating arbitrary population or area cutoffs as plausible alternatives: such bins can be invented endlessly and are not clues unless the board names and dates them. It does check authored bands, the recurring under-1,000 km² and above-100-million thresholds, country and capital initials, name patterns, all catalogue borders and regions, landlocked status, and every named set.
+
+### Developer self-play follow-up — Atlas 04
+
+A direct, fixed-seed developer play-through raised an unassigned exact association that the current audit rule bank does not check. Atlas 04 contains Finland, France, Ireland and the Netherlands; selecting those four as euro-area members received “No match.” The European Union's current [official euro-area list](https://european-union.europa.eu/institutions-law-budget/euro/countries-using-euro_en) includes all four (page last updated 12 January 2026). A separate guess of the United Kingdom, Ireland, Iceland and New Zealand received one-away feedback, consistent with three members of the authored “end in land” group. Screenshots: [euro-area no-match](../../../docs/research/competitive-landscape/STUDIES/evidence/connections-atlas-04-euro-area-no-match.png) and [island one-away](../../../docs/research/competitive-landscape/STUDIES/evidence/connections-atlas-04-island-one-away.png).
+
+This is a developer self-play signal, not independent player evidence. No board content changed. The blinded pilot now prioritizes at least two Atlas 04 observations if practical, without naming the proposed grouping to participants; use their unaided alternatives and fairness ratings before considering an edit.
 
 ### Answer-set repetition review
 

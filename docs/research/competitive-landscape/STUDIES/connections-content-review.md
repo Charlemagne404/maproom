@@ -13,6 +13,7 @@ This is a small qualitative pilot. It can identify board-specific problems for e
 - Recruit 6–8 casual players who have not authored these boards. Record prior familiarity with geography quizzes as a brief self-rating; no names or contact information are needed in the results sheet.
 - Each participant plays six Free Play boards: two Easy, two Medium and two Hard. Use the Standard country pool for every board. Rotate difficulty-block order across participants (Easy–Medium–Hard, Medium–Hard–Easy, Hard–Easy–Medium); for a seventh or eighth participant, use the least-used order.
 - Across eight participants this gives 48 board observations. Track the visible Atlas set number in the facilitator sheet and spread observations across all 24 sets where possible. Two observations per set is a coverage target, not a guaranteed outcome from random board selection. Note any repeated or unobserved sets and add a short follow-up only if needed.
+- Prioritize Atlas 04 for at least two independent observations if the draw allows it: a developer self-play pass raised a possible exact alternate grouping. Do not tell participants which board is being prioritized or suggest any candidate connection; record their own groupings and alternatives first.
 - Set the difficulty privately in the settings menu before each board. Do not tell participants the intended overall difficulty or show them the answer groups or editorial overlap notes before they play. The on-board tier legend is part of the game experience and should remain visible.
 
 ## Session procedure
