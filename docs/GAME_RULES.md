@@ -64,7 +64,7 @@ Each SVG is a Maproom-generated 31 December snapshot from CShapes 2.1, not an ar
 
 ## Map Projection Match
 
-Match each mapping task to one of four rendered views: Equal Earth, Mercator, Equirectangular or Orthographic. Every Free Play set asks once about each projection in a shuffled order. Choose one of the four maps and check it to reveal the recommended match and its properties. A correct answer earns 250 points, up to 1,000 across the four tasks. Task wording describes a common strength; it does not claim a projection preserves every map property or suits every scale and region. Map shapes use Maproom's bundled Natural Earth country boundaries and D3's local projection implementations. The game is Free Play only and remains outside Daily while prompt clarity and difficulty are evaluated.
+Match each mapping task to one of four rendered views: Equal Earth, Mercator, Equirectangular or Orthographic. Every Free Play set asks once about each projection in a shuffled order. Choose one of the four maps and check it to reveal the recommended match and its properties. In the constant-heading course task, the same orange route appears on every view so players can compare its shape. A correct answer earns 250 points, up to 1,000 across the four tasks. Task wording describes a common strength; it does not claim a projection preserves every map property or suits every scale and region. Map shapes use Maproom's bundled Natural Earth country boundaries and D3's local projection implementations. The game is Free Play only and remains outside Daily while prompt clarity and difficulty are evaluated.
 
 ## Population Pyramid Sort
 

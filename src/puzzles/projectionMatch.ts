@@ -3,6 +3,26 @@ import { seededShuffle } from './engine'
 export const PROJECTION_IDS = ['equal-earth', 'mercator', 'equirectangular', 'orthographic'] as const
 export type ProjectionId = typeof PROJECTION_IDS[number]
 
+export const PROJECTION_MAP_ROTATION: [number, number] = [-12, -4]
+const COURSE_START: [number, number] = [-42, 18]
+const COURSE_END: [number, number] = [52, 65]
+
+/** Sample one constant-heading course in the map's rotated longitude/latitude grid. */
+export function createConstantHeadingCourse(): [number, number][] {
+  const count = 64
+  const mercatorY = (latitude: number) => Math.log(Math.tan(Math.PI / 4 + latitude * Math.PI / 360))
+  const startY = mercatorY(COURSE_START[1])
+  const endY = mercatorY(COURSE_END[1])
+
+  return Array.from({ length: count + 1 }, (_, index) => {
+    const fraction = index / count
+    const y = startY + (endY - startY) * fraction
+    const latitude = (2 * Math.atan(Math.exp(y)) - Math.PI / 2) * 180 / Math.PI
+    const longitude = COURSE_START[0] + (COURSE_END[0] - COURSE_START[0]) * fraction
+    return [longitude, latitude]
+  })
+}
+
 export interface ProjectionQuestion {
   id: ProjectionId
   prompt: string

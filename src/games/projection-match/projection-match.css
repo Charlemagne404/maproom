@@ -8,6 +8,7 @@
 .projection-match-task { padding: 12px 15px; border-left: 3px solid var(--accent); background: var(--surface-raised); }
 .projection-match-task .eyebrow { margin-bottom: 3px; }
 .projection-match-task h3 { max-width: 790px; margin: 0; font-size: 1rem; line-height: 1.4; }
+.projection-match-task-note { margin-top: 4px; color: var(--muted); font-size: .73rem; line-height: 1.4; }
 .projection-map-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .projection-map-option { min-width: 0; overflow: hidden; padding: 8px; border: 1px solid var(--border); background: var(--surface-raised); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .15s ease, background-color .15s ease, transform .15s ease; }
 .projection-map-option:hover:not(:disabled) { border-color: var(--control-border); transform: translateY(-1px); }
@@ -22,6 +23,10 @@
 .projection-map-globe { fill: var(--surface-soft); stroke: var(--map-outline); stroke-width: 1.4; }
 .projection-map-land { fill: #e5d6c4; fill-rule: evenodd; stroke: #86796b; stroke-width: .7; stroke-linejoin: round; }
 .projection-map-graticule { fill: none; stroke: color-mix(in srgb, var(--map-outline) 62%, transparent); stroke-width: .55; pointer-events: none; }
+.projection-course-illustration { pointer-events: none; }
+.projection-course-casing, .projection-course { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.projection-course-casing { stroke: var(--paper); stroke-width: 4.5; }
+.projection-course { stroke: var(--accent-ink); stroke-width: 2.4; }
 .projection-option-name { display: block; padding-top: 7px; font-size: .78rem; font-weight: 700; }
 .projection-match-controls { display: flex; align-items: center; gap: 12px; }
 .projection-match-feedback { flex: 1; padding: 10px 12px; background: var(--surface-soft); color: var(--muted); font-size: .78rem; line-height: 1.45; }
@@ -50,3 +55,4 @@ html[data-theme='dark'] .projection-match-task,
 html[data-theme='dark'] .projection-map-option,
 html[data-theme='dark'] .projection-match-feedback { background: var(--surface); }
 html[data-theme='dark'] .projection-map-land { fill: #d5c4ad; stroke: #a89681; }
+html[data-theme='dark'] .projection-course-casing { stroke: #211e1b; }

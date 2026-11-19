@@ -161,6 +161,35 @@ test('Map Projection Match renders the four map views, restores checked feedback
   await openGame(page, 'projection-match')
   const task = page.getByRole('heading', { level: 3 })
   const firstPrompt = await task.innerText()
+  let courseDarkModeChecked = false
+  const inspectCourseIllustration = async () => {
+    const prompt = await task.innerText()
+    const courseLines = page.locator('.projection-course')
+    if (prompt.includes('constant-heading course')) {
+      await expect(page.locator('.projection-match-task-note')).toContainText('same constant-heading course')
+      await expect(courseLines).toHaveCount(4)
+      const descriptions = await page.locator('.projection-map-option').evaluateAll((elements) => elements.map((element) => element.getAttribute('aria-label') ?? ''))
+      expect(descriptions.join(' ')).toContain('course line is straight')
+      expect(descriptions.join(' ')).toContain('course line is curved')
+      if (!courseDarkModeChecked) {
+        await page.setViewportSize({ width: 390, height: 844 })
+        await page.getByRole('button', { name: 'Switch to dark appearance' }).click()
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+        await expect(courseLines.first()).toHaveCSS('stroke', 'rgb(245, 165, 117)')
+        await expect(page.locator('.projection-course-casing').first()).toHaveCSS('stroke', 'rgb(33, 30, 27)')
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0)
+        await page.screenshot({ path: 'artifacts/qa/product-quality/map-projection-match-rhumb-line-mobile-dark.png', fullPage: true })
+        await page.getByRole('button', { name: 'Switch to light appearance' }).click()
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+        await page.setViewportSize({ width: 1440, height: 960 })
+        courseDarkModeChecked = true
+      }
+      await page.screenshot({ path: 'artifacts/qa/product-quality/map-projection-match-rhumb-line.png', fullPage: true })
+    } else {
+      await expect(courseLines).toHaveCount(0)
+    }
+  }
+  await inspectCourseIllustration()
   await expect(page.locator('.projection-map-option')).toHaveCount(4)
   await expect(page.locator('.projection-map-visual path.projection-map-land')).toHaveCount(4)
   for (const path of await page.locator('.projection-map-land').all()) expect((await path.getAttribute('d'))?.length ?? 0).toBeGreaterThan(100)
@@ -180,6 +209,7 @@ test('Map Projection Match renders the four map views, restores checked feedback
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0)
   await page.screenshot({ path: 'artifacts/qa/product-quality/map-projection-match-mobile.png', fullPage: true })
   await page.setViewportSize({ width: 1440, height: 960 })
+  await inspectCourseIllustration()
 
   await page.getByRole('button', { name: projectionOptionFor(firstPrompt) }).focus()
   await page.keyboard.press('Space')
@@ -203,6 +233,7 @@ test('Map Projection Match renders the four map views, restores checked feedback
   await expect(page.getByRole('status')).toContainText('Good match.')
   await page.getByRole('button', { name: 'Next mapping task' }).click()
   await expect(page.getByRole('heading', { level: 3 })).toBeFocused()
+  await inspectCourseIllustration()
 
   for (let round = 1; round < 4; round += 1) {
     await page.getByRole('button', { name: projectionOptionFor(await task.innerText()) }).click()
@@ -210,6 +241,7 @@ test('Map Projection Match renders the four map views, restores checked feedback
     if (round < 3) {
       await expect(page.getByRole('status')).toContainText('Good match.')
       await page.getByRole('button', { name: 'Next mapping task' }).click()
+      await inspectCourseIllustration()
     }
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()

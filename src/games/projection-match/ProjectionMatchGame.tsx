@@ -1,9 +1,9 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { geoEquirectangular, geoEqualEarth, geoGraticule, geoMercator, geoOrthographic, geoPath, type GeoProjection } from 'd3-geo'
+import { geoEquirectangular, geoEqualEarth, geoGraticule, geoMercator, geoOrthographic, geoPath, geoRotation, type GeoProjection } from 'd3-geo'
 import { GameResultsDialog } from '../../components/GameResults'
 import { FreePlaySetupContext } from '../../components/FreePlaySetupContext'
 import type { GeographyData, GameMode } from '../../geography/types'
-import { createProjectionDeck, isProjectionId, PROJECTION_DETAILS, PROJECTION_IDS, projectionAnswerIsCorrect, type ProjectionId } from '../../puzzles/projectionMatch'
+import { createConstantHeadingCourse, createProjectionDeck, isProjectionId, PROJECTION_DETAILS, PROJECTION_IDS, PROJECTION_MAP_ROTATION, projectionAnswerIsCorrect, type ProjectionId } from '../../puzzles/projectionMatch'
 import { useGameSession } from '../session'
 import './projection-match.css'
 
@@ -24,6 +24,7 @@ interface ProjectionMapPaths {
   land: string
   graticule: string
   sphere: string
+  course: string
 }
 
 export function ProjectionMatchGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
@@ -105,6 +106,7 @@ export function ProjectionMatchGame({ data, mode, date, seed }: { data: Geograph
         <section className="projection-match-task" aria-labelledby="projection-task-title">
           <span className="eyebrow">Mapping task</span>
           <h3 ref={taskHeadingRef} id="projection-task-title" tabIndex={-1}>{question.prompt}</h3>
+          {question.id === 'mercator' && <p className="projection-match-task-note">The orange line shows the same constant-heading course on each map.</p>}
         </section>
 
         <div className="projection-map-grid" role="group" aria-label="Choose a map projection">
@@ -117,7 +119,7 @@ export function ProjectionMatchGame({ data, mode, date, seed }: { data: Geograph
               key={projectionId}
               className={`projection-map-option${isSelected ? ' is-selected' : ''}${checked && isCorrect ? ' is-correct' : ''}${checked && isSelected && !isCorrect ? ' is-incorrect' : ''}`}
               type="button"
-              aria-label={`Map option ${String.fromCharCode(65 + index)}: ${PROJECTION_DETAILS[projectionId].visualDescription}${checked ? ` ${PROJECTION_DETAILS[projectionId].name}.` : ''}`}
+              aria-label={`Map option ${String.fromCharCode(65 + index)}: ${PROJECTION_DETAILS[projectionId].visualDescription}${question.id === 'mercator' ? ` The orange course line is ${projectionId === 'mercator' ? 'straight' : 'curved'} in this view.` : ''}${checked ? ` ${PROJECTION_DETAILS[projectionId].name}.` : ''}`}
               aria-pressed={isSelected}
               disabled={checked}
               onClick={() => setSelected(projectionId)}
@@ -128,6 +130,10 @@ export function ProjectionMatchGame({ data, mode, date, seed }: { data: Geograph
                 {projectionId === 'orthographic' && <path className="projection-map-globe" d={map.sphere} />}
                 <path className="projection-map-land" d={map.land} />
                 <path className="projection-map-graticule" d={map.graticule} />
+                {question.id === 'mercator' && <g className="projection-course-illustration" aria-hidden="true">
+                  <path className="projection-course-casing" d={map.course} />
+                  <path className="projection-course" d={map.course} />
+                </g>}
               </svg>
               {checked && <span className="projection-option-name">{PROJECTION_DETAILS[projectionId].name}</span>}
             </button>
@@ -155,23 +161,33 @@ export function ProjectionMatchGame({ data, mode, date, seed }: { data: Geograph
 
 function makeMapPaths(geometry: GeoJSON.FeatureCollection): Record<ProjectionId, ProjectionMapPaths> {
   const graticule = geoGraticule().step([30, 30])()
+  const rotation = geoRotation(PROJECTION_MAP_ROTATION)
+  const course: GeoJSON.LineString = {
+    type: 'LineString',
+    coordinates: createConstantHeadingCourse().map((coordinate) => rotation.invert(coordinate)),
+  }
   return Object.fromEntries(PROJECTION_IDS.map((projectionId) => {
     const projection = makeProjection(projectionId).fitExtent([[12, 12], [MAP_WIDTH - 12, MAP_HEIGHT - 12]], geometry)
     const path = geoPath(projection)
+    const courseProjection = makeProjection(projectionId)
+      .fitExtent([[12, 12], [MAP_WIDTH - 12, MAP_HEIGHT - 12]], geometry)
+      .precision(0)
+    const coursePath = geoPath(courseProjection)
     return [projectionId, {
       land: path(geometry) ?? '',
       graticule: path(graticule) ?? '',
       sphere: path({ type: 'Sphere' }) ?? '',
+      course: coursePath(course) ?? '',
     }]
   })) as Record<ProjectionId, ProjectionMapPaths>
 }
 
 function makeProjection(projectionId: ProjectionId): GeoProjection {
   switch (projectionId) {
-    case 'equal-earth': return geoEqualEarth().rotate([-12, -4])
-    case 'mercator': return geoMercator().rotate([-12, -4])
-    case 'equirectangular': return geoEquirectangular().rotate([-12, -4])
-    case 'orthographic': return geoOrthographic().rotate([-12, -4]).clipAngle(90)
+    case 'equal-earth': return geoEqualEarth().rotate(PROJECTION_MAP_ROTATION)
+    case 'mercator': return geoMercator().rotate(PROJECTION_MAP_ROTATION)
+    case 'equirectangular': return geoEquirectangular().rotate(PROJECTION_MAP_ROTATION)
+    case 'orthographic': return geoOrthographic().rotate(PROJECTION_MAP_ROTATION).clipAngle(90)
   }
 }
 
