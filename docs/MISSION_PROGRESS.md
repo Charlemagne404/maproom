@@ -338,3 +338,15 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Prepared [a 12-outline pilot protocol](research/competitive-landscape/STUDIES/country-outlines-difficulty.md) and an offline HTML instrument with a fixed Easy/Medium/Hard sample, three counterbalanced orders, anonymous response fields, one-answer locking, delayed correctness reveal and explicit CSV export. The browser walkthrough completed all items and checked the generated export. The instrument was reviewed on desktop and mobile; no player sessions or responses exist, and no tier thresholds changed.
 - Validation passed: unit suite 127/127, typecheck, lint, production build (22 route snapshots, 19 indexable sitemap URLs, 201 precached assets, all 20 historical maps checked), and Historical Geography browser suite 6/6 with one worker. Screenshots: `artifacts/qa/product-quality/historical-sequence-desktop.png`, `historical-sequence-mobile-dark.png`, `country-outline-study-desktop.png`, and `country-outline-study-mobile.png`.
 - Backlog rank 14 now needs 6–12 casual player sessions; rank 15's prototype needs human clarity/difficulty review. No deployment occurred.
+
+## Geocore Geo Puzzle follow-up — 19 November 2026
+
+- Played one guest round of Geo Puzzle: Countries. The observed setup used 20 pieces from a 197-country world pool, an unlabeled map and a horizontal shape tray. Drag or select-and-tap placement, a geographic hint, distance feedback for a miss, and a green snap reveal were directly observed; the session placed Bulgaria correctly and stopped at 1/20. Keyboard arrow/Enter instructions appeared in the accessibility tree, but a successful keyboard placement was not tested.
+- The later same-day Play-page view showed 169 games (the earlier capture showed 168); the 85-mode Classic catalog is a separate surface. Updated the dated competitor record with both observations.
+- Deferred Country Mosaic because its current loop would duplicate the observed competitor puzzle. No Maproom code or data changed. Remaining top work requires human player sessions or physical-device access; research can continue with source audits for a genuinely distinct candidate.
+
+## Climate Twins source shortlist — 19 November 2026
+
+- Compared official climate data sources for the next distinct game candidate. WorldClim 2.1 has roughly 1 km monthly surfaces but does not allow redistribution or commercial use without permission. The World Bank CCKP documents 1991–2020 observed CRU normals under CC BY 4.0, with a 0.5° grid and public gridded archives.
+- The CCKP source may support an offline prototype, but its grid can blur city-scale coastal/elevation differences. Next step is a small extraction audit for missingness, duplicate city cells and climate-chart separation. The candidate is not yet approved or implemented; no data or app code changed.
+- References: [WorldClim 2.1](https://www.worldclim.org/data/worldclim21.html), [WorldClim license](https://www.worldclim.org/about.html), [CCKP metadata](https://climateknowledgeportal.worldbank.org/metadata), and [CCKP open-data archive](https://worldbank.github.io/climateknowledgeportal/README.html).
