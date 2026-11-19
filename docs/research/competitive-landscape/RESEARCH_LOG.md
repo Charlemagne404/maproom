@@ -31,6 +31,12 @@
 - Focused Riverways, Connections and expanded-puzzle tests: 24/24 passed. Full unit suite: 117/117 passed. Typecheck, lint and build passed. Production-preview Riverways browser regression passed 1/1. Manual local-browser review verified a distance/direction miss and the second-miss Ethiopia clue on the live game screen.
 - This evidence is engineering verification and self-play, not a moderated player study, screen-reader assessment, physical-device session or production deployment.
 
+## 19 November 2026 — Riverways clue signal audit
+
+- Exhaustively compared line-centre distance/direction signatures across the 134 named questions (148 Natural Earth features). With the current 50 km/eight-way clue, one wrong guess uniquely identifies the target in 83.2% of Easy, 82.1% of Medium and 77.5% of Hard pool cases. Adding both miss clues and the target-centre country raises unique signatures to 94.3%, 96.8% and 96.9% respectively.
+- In the Hard pool, rounding to 250 km with eight directions drops first-miss uniqueness to 37.6%; 500 km drops it to 20.8%. These are exhaustive, equally weighted clue combinations, not simulated player behavior or difficulty ratings. No clue precision changed.
+- Recorded methodology, precision sensitivity and a 6–8 person moderated pilot protocol in the [Riverways feedback audit](STUDIES/riverways-feedback-audit.md). Player understanding, whether the clue makes targets too obvious, fairness and completion remain unmeasured.
+
 ## 19 November 2026 — Higher or Lower source coverage
 
 - Queried five World Development Indicators series for the exact 2023 observation and matched them by ISO3 to Maproom's 195 Standard and 243 Extended identities. The API data metadata reported a last update of 11 November 2026. Coverage, positive-value counts, possible pair totals under the existing ratio bands, sources and interpretation limits are recorded in [GAME_RESEARCH.md](../../GAME_RESEARCH.md).
