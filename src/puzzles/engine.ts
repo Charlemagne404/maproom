@@ -102,6 +102,13 @@ export function shortestPath(start: string, end: string, adjacency: Map<string, 
   return null
 }
 
+export function routeQualityMessage(routeHops: number, shortestHops: number): string {
+  const borderLabel = (hops: number) => `${hops} ${hops === 1 ? 'border' : 'borders'}`
+  const extraStops = Math.max(0, routeHops - shortestHops)
+  if (extraStops === 0) return `Shortest route: ${borderLabel(routeHops)}.`
+  return `Your route uses ${borderLabel(routeHops)}; the shortest uses ${borderLabel(shortestHops)} (${extraStops} extra ${extraStops === 1 ? 'stop' : 'stops'}).`
+}
+
 export function validateRouteStep(route: string[], candidate: string, adjacency: Map<string, string[]>): string | null {
   if (!candidate) return 'Choose a country from the list.'
   if (route.includes(candidate)) return 'That country is already in your route.'

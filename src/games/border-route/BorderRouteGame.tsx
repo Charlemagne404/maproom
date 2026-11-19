@@ -6,7 +6,7 @@ import { InlineNotice } from '../../components/Kit'
 import { AdvancedGameSettings, GameSettingSelect, GameSettingsMenu } from '../../components/GameControls'
 import { GameResultsDialog } from '../../components/GameResults'
 import type { GeographyData, GameMode } from '../../geography/types'
-import { buildAdjacency, findRouteOrdering, generateRoutePuzzle, resolveCountryAnswer, shortestPath, type RouteDifficulty } from '../../puzzles/engine'
+import { buildAdjacency, findRouteOrdering, generateRoutePuzzle, resolveCountryAnswer, routeQualityMessage, shortestPath, type RouteDifficulty } from '../../puzzles/engine'
 import { useGameSession } from '../session'
 import { eligibleCountries, eligibleFeatures, initialGeographyEligibility, isStandardCountry, type GeographyEligibility } from '../../geography/eligibility'
 import { useAppData } from '../../app/useAppData'
@@ -147,7 +147,7 @@ function RouteRound({ data, countries, mode, date, seed, scope, scopes, difficul
           </div>
         </div>
       </div>
-      <GameResultsDialog complete={finished} gameId="routes" mode={mode} score={finalScore} correct={finished ? 1 : 0} total={1} title={selectedCountries.length === puzzle.shortest.length - 2 ? 'The shortest way through.' : 'A valid route across the map.'} message={routeNames.join(' → ')} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Build another route" />
+      <GameResultsDialog complete={finished} gameId="routes" mode={mode} score={finalScore} correct={finished ? 1 : 0} total={1} title={selectedCountries.length === puzzle.shortest.length - 2 ? 'The shortest way through.' : 'A valid route across the map.'} message={routeOrdering ? `${routeQualityMessage(routeOrdering.length - 1, puzzle.shortest.length - 1)} ${routeNames.join(' → ')}` : undefined} saveError={saveError} onReplay={mode === 'freeplay' ? onReplay : undefined} replayLabel="Build another route" />
     </div>
   )
 }

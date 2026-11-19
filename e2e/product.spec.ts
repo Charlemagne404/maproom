@@ -972,6 +972,7 @@ test('border route accepts an actual shortest path and scores it', async ({ page
   }
   await expect(page.locator('.game-results-dialog')).toBeVisible()
   await expect(page.locator('.game-results-dialog h2')).toContainText('shortest')
+  await expect(page.locator('.game-results-message')).toContainText(`Shortest route: ${shortest!.length - 1} ${shortest!.length - 1 === 1 ? 'border' : 'borders'}.`)
   const displayedNames = await page.locator('.route-stops li > span').allTextContents()
   const displayedCodes = displayedNames.map((name) => countriesByName.get(name)?.iso3)
   expect(displayedCodes).toHaveLength(shortest!.length)

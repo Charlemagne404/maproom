@@ -15,6 +15,7 @@ import {
   normalizeAnswer,
   pickCountries,
   resolveCountryAnswer,
+  routeQualityMessage,
   seededRandom,
   seededShuffle,
   shortestPath,
@@ -138,6 +139,22 @@ describe('border routes', () => {
     expect(shortestPath(puzzle.start, puzzle.end, adjacency)).toEqual(puzzle.shortest)
   })
 
+  it('keeps a longer connected route valid and counts its extra stop', () => {
+    const countries = [
+      country('AAA', { borders: ['BBB', 'DDD'] }),
+      country('BBB', { borders: ['CCC'] }),
+      country('CCC', { borders: ['DDD'] }),
+      country('DDD'),
+    ]
+    const adjacency = buildAdjacency(countries)
+    const shortest = shortestPath('AAA', 'DDD', adjacency)!
+    const longer = findRouteOrdering('AAA', 'DDD', ['CCC', 'BBB'], adjacency)
+
+    expect(shortest).toEqual(['AAA', 'DDD'])
+    expect(longer).toEqual(['AAA', 'BBB', 'CCC', 'DDD'])
+    expect(routeQualityMessage(longer!.length - 1, shortest.length - 1)).toBe('Your route uses 3 borders; the shortest uses 1 border (2 extra stops).')
+  })
+
   it('orders an unordered border-country set into a valid path deterministically', () => {
     const countries = [
       country('PRT', { borders: ['ESP'] }),
@@ -166,6 +183,13 @@ describe('border routes', () => {
       country('EEE'),
     ])
     expect(findRouteOrdering('AAA', 'EEE', ['DDD', 'CCC', 'BBB'], adjacency)).toEqual(['AAA', 'BBB', 'CCC', 'DDD', 'EEE'])
+  })
+
+  it('explains shortest and longer valid route quality with border and stop counts', () => {
+    expect(routeQualityMessage(1, 1)).toBe('Shortest route: 1 border.')
+    expect(routeQualityMessage(3, 3)).toBe('Shortest route: 3 borders.')
+    expect(routeQualityMessage(4, 3)).toBe('Your route uses 4 borders; the shortest uses 3 borders (1 extra stop).')
+    expect(routeQualityMessage(6, 4)).toBe('Your route uses 6 borders; the shortest uses 4 borders (2 extra stops).')
   })
 
   it('rejects disconnected, duplicated and endpoint selections without changing adjacency rules', () => {

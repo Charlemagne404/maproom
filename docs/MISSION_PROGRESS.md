@@ -283,3 +283,10 @@ Updated 18 November 2026. All changes remain local. No remote push, deployment, 
 - Geography Grid's expanded Free Play pool now samples categories based on their accepted-board usage. Deterministic measurement retains 240 boards, raises distinct row/column clue pairs from 345 to 371, and reduces P90 intersection size from 32 to 27. Maximum category appearances changed from 76 to 77; this is a modest pool-variety improvement, not proof of even balance or human-perceived replay value. Daily generation remains on its existing path.
 - Validation passed: full unit suite (117/117), typecheck, lint, production build, focused Riverways and Geography Grid production-preview tests (1/1 each), and manual local-browser review of both river miss clues and saved progress. The Grid browser flow filled all nine cells from valid category intersections and completed successfully.
 - Checkpoint `0bb0dd8` is committed and pushed to `codex/maproom-product-quality-20261119`. No deployment or production change occurred. Continue the broader quality mission on this branch; this checkpoint is not final completion.
+
+## Border Route route-quality results — 19 November 2026
+
+- Border Route results now state how many borders the accepted route uses and the shortest route's border count. A longer valid route also reports its extra intermediate stops; the game still accepts arbitrary-order country sets and valid detours.
+- The unit tests cover shortest/longer route wording and a valid detour through a real adjacency graph. The production-preview regression completed a shortest route and verified its comparison and existing 900-point hint-adjusted score.
+- Validation passed: full unit suite (119/119), typecheck, lint, production build, and the focused Border Route Playwright test (1/1). This is engineering/self-play evidence; player comprehension remains open.
+- This follow-up is ready for a mission-branch checkpoint. No deployment or production action was performed.

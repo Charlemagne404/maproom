@@ -21,7 +21,7 @@ Audit completed 18 November 2026 across all thirteen integrated game implementat
 ### Border route
 
 - **Gameplay, rules and balance:** Build a land path between fixed endpoints. Players add intermediate countries in any order; a reciprocal-neighbor graph and breadth-first search determine whether the full selected set can be arranged into one continuous route. Every selected country is used once in the displayed path. The shortest route remains the scoring target, while longer valid routes are allowed.
-- **Feedback and replay:** A disconnected set stays editable and receives a clear status; a valid set immediately shows the geographically ordered path and completes the round. Hints name a country on a shortest route. Seeded endpoint pairs allow repeatable daily play and varied practice.
+- **Feedback and replay:** A disconnected set stays editable and receives a clear status; a valid set immediately shows the geographically ordered path and completes the round. Results state the route's border count and, for longer paths, the extra stops versus the shortest route. Hints name a country on a shortest route. Seeded endpoint pairs allow repeatable daily play and varied practice.
 - **Visual, mobile and accessibility:** A map-centered view is paired with a compact bottom input dock and removable selected-country chips. Labeled autocomplete and map controls support keyboard and touch; the displayed route communicates geographic order even when entry order differed.
 - **Performance and geographic accuracy:** Uses the small country catalog and world geometry. Border answers follow reciprocal land neighbors; maritime borders and contested claims are not represented.
 
