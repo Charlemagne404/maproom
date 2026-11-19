@@ -148,7 +148,7 @@ function PopulationPyramidSession({ data, populationData, mode, date, seed }: {
       <div className="population-pyramid-key" aria-label="Chart legend and scale">
         <span><i className="population-pyramid-swatch is-male" />Male</span>
         <span><i className="population-pyramid-swatch is-female" />Female</span>
-        <p>Each bar is a share of the total population; all profiles use the same 0–8% scale.</p>
+        <p>Each bar is a share of the total population; all profiles use the same 0–8% scale. For 65+, add both sides of the four oldest bands (65–69 through 80+).</p>
       </div>
 
       <ol className="population-pyramid-order" aria-label="Your current profile order">

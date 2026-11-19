@@ -238,3 +238,8 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 - Added an optional native disclosure with the exact 17 cohort values to each anonymous pyramid profile. The table mirrors chart order and values, remains closed by default, and does not show country names or the 65+ indicator before checking. The current keyboard and touch reordering controls remain unchanged.
 - Production-preview checks confirm the 17 table rows, hidden pre-check country names, desktop keyboard operation, mobile touch opening, dark-theme rendering and no horizontal page overflow. The table lets players compare precise values, so whether it helps explain the silhouettes or shifts attention to arithmetic still needs a player session.
 - Typecheck, lint, production build/artifact validation and the focused browser suite passed (2/2). No data, scoring, Daily eligibility or deployment state changed.
+
+## 19 November 2026 — Population Pyramid Sort 65+ target hint
+
+- The prompt now says to add both sides of the four oldest age bands (65–69 through 80+) when comparing the 65+ target. The bundled male and female cohort values are each shares of total population, so the wording follows the source transformation and does not require interpreting sex-specific denominators.
+- Browser assertions check that the instruction is visible before answering on desktop and mobile. A player session is still needed to test whether this explanation makes the visual comparison intuitive.

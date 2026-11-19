@@ -535,3 +535,9 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Added a collapsed, keyboard-operable table disclosure to each anonymous profile. It exposes the same 17 male/female population-share cohorts as the bars and keeps country names and the 65+ result hidden until checking. Sighted players can now expand the same cohort table exposed to screen readers; because it makes precise ordering easier, its effect on the silhouette-reading task remains a player-study question.
 - Updated the game rules, source study, game audit, gap analysis and backlog. Browser checks cover table rows, answer-name hiding, keyboard activation, mobile touch, dark theme and no page-width overflow. Visual review: `artifacts/qa/product-quality/population-pyramid-cohort-table.png` and `population-pyramid-mobile-dark.png`.
 - Typecheck, lint, production build/artifact validation (24 route snapshots, 21 sitemap URLs, 205 precached assets) and the focused Population Pyramid Playwright suite (2/2) passed. The game remains Free Play only and has not been deployed.
+
+## Population Pyramid Sort target-reading hint — 19 November 2026
+
+- Added a pre-answer instruction to combine the male and female shares in the four oldest bands, 65–69 through 80+, to estimate each profile's 65+ share. This makes the relationship between the chart and the named target explicit without revealing country identities or the checked 65+ result.
+- Updated the rules, audit, gap analysis, backlog and source study. Focused browser assertions cover the hint before play on desktop and mobile; responsive inspection checks that the added copy does not cause page overflow. Player comprehension remains unmeasured.
+- The game remains outside Daily and has not been deployed.

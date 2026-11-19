@@ -24,6 +24,7 @@ test('Population Pyramid Sort reveals sourced profiles, saves ordering, scores f
   const cards = page.locator('.population-pyramid-card')
   await expect(cards).toHaveCount(3)
   await expect(page.locator('.population-pyramid-row')).toHaveCount(51)
+  await expect(page.locator('.population-pyramid-key')).toContainText('For 65+, add both sides of the four oldest bands (65–69 through 80+).')
   await page.screenshot({ path: 'artifacts/qa/product-quality/population-pyramid-desktop.png', fullPage: true })
   const cohortDetails = page.locator('.population-pyramid-data')
   await expect(cohortDetails).toHaveCount(3)
@@ -85,6 +86,7 @@ test('Population Pyramid Sort fits mobile, respects dark theme and opens its pro
   try {
     await openGame(page)
     await expect(page.locator('.population-pyramid-scoring-rule')).toBeVisible()
+    await expect(page.locator('.population-pyramid-key')).toContainText('For 65+, add both sides of the four oldest bands (65–69 through 80+).')
     await expect(page.locator('.population-pyramid-score')).toContainText('/ 1,500 points')
     await page.getByRole('button', { name: 'Switch to dark appearance' }).tap()
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
