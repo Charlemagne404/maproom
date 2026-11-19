@@ -529,3 +529,9 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 
 - Verified GeoNames city records include coordinates and IANA time-zone IDs under CC BY 4.0; the IANA time-zone database is public domain, while its rules change with government decisions. Exact timezone polygons would add an ODbL boundary dataset.
 - The city/time-zone data can be bundled, but sorting clocks repeats current ordering games and a single conversion question uses the map weakly. Deferred implementation until a route/date-line action offers distinct, fair decisions with pinned time-zone rules. See the source review and decision log.
+
+## Population Pyramid Sort optional age-band table — 19 November 2026
+
+- Added a collapsed, keyboard-operable table disclosure to each anonymous profile. It exposes the same 17 male/female population-share cohorts as the bars and keeps country names and the 65+ result hidden until checking. Sighted players can now expand the same cohort table exposed to screen readers; because it makes precise ordering easier, its effect on the silhouette-reading task remains a player-study question.
+- Updated the game rules, source study, game audit, gap analysis and backlog. Browser checks cover table rows, answer-name hiding, keyboard activation, mobile touch, dark theme and no page-width overflow. Visual review: `artifacts/qa/product-quality/population-pyramid-cohort-table.png` and `population-pyramid-mobile-dark.png`.
+- Typecheck, lint, production build/artifact validation (24 route snapshots, 21 sitemap URLs, 205 precached assets) and the focused Population Pyramid Playwright suite (2/2) passed. The game remains Free Play only and has not been deployed.

@@ -232,3 +232,9 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 
 - Verified the official GeoNames dump README: `cities15000.zip` includes place IDs, names, WGS84 points, population and IANA time-zone IDs. GeoNames applies CC BY 4.0, requires attribution, allows commercial use and describes the data as-is. IANA states that tzdb is public domain and its records change as governments alter local-time rules; timezone boundary polygons linked by IANA come from OSM and are ODbL.
 - Source readiness is good for a pinned, curated offline city set, but it does not establish a game. Sorting local times would repeat Latitude Ladder/Population Pyramid; a direct clock conversion would be a thin quiz. Deferred implementation until a route/date-line action makes distinct geographic decisions and has deterministic, reviewable answers. See the [source and mechanic review](STUDIES/time-zone-relay-source-review.md).
+
+## 19 November 2026 — Population Pyramid Sort optional cohort tables
+
+- Added an optional native disclosure with the exact 17 cohort values to each anonymous pyramid profile. The table mirrors chart order and values, remains closed by default, and does not show country names or the 65+ indicator before checking. The current keyboard and touch reordering controls remain unchanged.
+- Production-preview checks confirm the 17 table rows, hidden pre-check country names, desktop keyboard operation, mobile touch opening, dark-theme rendering and no horizontal page overflow. The table lets players compare precise values, so whether it helps explain the silhouettes or shifts attention to arithmetic still needs a player session.
+- Typecheck, lint, production build/artifact validation and the focused browser suite passed (2/2). No data, scoring, Daily eligibility or deployment state changed.

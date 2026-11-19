@@ -220,12 +220,17 @@ function PyramidChart({ profile, label }: { profile: PopulationAgeProfile; label
         <span className="population-pyramid-bar-track is-female"><i style={{ width: `${Math.min(100, female / 8 * 100)}%` }} /></span>
       </div>)}
     </div>
-    <figcaption id={`population-pyramid-caption-${label.replaceAll(' ', '-')}`} className="sr-only">{label}, 2023. Male population shares are on the left, female shares are on the right, and age bands run from 80 and older down to 0–4. <span>Exact values are available in the accompanying table.</span></figcaption>
-    <table className="sr-only">
-      <caption>{label}: male and female percentages of the total population by age band, 2023</caption>
-      <thead><tr><th scope="col">Age band</th><th scope="col">Male share</th><th scope="col">Female share</th></tr></thead>
-      <tbody>{rows.map(({ code, ageLabel, male, female }) => <tr key={code}><th scope="row">{ageLabel}</th><td>{formatShare(male)}</td><td>{formatShare(female)}</td></tr>)}</tbody>
-    </table>
+    <figcaption id={`population-pyramid-caption-${label.replaceAll(' ', '-')}`} className="sr-only">{label}, 2023. Male population shares are on the left, female shares are on the right, and age bands run from 80 and older down to 0–4. Exact cohort values are available in the age-band table.</figcaption>
+    <details className="population-pyramid-data">
+      <summary>Show {label} age-band values</summary>
+      <div className="population-pyramid-data-table-wrap">
+        <table className="population-pyramid-data-table">
+          <caption>{label}: male and female shares of the total population by age band, 2023</caption>
+          <thead><tr><th scope="col">Age band</th><th scope="col">Male share</th><th scope="col">Female share</th></tr></thead>
+          <tbody>{rows.map(({ code, ageLabel, male, female }) => <tr key={code}><th scope="row">{ageLabel}</th><td>{formatShare(male)}</td><td>{formatShare(female)}</td></tr>)}</tbody>
+        </table>
+      </div>
+    </details>
   </figure>
 }
 

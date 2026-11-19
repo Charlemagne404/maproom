@@ -22,6 +22,17 @@
 .population-pyramid-card-heading h3 { grid-column: 1; margin: 0; font-size: .9rem; }
 .population-pyramid-result-rank { grid-column: 2; grid-row: 1 / span 2; align-self: center; color: var(--accent-ink); font-size: .62rem; text-align: right; }
 .population-pyramid-figure { margin: 6px 0 0; }
+.population-pyramid-data { margin-top: 4px; color: var(--muted); font-size: .62rem; }
+.population-pyramid-data summary { min-height: 30px; display: flex; align-items: center; width: fit-content; padding: 0 4px; border-bottom: 1px solid var(--border); cursor: pointer; text-underline-offset: 2px; }
+.population-pyramid-data summary::before { width: 0; height: 0; flex: none; margin-right: 6px; border: 4px solid transparent; border-left: 5px solid currentColor; content: ''; transition: transform .14s ease; }
+.population-pyramid-data[open] summary::before { transform: rotate(90deg); }
+.population-pyramid-data summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.population-pyramid-data-table-wrap { max-width: 100%; overflow-x: auto; }
+.population-pyramid-data-table { width: 100%; margin-top: 4px; border-collapse: collapse; font-size: .58rem; text-align: right; }
+.population-pyramid-data-table caption { padding: 3px 0; color: var(--muted); text-align: left; }
+.population-pyramid-data-table th, .population-pyramid-data-table td { padding: 3px 4px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.population-pyramid-data-table thead th { color: var(--muted); font-weight: 600; }
+.population-pyramid-data-table tbody th { text-align: left; font-weight: 600; }
 .population-pyramid-chart { min-width: 0; }
 .population-pyramid-axis, .population-pyramid-row { display: grid; grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr); align-items: center; gap: 4px; }
 .population-pyramid-axis { min-height: 18px; color: var(--muted); font-size: .5rem; line-height: 1; }

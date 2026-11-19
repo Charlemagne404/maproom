@@ -40,3 +40,9 @@ Across these 150 complete sets, all 194 profiles appeared at least once in the 2
 ## Evidence boundaries
 
 The data audit establishes source coverage, a shared observation year, internally comparable chart scales, and large candidate pools for the five spacing bands. It does not establish that the prompt is intuitive, that population pyramids are legible to first-time players, or that the final round feels fair. The score, round count, and spacing progression are prototype choices. Seek first-read and replay feedback before considering more scopes, more age metrics, or Daily eligibility.
+
+## Visible age-band table — 19 November 2026
+
+Each anonymous profile now has a collapsed, keyboard-operable “Show Profile A/B/C age-band values” disclosure. It presents the same 17 age bands and male/female shares of total population used by the mirrored chart, in chart order from 80+ down to 0–4. Country names and the 65+ indicator remain hidden until checking the answer. Browser checks cover desktop, mobile touch, dark theme and page-width fit while a table is open.
+
+The exact cohort values let players calculate and compare the target more precisely than estimating from bar lengths. This is an optional alternate view of the same evidence, not a validated difficulty or clarity improvement; ask players whether it helps explain the silhouettes or shifts their attention to arithmetic.
