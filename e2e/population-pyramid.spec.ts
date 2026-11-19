@@ -52,6 +52,15 @@ test('Population Pyramid Sort reveals sourced profiles, saves ordering, scores f
   await moveEarlier.focus()
   await page.keyboard.press('Space')
   await expect(cards.first()).toContainText('Profile B')
+  const moveLater = page.getByRole('button', { name: 'Move Profile B later' })
+  await expect(moveLater).toBeFocused()
+  await page.keyboard.press('Space')
+  await expect(cards.nth(1)).toContainText('Profile B')
+  await expect(moveLater).toBeFocused()
+  await page.getByRole('button', { name: 'Move Profile B earlier' }).focus()
+  await page.keyboard.press('Space')
+  await expect(cards.first()).toContainText('Profile B')
+  await expect(moveLater).toBeFocused()
   const movedCodes = await cards.evaluateAll((items) => items.map((item) => item.getAttribute('data-iso3')))
   await expect.poll(() => page.evaluate(() => {
     const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<{ gameId: string; payload?: { order?: string[] } }>

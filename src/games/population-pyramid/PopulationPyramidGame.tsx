@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { GameResultsDialog } from '../../components/GameResults'
 import { InlineNotice, LoadingState } from '../../components/Kit'
@@ -61,6 +61,8 @@ function PopulationPyramidSession({ data, populationData, mode, date, seed }: {
   const [answers, setAnswers] = useState(() => restoreAnswers(saved?.answers, deck))
   const [order, setOrder] = useState(() => restoreOrder(saved?.order, deck[restoredRound]?.startingOrder ?? []))
   const [finished, setFinished] = useState(saved?.finished === true)
+  const moveButtonRefs = useRef(new Map<string, HTMLButtonElement>())
+  const pendingMoveFocus = useRef<{ code: string; delta: -1 | 1 } | null>(null)
   const question = deck[round]
   const submittedOrder = answers[round]
   const checked = Boolean(submittedOrder)
@@ -76,10 +78,23 @@ function PopulationPyramidSession({ data, populationData, mode, date, seed }: {
     void saveProgress({ version: 1, setIndex, round, answers, order, finished: false })
   }, [answers, finished, order, round, saveProgress, setIndex])
 
+  useLayoutEffect(() => {
+    const pending = pendingMoveFocus.current
+    if (!pending) return
+    pendingMoveFocus.current = null
+
+    const index = order.indexOf(pending.code)
+    if (index < 0) return
+    const preferredAvailable = pending.delta === -1 ? index > 0 : index < order.length - 1
+    const focusDelta = preferredAvailable ? pending.delta : pending.delta === -1 ? 1 : -1
+    moveButtonRefs.current.get(`${pending.code}:${focusDelta}`)?.focus()
+  }, [order])
+
   function moveProfile(index: number, delta: -1 | 1) {
     if (checked || finished) return
     const nextIndex = index + delta
     if (nextIndex < 0 || nextIndex >= order.length) return
+    pendingMoveFocus.current = { code: order[index]!, delta }
     const next = [...order]
     ;[next[index], next[nextIndex]] = [next[nextIndex]!, next[index]!]
     setOrder(next)
@@ -169,8 +184,8 @@ function PopulationPyramidSession({ data, populationData, mode, date, seed }: {
               <span>{formatShare(profile.age65Plus)} of the population is aged 65+</span>
             </div>}
             <div className="population-pyramid-move-controls" aria-label={`Move Profile ${label}`}>
-              <button type="button" aria-label={`Move Profile ${label} earlier`} disabled={checked || index === 0} onClick={() => moveProfile(index, -1)}><ChevronLeft size={17} aria-hidden="true" /><span>Earlier</span></button>
-              <button type="button" aria-label={`Move Profile ${label} later`} disabled={checked || index === order.length - 1} onClick={() => moveProfile(index, 1)}><span>Later</span><ChevronRight size={17} aria-hidden="true" /></button>
+              <button ref={(element) => { if (element) moveButtonRefs.current.set(`${profile.iso3}:-1`, element); else moveButtonRefs.current.delete(`${profile.iso3}:-1`) }} type="button" aria-label={`Move Profile ${label} earlier`} disabled={checked || index === 0} onClick={() => moveProfile(index, -1)}><ChevronLeft size={17} aria-hidden="true" /><span>Earlier</span></button>
+              <button ref={(element) => { if (element) moveButtonRefs.current.set(`${profile.iso3}:1`, element); else moveButtonRefs.current.delete(`${profile.iso3}:1`) }} type="button" aria-label={`Move Profile ${label} later`} disabled={checked || index === order.length - 1} onClick={() => moveProfile(index, 1)}><span>Later</span><ChevronRight size={17} aria-hidden="true" /></button>
             </div>
           </li>
         })}

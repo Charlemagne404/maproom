@@ -255,3 +255,8 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 - Completed one nine-country guest daily round after rejecting optional tracking. The permanent one-to-one assignment scored 718/782; the result screen reported 7,732 players and top 16%. See the [Geozee deep dive](DEEP_DIVES/geozee.md) for the assignment table and observed score values.
 - “See optimal” displayed an assignment whose nine card scores total 782, while the header remained at 718/782 and “best 718.” The same view makes the category-allocation trade-off clear, but its aggregate header is inconsistent with the displayed cards.
 - Geozee uses an irreversible allocation loop, distinct from Geography Grid's two-criterion intersections. No Maproom gameplay change follows from one competitor session; actual Maproom play evidence remains open.
+
+## 19 November 2026 — Population Pyramid Sort reorder focus
+
+- A keyboard pass found that moving a profile to the first position disabled the focused Earlier button and left keyboard focus on the page body. Focus now follows the moved profile's same-direction control when it remains available, or moves to the opposite enabled control at an endpoint.
+- The production-preview browser flow checks both the endpoint fallback and continued focus during an interior move. Lint, production build/artifact validation and the focused Population Pyramid suite passed (2/2). No scoring, ordering, data or Daily rules changed; no deployment occurred.
