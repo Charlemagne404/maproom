@@ -23,6 +23,20 @@ The API reported its release last updated on 11 November 2026. The checked-in da
 
 The World Bank indicator pages list CC BY 4.0 terms. The bundled source manifest attributes World Bank WDI and the underlying UN World Population Prospects 2024 Revision. A data refresh must preserve the fixed year, verify the series metadata and profile reconciliation, refresh the artifact checksum, and recheck age-band spacing.
 
+## Puzzle generation audit
+
+The current generator sorts profiles by the source 65+ share, uses inclusive lower/upper limits on both adjacent gaps, samples uniformly from all valid triples in each round, and excludes countries already used earlier in that set. The first-round pool has 31,699 valid triples. The following counts include the previous-round exclusions and were measured across 150 seeds (`population-variety-0` through `population-variety-149`, set index zero):
+
+| Round | Adjacent 65+ gap range (percentage points) | Valid triples after earlier-country exclusions |
+| ---: | ---: | ---: |
+| 1 | 8–18 | 31,699 |
+| 2 | 6–14 | 81,911–87,279 (mean 83,843) |
+| 3 | 4–10 | 111,045–118,519 (mean 114,174) |
+| 4 | 2.5–7 | 81,220–89,733 (mean 84,425) |
+| 5 | 1–4 | 81,711–92,481 (mean 86,173) |
+
+Across these 150 complete sets, all 194 profiles appeared at least once in the 2,250 selected profile slots. Individual profile selection counts ranged from 3 to 34 (median 11, 90th percentile 19). A 50-seed exploratory comparison of uniform valid-triple selection, uniform country-anchor selection, and inverse-candidate-degree weighting did not reduce country-count dispersion for either alternative, so the uniform valid-triple rule was retained. These generator statistics cannot establish whether players experience a set as varied or a later round as fair.
+
 ## Evidence boundaries
 
-The data audit establishes source coverage, a shared observation year, internally comparable chart scales, and enough distinct triples for the five spacing bands. It does not establish that the prompt is intuitive, that population pyramids are legible to first-time players, or that the final round feels fair. The score, round count, and spacing progression are prototype choices. Seek first-read and replay feedback before considering more scopes, more age metrics, or Daily eligibility.
+The data audit establishes source coverage, a shared observation year, internally comparable chart scales, and large candidate pools for the five spacing bands. It does not establish that the prompt is intuitive, that population pyramids are legible to first-time players, or that the final round feels fair. The score, round count, and spacing progression are prototype choices. Seek first-read and replay feedback before considering more scopes, more age metrics, or Daily eligibility.

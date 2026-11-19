@@ -1,6 +1,6 @@
 # Game rules and scoring
 
-Maproom has fourteen games. Each Daily lineup selects six of eight eligible games: Find the country, Country Outline Quiz, Border Route, Flag Match, Geography Grid, Capitals & Cities, Riverways and Latitude Ladder. Geography Connections, Higher or Lower: Countries, Neighbour Challenge, City Distance & Direction, When Was This Map? and Map Projection Match are Free Play experiences; the latter two remain explicitly outside the Daily rotation. Daily dates use the time zone in Settings. In-progress daily sessions are saved locally and reopen with the same question sequence; completed results remain available from the puzzle and Statistics.
+Maproom has fifteen registered games. Each Daily lineup selects six of eight eligible games: Find the country, Country Outline Quiz, Border Route, Flag Match, Geography Grid, Capitals & Cities, Riverways and Latitude Ladder. Geography Connections, Higher or Lower: Countries, Neighbour Challenge, City Distance & Direction, When Was This Map?, Map Projection Match and Population Pyramid Sort are Free Play experiences and remain outside the Daily rotation. Daily dates use the time zone in Settings. In-progress daily sessions are saved locally and reopen with the same question sequence; completed results remain available from the puzzle and Statistics.
 
 ## Country pools
 

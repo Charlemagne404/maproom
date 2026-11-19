@@ -7,7 +7,7 @@ Research captured 19 November 2026 for Maproom's continuous product-quality miss
 - [Competitor catalog](COMPETITOR_CATALOG.md) inventories Teuteuf's current portfolio, Geocore's current Classic catalog, and the additional platforms reviewed.
 - [Deep dives](DEEP_DIVES/README.md) separates games played in the browser from features only found in official descriptions and pages that could not be inspected.
 - [Mechanic library](MECHANIC_LIBRARY.md) extracts general design patterns without copying another game's wording, art, or puzzle content.
-- [Maproom gap analysis](MAPROOM_GAP_ANALYSIS.md) compares these patterns against the current fourteen games.
+- [Maproom gap analysis](MAPROOM_GAP_ANALYSIS.md) compares these patterns against the current fifteen games.
 - [Improvement backlog](IMPROVEMENT_BACKLOG.md) ranks changes to existing games and records the implemented game improvements and Map Projection Match addition.
 - [Game ideas](GAME_IDEAS.md) tracks distinct future game candidates and their data or licensing constraints.
 - [Decisions](DECISIONS.md) records product choices and unresolved questions.

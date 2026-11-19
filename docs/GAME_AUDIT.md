@@ -1,6 +1,6 @@
 # Maproom game audit
 
-Audit started 18 November 2026 and updated 19 November across all fourteen integrated game implementations, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
+Audit started 18 November 2026 and updated 19 November across all fifteen registered game implementations, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
 
 ## Game-by-game review
 
@@ -102,6 +102,13 @@ Audit started 18 November 2026 and updated 19 November across all fourteen integ
 - **Visual, mobile and accessibility:** Each option is a keyboard-operable button containing a small rendered world map and graticule. The four-up desktop layout becomes a two-by-two grid on narrow screens. Option letters remain available before selection; projection names and correct/incorrect states appear after checking. Focus moves to the feedback and next task; production-preview checks cover keyboard selection, 390px touch play and overflow. Broader screen-reader and assistive-technology review remains outstanding.
 - **Performance and geographic accuracy:** The four projections use the bundled Natural Earth country geometry and the existing `d3-geo` dependency; no additional data service or asset is needed. Each projection preserves different properties and none preserves every property of a globe. The simplified prompts describe common use cases, not universal best-projection rules.
 
+### Population Pyramid Sort
+
+- **Gameplay, rules and balance:** Order three anonymous 2023 country profiles by the share of the total population aged 65 or older. Five rounds progressively narrow both adjacent 65+ gaps, and each correct pair earns 100 points. The silhouette makes age structure visible while the scoring target stays explicit; whether the five gap bands feel well paced is untested with players.
+- **Feedback and replay:** Checking the order reveals country names, 65+ shares and each profile's correct position, then explains the round's pairwise score. Five rounds form a complete set; saved progress resumes the current order and replay selects another seeded set. The game is Free Play only and remains outside Daily.
+- **Visual, mobile and accessibility:** Mirrored male/female bars use one shared 0–8% scale across all 17 age cohorts. Earlier/Later controls provide keyboard and touch reordering. Screen readers receive cohort values in a table while the visual chart is hidden from the accessibility tree; mobile and dark-theme layouts were browser-checked. A player study and broader assistive-technology review remain open. One product question is whether the result should show an optional visible cohort table to help sighted players connect the silhouette with its lesson.
+- **Performance and geographic accuracy:** A local, offline-cached bundle contains 194 complete 2023 Standard country profiles; Vatican City has no complete source observation and is omitted without fallback. Sex-specific age-band percentages are weighted by each sex's population total, so the mirrored bars represent shares of total country population. The separately sourced 65+ series matches the summed older cohorts within 0.00008 percentage points. This is a one-year ordering puzzle, not a measure of demographic change or a forecast.
+
 ## Shared findings and changes from this mission
 
 - The original ten games already used shared session/result paths, reusable settings, local persistence and a curated daily allowlist. Riverways, Latitude Ladder, Historical Geography and Map Projection Match keep those boundaries through independent puzzle modules rather than a universal game engine.
@@ -115,11 +122,11 @@ Audit started 18 November 2026 and updated 19 November across all fourteen integ
 
 ## Follow-up priorities
 
-1. Run moderated play sessions for Geography Grid, Geography Connections, Riverways and Latitude Ladder to measure first-read clarity, difficulty and replay interest; existing self-play is not independent player evidence.
+1. Run moderated play sessions for Geography Grid, Geography Connections, Riverways, Latitude Ladder, Population Pyramid Sort and Map Projection Match to measure first-read clarity, difficulty and replay interest; existing self-play is not independent player evidence.
 2. Continue assistive-technology review, especially the final spoken casing of the Grid counter and screen-reader operation of map-heavy games. Voice control, braille, human listening and other assistive technologies remain untested.
 3. Measure cold-load, storage and touch behavior on physical mobile devices and on a hosted connection; current performance evidence is local Chromium evidence.
 4. Revisit country population questions only when a new, versioned source year is deliberately adopted. Keep speculative physical-geography concepts conditional on data, license and pedagogical review.
 
-## Integration verification
+## Initial Maproom 2.0 integration verification
 
-Historical Geography is registered in the shared catalog and lazy component registry, linked as a secondary Explore collection, available by direct route, and explicitly excluded from Daily with a review reason. Riverways and Latitude Ladder are eligible in Daily. The eight-game allowlist remains explicit; Connections, Higher or Lower, Neighbour Challenge, Distance & Direction, and Historical Geography remain excluded. See [the integration report](parallel-development/INTEGRATION_REPORT.md) for final integrated checks, host routing behavior and test evidence.
+At the integration checkpoint, Historical Geography was registered in the shared catalog and lazy component registry, linked as a secondary Explore collection, available by direct route, and explicitly excluded from Daily with a review reason. Riverways and Latitude Ladder were eligible in Daily. The eight-game allowlist was explicit; Connections, Higher or Lower, Neighbour Challenge, Distance & Direction, and Historical Geography remained excluded at that time. See [the integration report](parallel-development/INTEGRATION_REPORT.md) for the original integrated checks, host routing behavior and test evidence.

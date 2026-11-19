@@ -1,12 +1,13 @@
 # Maproom gap analysis
 
-This comparison builds on the fourteen-game [engineering audit](../../GAME_AUDIT.md), the existing [research notes](../../GAME_RESEARCH.md), and the public-play studies in this folder. It is not a player study. Browser self-play verifies that a flow works; it cannot establish that players find it fun or fair.
+This comparison builds on the fifteen-game [engineering audit](../../GAME_AUDIT.md), the existing [research notes](../../GAME_RESEARCH.md), and the public-play studies in this folder. It is not a player study. Browser self-play verifies that a flow works; it cannot establish that players find it fun or fair.
 
 ## Current strengths
 
 - Maproom already spans map selection, silhouettes, flags, route construction, grids, grouped logic, city placement, comparisons, river traces, ordering, historical maps and projection tradeoffs.
 - Daily puzzle identity, Free Play settings, saved sessions, offline data and reusable result flows are established.
 - Country Outlines already gives distance, direction and later regional clues. Latitude Ladder has accessible move controls and a post-submit map/coordinate reveal.
+- Population Pyramid Sort adds demographic data interpretation through comparable, mirrored cohort profiles; its visual readability and reveal value still need player evidence.
 - Geography Grid rejects unsolvable boards. Geography Connections keeps its 24 boards authored, seeded and uniqueness-audited rather than inventing arbitrary category combinations at runtime.
 - Keyboard, touch, mobile layouts, dark theme and browser accessibility coverage have accumulated. The current browser baseline passed 87/87 tests; physical-device and human play evidence still matter.
 
@@ -28,6 +29,7 @@ This comparison builds on the fourteen-game [engineering audit](../../GAME_AUDIT
 | Latitude Ladder | Reorder cities on either axis; exact-position score and post-submit map. | Test whether difficulty should be controlled by regional scope or by city spacing, using players rather than arbitrary labels. | Backlog. |
 | Historical Geography | Curated dated boundary reconstructions, citations and explicit license disclosure. | Test whether players can order visually distinct snapshots and learn from the timeline reveal. | **Free Play prototype:** six seeded three-map sequences use existing snapshots at least 22 years apart, Earlier/Later controls and a sourced chronological reveal. Visual differences were screened from the bundled maps; player clarity remains unmeasured and Daily stays unchanged. |
 | Map Projection Match | Four rendered world projections tied to concrete mapping tasks, with a property and tradeoff reveal. | Check whether people can recognize the purpose of each projection from the map and concise task text. | **Implemented:** four seeded Free Play tasks use bundled geometry and D3; comprehension and difficulty remain unmeasured. |
+| Population Pyramid Sort | Three anonymous cohort profiles are ordered by the share aged 65+, with narrower pair gaps across five rounds. | Check whether players can infer the 65+ ordering from the full silhouette and whether the answer reveal makes the demographic comparison satisfying. | **Implemented:** 194 2023 WDI profiles, pairwise scoring, save/restore, and offline support; human clarity, pacing and visible-reveal needs remain unmeasured. |
 
 ## First improvement: Riverways feedback
 
