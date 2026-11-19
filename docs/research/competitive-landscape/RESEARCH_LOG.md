@@ -235,14 +235,20 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 
 ## 19 November 2026 — Population Pyramid Sort optional cohort tables
 
-- Added an optional native disclosure with the exact 17 cohort values to each anonymous pyramid profile. The table mirrors chart order and values, remains closed by default, and does not show country names or the 65+ indicator before checking. The current keyboard and touch reordering controls remain unchanged.
-- Production-preview checks confirm the 17 table rows, hidden pre-check country names, desktop keyboard operation, mobile touch opening, dark-theme rendering and no horizontal page overflow. The table lets players compare precise values, so whether it helps explain the silhouettes or shifts attention to arithmetic still needs a player session.
+- Added an optional native disclosure with 17 age-band values rounded to 0.1 percentage point to each anonymous pyramid profile. The table mirrors chart order and values, remains closed by default, and does not show country names or the 65+ indicator before checking. The current keyboard and touch reordering controls remain unchanged.
+- Production-preview checks confirm the 17 table rows, hidden pre-check country names, desktop keyboard operation, mobile touch opening, dark-theme rendering and no horizontal page overflow. The rounded values give numeric context alongside the silhouettes; whether the table helps explain them or shifts attention to arithmetic still needs a player session.
 - Typecheck, lint, production build/artifact validation and the focused browser suite passed (2/2). No data, scoring, Daily eligibility or deployment state changed.
 
 ## 19 November 2026 — Population Pyramid Sort 65+ target hint
 
 - The prompt now says to add both sides of the four oldest age bands (65–69 through 80+) when comparing the 65+ target. The bundled male and female cohort values are each shares of total population, so the wording follows the source transformation and does not require interpreting sex-specific denominators.
 - Browser assertions check that the instruction is visible before answering on desktop and mobile. A player session is still needed to test whether this explanation makes the visual comparison intuitive.
+
+## 19 November 2026 — Population Pyramid Sort table rounding clarification
+
+- A direct Free Play round showed that summing the one-decimal table values can differ from the 65+ result, which is calculated from unrounded source shares. The prior screen-reader caption and source notes described the table values as exact.
+- Clarified the figure caption and table caption, and added an inline disclosure note explaining the rounding. The source study, rules, audit, gap analysis, backlog and mission log now describe the displayed precision accurately.
+- The gameplay metric, answer order, score, source values and one-decimal output remain unchanged. A focused production-preview browser assertion checks the note alongside the existing table, keyboard, touch, offline and reveal coverage.
 
 ## 19 November 2026 — Geozee daily allocation play
 

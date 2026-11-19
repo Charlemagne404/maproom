@@ -220,12 +220,13 @@ function PyramidChart({ profile, label }: { profile: PopulationAgeProfile; label
         <span className="population-pyramid-bar-track is-female"><i style={{ width: `${Math.min(100, female / 8 * 100)}%` }} /></span>
       </div>)}
     </div>
-    <figcaption id={`population-pyramid-caption-${label.replaceAll(' ', '-')}`} className="sr-only">{label}, 2023. Male population shares are on the left, female shares are on the right, and age bands run from 80 and older down to 0–4. Exact cohort values are available in the age-band table.</figcaption>
+    <figcaption id={`population-pyramid-caption-${label.replaceAll(' ', '-')}`} className="sr-only">{label}, 2023. Male population shares are on the left, female shares are on the right, and age bands run from 80 and older down to 0–4. Rounded age-band values are available in the optional table.</figcaption>
     <details className="population-pyramid-data">
       <summary>Show {label} age-band values</summary>
+      <p className="population-pyramid-data-note">Each band is rounded to 0.1 percentage point. The revealed 65+ share uses unrounded data, so adding these displayed values can differ slightly.</p>
       <div className="population-pyramid-data-table-wrap">
         <table className="population-pyramid-data-table">
-          <caption>{label}: male and female shares of the total population by age band, 2023</caption>
+          <caption>{label}: male and female shares of the total population by age band, rounded to 0.1 percentage point, 2023</caption>
           <thead><tr><th scope="col">Age band</th><th scope="col">Male share</th><th scope="col">Female share</th></tr></thead>
           <tbody>{rows.map(({ code, ageLabel, male, female }) => <tr key={code}><th scope="row">{ageLabel}</th><td>{formatShare(male)}</td><td>{formatShare(female)}</td></tr>)}</tbody>
         </table>
