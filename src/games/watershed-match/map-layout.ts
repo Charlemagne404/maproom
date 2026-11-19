@@ -28,6 +28,8 @@ export interface WatershedMapShape {
   optionIndex: number
 }
 
+const MAP_POSITION_SECTORS = ['right', 'upper right', 'above', 'upper left', 'left', 'lower left', 'below', 'lower right'] as const
+
 interface MapPoint {
   x: number
   y: number
@@ -59,6 +61,21 @@ export function makeWatershedMapShapes(data: WatershedMatchData, question: Water
   })
 
   return layoutWatershedMarkers(shapes)
+}
+
+/** Describes a candidate polygon centroid relative to the source on the rendered map. */
+export function describeWatershedMapPosition(
+  source: Pick<WatershedMapShape, 'x' | 'y'>,
+  candidate: Pick<WatershedMapShape, 'x' | 'y'>,
+): string {
+  const dx = candidate.x - source.x
+  const dy = source.y - candidate.y
+  if (Math.hypot(dx, dy) < 1) {
+    return 'On this map, the center of this candidate area overlaps the center of the blue starting area.'
+  }
+
+  const sectorIndex = ((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8
+  return `On this map, the center of this candidate area is ${MAP_POSITION_SECTORS[sectorIndex]} of the center of the blue starting area.`
 }
 
 /** Moves nearby callout markers apart while keeping each one close to its polygon centroid. */

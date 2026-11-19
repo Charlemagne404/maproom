@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import rawDataText from '../../../public/data/watershed-match.json?raw'
 import { parseWatershedMatchData } from './data'
-import { makeWatershedMapShapes, WATERSHED_MAP_HEIGHT, WATERSHED_MAP_WIDTH, WATERSHED_MARKER_MIN_SPACING, WATERSHED_MARKER_SAFE_INSET } from './map-layout'
+import { describeWatershedMapPosition, makeWatershedMapShapes, WATERSHED_MAP_HEIGHT, WATERSHED_MAP_WIDTH, WATERSHED_MARKER_MIN_SPACING, WATERSHED_MARKER_SAFE_INSET } from './map-layout'
 import { createWatershedMatchDeck, scoreWatershedMatchAnswer, WATERSHED_MATCH_ROUNDS } from './puzzle'
 
 const rawData = JSON.parse(rawDataText) as {
@@ -53,6 +53,38 @@ describe('Watershed Match', () => {
 
     expect(crowdedFrames).toBeGreaterThan(0)
     expect(movedMarkers).toBeGreaterThan(0)
+  })
+
+  it('describes every candidate position relative to the blue source area', () => {
+    for (const questionData of data.questions) {
+      const question = { ...questionData, choices: questionData.optionIds }
+      const shapes = makeWatershedMapShapes(data, question)
+      const source = shapes.find((shape) => shape.optionIndex < 0)!
+      const candidates = shapes.filter((shape) => shape.optionIndex >= 0)
+      expect(candidates).toHaveLength(3)
+      for (const candidate of candidates) {
+        expect(describeWatershedMapPosition(source, candidate)).toMatch(/^On this map, the center of this candidate area /)
+        expect(describeWatershedMapPosition(source, candidate)).toContain('blue starting area')
+      }
+    }
+  })
+
+  it('uses all eight map directions and handles overlapping area centers', () => {
+    const source = { x: 100, y: 100 }
+    const cases = [
+      [{ x: 120, y: 100 }, 'right'],
+      [{ x: 120, y: 80 }, 'upper right'],
+      [{ x: 100, y: 80 }, 'above'],
+      [{ x: 80, y: 80 }, 'upper left'],
+      [{ x: 80, y: 100 }, 'left'],
+      [{ x: 80, y: 120 }, 'lower left'],
+      [{ x: 100, y: 120 }, 'below'],
+      [{ x: 120, y: 120 }, 'lower right'],
+    ] as const
+    for (const [candidate, direction] of cases) {
+      expect(describeWatershedMapPosition(source, candidate)).toContain(`is ${direction} of`)
+    }
+    expect(describeWatershedMapPosition(source, { x: 100.5, y: 100.5 })).toContain('overlaps the center')
   })
 
   it('labels the mixed Potomac-area sample by its broader Appalachian geography', () => {

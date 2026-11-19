@@ -39,6 +39,7 @@ test('Watershed Match reveals ToHUC answers, saves a round, scores five question
   await page.setViewportSize({ width: 1440, height: 1000 })
   await openGame(page)
   await expect(page.locator('.watershed-choice')).toHaveCount(3)
+  await expect(page.locator('.watershed-choice').first()).toHaveAccessibleDescription(/On this map, the center of this candidate area is .* of the center of the blue starting area\./)
   await expect(page.locator('.watershed-shape')).toHaveCount(4)
   await expect(page.locator('.watershed-match-source')).toContainText('Appalachians, Columbia and Susquehanna')
   await expect(page.locator('.watershed-match-source a')).toHaveAttribute('href', /wbd12_20250107/)

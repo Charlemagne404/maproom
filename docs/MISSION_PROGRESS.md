@@ -483,3 +483,9 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Traced the 21 wrong-choice labels with exact remaining token-set matches to ten shared waterbody-name groups, and added their question IDs to the moderator source review. The inventory is not presented to participants and no question content was changed.
 - Added the Watershed Match and Population Pyramid source/method summaries to `DATA_SOURCES.md`, including their CC0/CC BY terms, fixed coverage, transformations, offline behavior and limits.
 - These are documentation and study-preparation changes only. No code, data, Daily eligibility or deployment state changed. The game remains outside Daily pending editorial and player review.
+
+## Watershed Match nonvisual map positions — 19 November 2026
+
+- Added nonvisual descriptions to answer buttons locating each candidate polygon center in one of eight screen-relative directions from the blue starting-area center; coincident centers are described as overlapping. The letter and candidate name remain the accessible button name, while the decorative marker SVG remains hidden.
+- Added full-pool unit coverage for all 180 candidate positions across 60 questions, all eight direction sectors and overlapping centers. Added a production-preview browser assertion for the accessible description. This is browser-tree verification, not a physical screen-reader review.
+- Typecheck, lint, all 145 unit tests, production build/artifact validation and the focused Watershed Match Playwright suite passed. No source data or gameplay rules changed; the game remains outside Daily and has not been deployed.

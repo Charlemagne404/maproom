@@ -4,7 +4,7 @@ import { InlineNotice, LoadingState } from '../../components/Kit'
 import type { GeographyData, GameMode } from '../../geography/types'
 import { useGameSession } from '../session'
 import { loadWatershedMatchData, type WatershedMatchData } from './data'
-import { makeWatershedMapShapes, WATERSHED_MAP_HEIGHT, WATERSHED_MAP_WIDTH } from './map-layout'
+import { describeWatershedMapPosition, makeWatershedMapShapes, WATERSHED_MAP_HEIGHT, WATERSHED_MAP_WIDTH } from './map-layout'
 import { createWatershedMatchDeck, scoreWatershedMatchAnswer, WATERSHED_POINTS_PER_QUESTION, WATERSHED_MATCH_ROUNDS, type WatershedQuestion } from './puzzle'
 import './watershed-match.css'
 
@@ -94,6 +94,7 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
 
   const source = data.unitsById.get(question.sourceId)!
   const downstream = data.unitsById.get(question.answerId)!
+  const sourceShape = shapes.find((shape) => shape.optionIndex < 0)!
   const chosenId = currentAnswer ?? selected
   const checked = currentAnswer !== undefined
 
@@ -158,6 +159,8 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
       <div className="watershed-choice-list" role="group" aria-label="Choose the downstream subwatershed">
         {question.choices.map((id, index) => {
           const unit = data.unitsById.get(id)!
+          const choiceShape = shapes.find((shape) => shape.id === id)!
+          const mapPositionDescription = describeWatershedMapPosition(sourceShape, choiceShape)
           const isSelected = chosenId === id
           const isCorrect = checked && id === question.answerId
           const isIncorrect = checked && isSelected && !isCorrect
@@ -166,11 +169,13 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
             className={`watershed-choice${isSelected ? ' is-selected' : ''}${isCorrect ? ' is-correct' : ''}${isIncorrect ? ' is-incorrect' : ''}`}
             type="button"
             aria-pressed={isSelected}
+            aria-describedby={`watershed-choice-map-position-${index}`}
             disabled={checked}
             onClick={() => setSelected(id)}
           >
             <span className="watershed-choice-letter">{String.fromCharCode(65 + index)}</span>
             <span className="watershed-choice-copy"><strong>{unit.properties.name}</strong>{checked && <small>HUC12 {id}</small>}</span>
+            <span className="sr-only" id={`watershed-choice-map-position-${index}`}>{mapPositionDescription}</span>
             {isCorrect && <span className="watershed-choice-result">Downstream destination</span>}
             {isIncorrect && <span className="watershed-choice-result">Not the recorded destination</span>}
           </button>

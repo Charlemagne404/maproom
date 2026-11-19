@@ -191,3 +191,9 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 - No game code, data or release state changed. The pilot remains limited to Free Play and has not been deployed.
 - Traced the 21 exact post-stop-word distractor ties to ten shared hydronym groups across the Appalachian, Columbia and Susquehanna samples. Added a question-ID inventory for editorial follow-up, with instructions not to expose it or prime participants before play. No question content changed.
 - Added the WBD HUC12 and age-profile datasets to the shared data-source guide; it now describes their fixed samples/years, transformations, manifest terms, offline behavior and limits alongside the existing source studies.
+
+## Watershed Match nonvisual map positions — 19 November 2026
+
+- Each answer button now has a nonvisual description of its polygon center relative to the blue starting-area center, using eight screen-relative directions or an overlap description. The map's decorative letter markers remain hidden from the accessibility tree; the letter and area name stay in the button's accessible name.
+- Unit checks cover all three candidate positions in all 60 questions, all eight directions and overlapping centers. A focused browser assertion checks the accessible description. This confirms the browser accessibility tree only; screen-reader and physical-device use remain open.
+- Typecheck, lint, full unit suite, production build/artifact audit and the focused Watershed Match browser suite passed. No source data or gameplay rules changed; the game remains outside Daily and has not been deployed.
