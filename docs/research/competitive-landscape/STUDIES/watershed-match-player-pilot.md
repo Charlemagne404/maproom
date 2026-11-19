@@ -15,6 +15,7 @@ This is a small qualitative pilot. It can find confusing wording, map cues or in
 - Let each participant complete two five-question sets, using the normal replay action between sets. The generator samples all three regions in each set. Record the visible source HUC12, sample area, choices, answer and set position so concerns can be traced to a specific item.
 - Use the same viewport and input method within a session; record whether it was desktop or touch. Clear saved game state between participants or use a separate browser profile. Do not use screenshots with participant information.
 - Participation is voluntary. Use anonymous IDs such as `P01`; collect no names, contact details, precise location, audio, video or unrelated demographic details. Stop if a participant wants to stop.
+- A separate source review contains an inventory of lexically similar choices for moderator follow-up. Do not show that inventory or name specific questions before or during play; record only concerns that participants raise themselves.
 
 ## Session procedure
 

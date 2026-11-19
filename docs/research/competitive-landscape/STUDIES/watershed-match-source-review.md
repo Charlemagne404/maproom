@@ -65,6 +65,23 @@ The 31 questions initially labeled Potomac come from the first bounding box, not
 
 The same static content pass found no repeated source/choice names within any of the 60 questions. The pool contains 43 distinct correct HUC12 destinations; 15 destination IDs recur elsewhere in the pool, with a maximum of three questions per destination. The five-question deck prevents a destination from appearing twice in one set. Using the generator's name-token stop-word list, 21 of 120 wrong-choice labels have the same remaining token set as the correct destination. This confirms there are lexically close decoys, but it is not evidence that players find them fair or the rule understandable; no names or choices were changed from this check.
 
+The exact token-set matches cluster as follows. Question IDs are included so an editor can trace participant comments; the counts are tied wrong-choice pairs, not unique questions.
+
+| Sample area | Shared remaining name token | Tied pairs | Question IDs |
+| --- | --- | ---: | --- |
+| Susquehanna | Mahantango | 1 | `wbd-020503010601` |
+| Susquehanna | Swatara | 2 | `wbd-020503050604`, `wbd-020503050605` |
+| Appalachians | Greenbrier | 3 | `wbd-050500030101`, `wbd-050500030102`, `wbd-050500030103` |
+| Appalachians | Knapp | 1 | `wbd-050500030201` |
+| Columbia | Washougal | 5 | `wbd-170800010601`, `wbd-170800010602` (2 ties), `wbd-170800010603` (2 ties) |
+| Columbia | Rock | 2 | `wbd-170900090301`, `wbd-170900090303` |
+| Columbia | Milk | 3 | `wbd-170900090601`, `wbd-170900090603`, `wbd-170900090604` |
+| Columbia | Eagle | 2 | `wbd-170900110501`, `wbd-170900110502` |
+| Columbia | Clear | 1 | `wbd-170900110602` |
+| Columbia | Scappoose | 1 | `wbd-170900120301` |
+
+This inventory is for editorial follow-up, not a list of presumed defects. Do not show it to participants or use it to prompt a particular answer during the first-read pilot.
+
 ## Remaining gates
 
 - Review all 60 source and answer names, distractor pairs and map extents; reject ambiguous choices, confusing labels and hard-to-see polygons. The [first-read player pilot](watershed-match-player-pilot.md) records question-level fairness and clarity without exposing the intended answer before each response.
