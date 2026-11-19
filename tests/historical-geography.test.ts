@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { validateHistoricalManifest } from '../src/geography/historical/loader'
 import type { HistoricalMap, HistoricalManifest } from '../src/geography/historical/types'
-import { createHistoricalDeck, evaluateHistoricalGuess, formatHistoricalYearRange, getHistoricalMapAt, HISTORICAL_TOLERANCES } from '../src/puzzles/historical-geography'
+import { createHistoricalDeck, createHistoricalSequenceDeck, createHistoricalSequenceOrder, evaluateHistoricalGuess, evaluateHistoricalSequenceOrder, formatHistoricalYearRange, getHistoricalMapAt, HISTORICAL_TOLERANCES } from '../src/puzzles/historical-geography'
 
 const root = process.cwd()
 const manifestBytes = readFileSync(join(root, 'public/data/historical/manifest.json'))
@@ -37,6 +37,32 @@ describe('historical geography game', () => {
     expect(Array.from({ length: 20 }, (_, round) => getHistoricalMapAt(manifest.maps, 'test-seed', round)?.id)).toEqual(forward.map((map) => map.id))
     expect(getHistoricalMapAt(manifest.maps, 'test-seed', 20)?.id).toBe(forward[0]?.id)
     expect(getHistoricalMapAt(manifest.maps, 'test-seed', -1)).toBeUndefined()
+  })
+
+  it('builds curated historical sequences and a deterministic, unsolved starting order', () => {
+    const forward = createHistoricalSequenceDeck(manifest.maps, 'sequence-seed')
+    const reversed = createHistoricalSequenceDeck([...manifest.maps].reverse(), 'sequence-seed')
+    expect(forward.map(({ id }) => id)).toEqual(reversed.map(({ id }) => id))
+    expect(forward).toHaveLength(6)
+    expect(forward.map(({ maps }) => maps.map(({ depictedYear }) => depictedYear))).toEqual(expect.arrayContaining([
+      [1886, 1949, 1991], [1898, 1956, 2002], [1914, 1960, 2006],
+      [1918, 1965, 2011], [1920, 1971, 1993], [1939, 1975, 2011],
+    ]))
+    for (const sequence of forward) {
+      const answer = sequence.maps.map(({ id }) => id)
+      const order = createHistoricalSequenceOrder(sequence, `sequence-seed:${sequence.id}`)
+      expect(new Set(order.map(({ id }) => id))).toEqual(new Set(answer))
+      expect(order.map(({ id }) => id)).not.toEqual(answer)
+      expect(order.map(({ id }) => id)).not.toEqual([...answer].reverse())
+      expect(createHistoricalSequenceOrder(sequence, `sequence-seed:${sequence.id}`).map(({ id }) => id)).toEqual(order.map(({ id }) => id))
+    }
+  })
+
+  it('scores chronological pair order and rejects malformed sequence answers', () => {
+    expect(evaluateHistoricalSequenceOrder(['a', 'b', 'c'], ['a', 'b', 'c'])).toEqual({ correctPairs: 3, totalPairs: 3, score: 1000, exact: true })
+    expect(evaluateHistoricalSequenceOrder(['a', 'b', 'c'], ['b', 'a', 'c'])).toEqual({ correctPairs: 2, totalPairs: 3, score: 667, exact: false })
+    expect(evaluateHistoricalSequenceOrder(['a', 'b', 'c'], ['c', 'b', 'a'])).toEqual({ correctPairs: 0, totalPairs: 3, score: 0, exact: false })
+    expect(() => evaluateHistoricalSequenceOrder(['a', 'b', 'c'], ['a', 'a', 'c'])).toThrow(RangeError)
   })
 
   it('ships 20 distinct, dated and attributed boundary snapshots with matching SVG hashes', () => {

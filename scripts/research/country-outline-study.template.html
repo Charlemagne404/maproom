@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Country Outlines · anonymous pilot</title>
+  <style>
+    :root { color-scheme: light; font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #292622; background: #f5eee5; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 28px 16px 40px; }
+    main { width: min(100%, 820px); margin: 0 auto; }
+    h1 { margin: 0; font-size: clamp(1.65rem, 5vw, 2.35rem); letter-spacing: -.035em; line-height: 1.1; }
+    h2 { margin: 0 0 8px; font-size: 1.25rem; }
+    p { margin: 10px 0; }
+    .eyebrow { display: block; margin-bottom: 5px; color: #80502e; font-size: .73rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    .intro, .study-panel { margin-top: 20px; padding: 20px; border: 1px solid #d5c7b7; border-radius: 8px; background: #fffaf3; }
+    .privacy-note { padding: 10px 12px; border-left: 3px solid #b25728; background: #f3e8db; font-size: .85rem; }
+    .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 17px; }
+    label, legend { font-weight: 700; }
+    label > span { display: block; margin-bottom: 5px; }
+    input[type="text"], select { width: 100%; min-height: 46px; padding: 9px 11px; border: 1px solid #9a8a78; border-radius: 5px; background: #fff; color: #292622; font: inherit; }
+    input:focus-visible, select:focus-visible, button:focus-visible { outline: 3px solid #b25728; outline-offset: 3px; }
+    button { min-height: 46px; padding: 9px 15px; border: 1px solid #292622; border-radius: 5px; background: #292622; color: #fffaf3; font: inherit; font-weight: 700; cursor: pointer; }
+    button:hover:not(:disabled) { background: #4a4037; }
+    button.secondary { border-color: #9a8a78; background: transparent; color: #292622; }
+    button.secondary:hover:not(:disabled) { background: #eee3d6; }
+    button:disabled { opacity: .45; cursor: default; }
+    .setup-actions { margin-top: 16px; }
+    .progress-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .progress-row strong { font-variant-numeric: tabular-nums; }
+    progress { width: 100%; height: 8px; accent-color: #b25728; }
+    .silhouette-stage { overflow: hidden; margin: 14px 0; border: 1px solid #51463c; border-radius: 5px; background: #292622; }
+    .silhouette-stage svg { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; }
+    .answer-row { display: flex; align-items: end; gap: 10px; }
+    .answer-row label { flex: 1; min-width: 0; }
+    .answer-row button { flex: none; }
+    .answer-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 10px; }
+    .ratings { display: grid; gap: 14px; margin-top: 14px; }
+    fieldset { min-width: 0; margin: 0; padding: 12px; border: 1px solid #d5c7b7; border-radius: 5px; }
+    legend { padding: 0 4px; }
+    .rating-options { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 4px; }
+    .rating-option { min-width: 0; position: relative; }
+    .rating-option input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .rating-option span { min-height: 44px; display: grid; place-items: center; border: 1px solid #9a8a78; border-radius: 4px; background: #fff; font-weight: 700; cursor: pointer; }
+    .rating-option input:checked + span { border-color: #6c381b; background: #f0dfce; box-shadow: inset 0 0 0 1px #6c381b; }
+    .rating-option input:focus-visible + span { outline: 3px solid #b25728; outline-offset: 3px; }
+    .rating-labels { display: flex; justify-content: space-between; gap: 12px; margin-top: 4px; color: #675e55; font-size: .73rem; }
+    .lock-note, .source-note, .muted { color: #675e55; font-size: .84rem; }
+    .result-table-wrap { overflow-x: auto; margin: 15px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    th, td { padding: 8px 9px; border: 1px solid #d5c7b7; text-align: left; vertical-align: top; }
+    th { background: #eee3d6; }
+    td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+    .result-actions { margin-top: 14px; }
+    footer { margin-top: 16px; padding-top: 12px; border-top: 1px solid #d5c7b7; color: #675e55; font-size: .72rem; }
+    footer a { color: #4d3425; }
+    [hidden] { display: none !important; }
+    @media (max-width: 560px) {
+      body { padding: 18px 11px 28px; }
+      .intro, .study-panel { padding: 15px 13px; }
+      .setup-grid { grid-template-columns: 1fr; gap: 11px; }
+      .answer-row { align-items: stretch; flex-direction: column; }
+      .answer-row button { width: 100%; }
+      .answer-actions button { flex: 1; }
+      .rating-options { gap: 5px; }
+      .rating-option span { min-height: 44px; }
+      table { min-width: 690px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="eyebrow">Maproom · research pilot</span>
+    <h1>Country Outlines</h1>
+    <p>Anonymous, uncued silhouette study · 12 maps · one answer each</p>
+
+    <section id="setup-screen" class="intro" aria-labelledby="setup-heading">
+      <h2 id="setup-heading">Facilitator setup</h2>
+      <p>Ask the participant: “Name the country shown by each outline. You have one answer per map. You will see the answers after all twelve.” Keep the country names and difficulty tiers hidden until the last answer.</p>
+      <p class="privacy-note">This page works offline. It sends no data, uses no analytics or browser storage, and keeps responses in memory until you download the CSV. Closing or refreshing the page clears them. Enter an anonymous participant code only; do not enter names or contact details.</p>
+      <form id="setup-form">
+        <div class="setup-grid">
+          <label><span>Anonymous participant code</span><input id="participant-code" type="text" required minlength="2" maxlength="16" pattern="[A-Za-z0-9_]+" autocomplete="off" placeholder="e.g. P01"><small class="muted">Use a code that cannot identify the person.</small></label>
+          <label><span>Assigned counterbalanced order</span><select id="order-choice"><option value="A">Order A</option><option value="B">Order B</option><option value="C">Order C</option></select></label>
+        </div>
+        <div class="setup-actions"><button type="submit">Start the twelve maps</button></div>
+      </form>
+    </section>
+
+    <section id="participant-screen" class="study-panel" aria-labelledby="participant-heading" hidden>
+      <div class="progress-row"><div><span class="eyebrow">First answer only</span><h2 id="participant-heading">Name the country shown</h2></div><strong id="item-count">Item 1 of 12</strong></div>
+      <progress id="item-progress" max="12" value="1" aria-label="Study progress"></progress>
+      <div id="silhouette-stage" class="silhouette-stage"></div>
+      <form id="answer-form">
+        <div class="answer-row">
+          <label for="answer-input"><span>Your country answer</span><input id="answer-input" type="text" required autocomplete="off" autocapitalize="words" spellcheck="false"></label>
+          <button type="submit">Lock first answer</button>
+        </div>
+        <div class="answer-actions"><button id="dont-know" class="secondary" type="button">I don’t know</button></div>
+      </form>
+      <section id="rating-step" class="ratings" aria-labelledby="rating-heading" hidden>
+        <h2 id="rating-heading">Answer locked. No answer feedback will appear until all twelve are done.</h2>
+        <fieldset>
+          <legend>How confident were you in that answer?</legend>
+          <div class="rating-options" data-rating-group="confidence"></div>
+          <div class="rating-labels"><span>Not confident</span><span>Very confident</span></div>
+        </fieldset>
+        <fieldset>
+          <legend>Before this study, how familiar were you with this country’s outline?</legend>
+          <div class="rating-options" data-rating-group="familiarity"></div>
+          <div class="rating-labels"><span>Not familiar</span><span>Very familiar</span></div>
+        </fieldset>
+        <button id="next-item" type="button" disabled>Next map</button>
+      </section>
+      <p id="study-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="results-screen" class="study-panel" aria-labelledby="results-heading" hidden>
+      <span class="eyebrow">Answers revealed after item 12</span>
+      <h2 id="results-heading" tabindex="-1">Study complete</h2>
+      <p id="results-summary"></p>
+      <p class="muted">This small pilot is descriptive. It does not estimate difficulty for all players or establish statistical significance.</p>
+      <div class="result-table-wrap"><table>
+        <thead><tr><th>Position</th><th>Target (moderator)</th><th>Tier</th><th>First answer</th><th>Correct</th><th>Seconds</th><th>Confidence</th><th>Familiarity</th></tr></thead>
+        <tbody id="results-rows"></tbody>
+      </table></div>
+      <div class="result-actions"><button id="download-csv" type="button">Download response CSV</button></div>
+    </section>
+
+    <footer>
+      <div>Outline geometry: <a href="__GEOMETRY_SOURCE_URL__">Natural Earth 1:10m Admin 0 Countries</a> · __GEOMETRY_LICENSE__ · __GEOMETRY_ATTRIBUTION__.</div>
+      <div>Stimuli use the same local-fit Equal Earth projection, 960 × 480 viewBox and unrotated Natural Earth geometry as the current country silhouette game.</div>
+    </footer>
+  </main>
+
+  <script type="application/json" id="study-data">__STIMULI_JSON__</script>
+  <script>
+    const { stimuli, orders } = JSON.parse(document.getElementById('study-data').textContent)
+    const state = { participant: '', order: 'A', codes: [], index: 0, startedAt: 0, pending: null, responses: [] }
+    const byCode = new Map(stimuli.map((stimulus) => [stimulus.code, stimulus]))
+    const setupScreen = document.getElementById('setup-screen')
+    const participantScreen = document.getElementById('participant-screen')
+    const resultsScreen = document.getElementById('results-screen')
+    const answerForm = document.getElementById('answer-form')
+    const answerInput = document.getElementById('answer-input')
+    const ratingStep = document.getElementById('rating-step')
+    const nextButton = document.getElementById('next-item')
+    const status = document.getElementById('study-status')
+    const svgNamespace = 'http://www.w3.org/2000/svg'
+
+    for (const group of document.querySelectorAll('[data-rating-group]')) {
+      const name = group.dataset.ratingGroup
+      for (let value = 1; value <= 5; value += 1) {
+        const label = document.createElement('label')
+        label.className = 'rating-option'
+        const input = document.createElement('input')
+        input.type = 'radio'
+        input.name = name
+        input.value = String(value)
+        input.required = true
+        const text = document.createElement('span')
+        text.textContent = String(value)
+        label.append(input, text)
+        group.append(label)
+      }
+    }
+
+    document.getElementById('setup-form').addEventListener('submit', (event) => {
+      event.preventDefault()
+      const participant = document.getElementById('participant-code').value.trim()
+      if (!participant) return
+      state.participant = participant
+      state.order = document.getElementById('order-choice').value
+      state.codes = orders[state.order]
+      setupScreen.hidden = true
+      participantScreen.hidden = false
+      showItem()
+    })
+
+    answerForm.addEventListener('submit', (event) => {
+      event.preventDefault()
+      const answer = answerInput.value.trim()
+      if (answer) lockAnswer(answer)
+    })
+
+    document.getElementById('dont-know').addEventListener('click', () => lockAnswer('I don’t know'))
+    document.querySelectorAll('input[name="confidence"], input[name="familiarity"]').forEach((input) => input.addEventListener('change', updateNextButton))
+    nextButton.addEventListener('click', recordRatings)
+    document.getElementById('download-csv').addEventListener('click', downloadCsv)
+
+    function showItem() {
+      const stimulus = byCode.get(state.codes[state.index])
+      const itemNumber = state.index + 1
+      document.getElementById('item-count').textContent = `Item ${itemNumber} of ${state.codes.length}`
+      document.getElementById('item-progress').value = itemNumber
+      renderSilhouette(stimulus, itemNumber)
+      answerInput.value = ''
+      answerForm.hidden = false
+      ratingStep.hidden = true
+      document.querySelectorAll('input[name="confidence"], input[name="familiarity"]').forEach((input) => { input.checked = false })
+      nextButton.disabled = true
+      nextButton.textContent = itemNumber === state.codes.length ? 'Finish study' : 'Next map'
+      status.textContent = `Item ${itemNumber} of ${state.codes.length}. One answer only; there is no correctness feedback until the end.`
+      state.startedAt = performance.now()
+      answerInput.focus()
+    }
+
+    function renderSilhouette(stimulus, itemNumber) {
+      const svg = document.createElementNS(svgNamespace, 'svg')
+      svg.setAttribute('viewBox', '0 0 960 480')
+      svg.setAttribute('role', 'img')
+      svg.setAttribute('aria-label', `Unlabelled country silhouette, item ${itemNumber} of ${state.codes.length}`)
+      const background = document.createElementNS(svgNamespace, 'rect')
+      background.setAttribute('width', '960')
+      background.setAttribute('height', '480')
+      background.setAttribute('fill', '#292622')
+      const shape = document.createElementNS(svgNamespace, 'path')
+      shape.setAttribute('d', stimulus.path)
+      shape.setAttribute('fill', '#e57937')
+      shape.setAttribute('stroke', '#f5eee5')
+      shape.setAttribute('stroke-width', '1.4')
+      shape.setAttribute('stroke-linejoin', 'round')
+      svg.append(background, shape)
+      const stage = document.getElementById('silhouette-stage')
+      stage.replaceChildren(svg)
+    }
+
+    function lockAnswer(answer) {
+      if (state.pending) return
+      state.pending = {
+        code: state.codes[state.index],
+        answer,
+        responseSeconds: Math.round((performance.now() - state.startedAt) / 100) / 10,
+      }
+      answerForm.hidden = true
+      ratingStep.hidden = false
+      status.textContent = 'First answer locked. Country names and correctness remain hidden until the final map.'
+      document.querySelector('input[name="confidence"]').focus()
+    }
+
+    function updateNextButton() {
+      const confidence = document.querySelector('input[name="confidence"]:checked')
+      const familiarity = document.querySelector('input[name="familiarity"]:checked')
+      nextButton.disabled = !confidence || !familiarity
+    }
+
+    function recordRatings() {
+      if (!state.pending) return
+      const confidence = Number(document.querySelector('input[name="confidence"]:checked')?.value)
+      const familiarity = Number(document.querySelector('input[name="familiarity"]:checked')?.value)
+      if (!confidence || !familiarity) return
+      state.responses.push({ ...state.pending, confidence, familiarity })
+      state.pending = null
+      state.index += 1
+      if (state.index < state.codes.length) showItem()
+      else showResults()
+    }
+
+    function showResults() {
+      participantScreen.hidden = true
+      resultsScreen.hidden = false
+      const correctCount = state.responses.filter(isCorrect).length
+      document.getElementById('results-summary').textContent = `${correctCount} of ${state.responses.length} first answers were correct. Answers are revealed now; no correctness feedback was shown during the study.`
+      const rows = document.getElementById('results-rows')
+      rows.replaceChildren()
+      state.responses.forEach((response, index) => {
+        const stimulus = byCode.get(response.code)
+        const row = document.createElement('tr')
+        const values = [String(index + 1), `${stimulus.name} (${stimulus.code})`, stimulus.difficulty, response.answer, isCorrect(response) ? 'Yes' : 'No', response.responseSeconds.toFixed(1), String(response.confidence), String(response.familiarity)]
+        for (const [column, value] of values.entries()) {
+          const cell = document.createElement('td')
+          cell.textContent = value
+          if (column === 0 || column >= 5) cell.className = 'numeric'
+          row.append(cell)
+        }
+        rows.append(row)
+      })
+      document.getElementById('results-heading').focus()
+    }
+
+    function isCorrect(response) {
+      const stimulus = byCode.get(response.code)
+      const normalize = (value) => String(value).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+      const answer = normalize(response.answer)
+      return stimulus.aliases.some((alias) => normalize(alias) === answer)
+    }
+
+    function downloadCsv() {
+      const header = ['participant_code', 'order', 'item_position', 'target_iso3', 'tier', 'first_answer', 'correct', 'response_seconds', 'confidence_1_to_5', 'prior_outline_familiarity_1_to_5']
+      const rows = state.responses.map((response, index) => {
+        const stimulus = byCode.get(response.code)
+        return [state.participant, state.order, index + 1, stimulus.code, stimulus.difficulty, response.answer, isCorrect(response) ? 1 : 0, response.responseSeconds.toFixed(1), response.confidence, response.familiarity]
+      })
+      const csv = [header, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n')
+      const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+      const link = document.createElement('a')
+      const safeCode = state.participant.replace(/[^A-Za-z0-9_-]+/g, '-')
+      link.href = url
+      link.download = `country-outlines-pilot-${safeCode}-${state.order}.csv`
+      document.body.append(link)
+      link.click()
+      link.remove()
+      window.setTimeout(() => URL.revokeObjectURL(url), 2000)
+    }
+
+    function csvCell(value) {
+      const text = String(value ?? '')
+      return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text
+    }
+  </script>
+</body>
+</html>

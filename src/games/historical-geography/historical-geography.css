@@ -59,6 +59,158 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-ink) 30%, transparent), 0 8px 25px rgba(41, 38, 34, .09);
 }
 
+.historical-sequence-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historical-sequence-item {
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-raised);
+}
+
+.historical-sequence-map {
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: #eee6d8;
+}
+
+.historical-sequence-map .historical-map-image {
+  aspect-ratio: 5 / 3;
+}
+
+.historical-sequence-map figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 8px;
+  border-top: 1px solid var(--border);
+  color: var(--ink);
+  font-size: .73rem;
+}
+
+.historical-sequence-map figcaption span {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.historical-sequence-controls {
+  display: flex;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.historical-sequence-controls .button {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 42px;
+  padding: 6px 8px;
+  font-size: .74rem;
+}
+
+.historical-sequence-controls .button:focus-visible,
+.historical-sequence-submit:focus-visible {
+  outline: 3px solid var(--accent-ink);
+  outline-offset: 3px;
+}
+
+.historical-sequence-status {
+  min-height: 1.4em;
+  margin: -3px 0 0;
+  color: var(--muted);
+  font-size: .76rem;
+  text-align: center;
+}
+
+.historical-sequence-submit {
+  min-height: 48px;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 auto;
+}
+
+.historical-sequence-reveal {
+  padding: 17px 19px 15px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent-ink);
+  border-radius: 3px;
+  background: var(--surface-raised);
+  animation: historical-reveal-in .38s ease both;
+}
+
+.historical-sequence-reveal > h3 {
+  margin: 4px 0 12px;
+  font-size: 1.25rem;
+}
+
+.historical-sequence-answer {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historical-sequence-answer > li {
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.historical-sequence-answer > li > strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.02rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.historical-sequence-answer > li > strong span {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.historical-sequence-answer > li > p {
+  max-width: 88ch;
+  margin: 6px 0 0 32px;
+  font-size: .8rem;
+  line-height: 1.5;
+}
+
+.historical-sequence-answer .historical-source-details {
+  margin-left: 32px;
+}
+
+.historical-sequence-attribution {
+  margin: 13px 0 0;
+  color: var(--muted);
+  font-size: .68rem;
+  line-height: 1.5;
+}
+
+.historical-sequence-attribution a {
+  color: var(--ink);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
 .historical-map-image {
   display: block;
   width: 100%;
@@ -327,6 +479,14 @@
   .historical-round-heading h2 { font-size: clamp(1.55rem, 8vw, 2rem); }
   .historical-round-meta { padding: 6px 8px; font-size: .66rem; }
   .historical-map-frame { border-radius: 3px; }
+  .historical-sequence-list { grid-template-columns: minmax(0, 1fr); gap: 9px; }
+  .historical-sequence-item { padding: 7px; }
+  .historical-sequence-map .historical-map-image { max-height: 250px; }
+  .historical-sequence-controls .button { min-height: 44px; }
+  .historical-sequence-submit { width: 100%; }
+  .historical-sequence-reveal { padding: 14px 13px 12px; }
+  .historical-sequence-answer > li > p,
+  .historical-sequence-answer .historical-source-details { margin-left: 0; }
   .historical-map-caption { right: 6px; bottom: 6px; gap: 3px 8px; padding: 4px 6px; font-size: .55rem; }
   .historical-guess-form { margin-top: 5px; padding: 14px 13px 11px; }
   .historical-year-entry { flex-direction: column; }

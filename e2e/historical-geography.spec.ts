@@ -87,6 +87,92 @@ test('an out-of-range year is marked incorrect and the historical context is rev
   await expect(page.getByRole('dialog')).toBeVisible()
 })
 
+test('Free Play can order curated snapshots, explain the timeline and restore sequence progress', async ({ page }) => {
+  await startHistorical(page)
+  await page.getByRole('button', { name: 'Historical game settings' }).click()
+  await page.getByRole('group', { name: 'Historical game settings' }).getByLabel('Format').selectOption('sequence')
+  await expect(page.getByRole('heading', { name: 'Put the maps in order' })).toBeVisible()
+  await expect(page.locator('.historical-sequence-list > li')).toHaveCount(3)
+  await expect.poll(() => page.locator('.historical-sequence-list .historical-map-image').evaluateAll((images: HTMLImageElement[]) => images.every((image) => image.naturalWidth > 100))).toBe(true)
+
+  const manifestResponse = await page.request.get('/data/historical/manifest.json')
+  expect(manifestResponse.ok()).toBe(true)
+  const manifest = await manifestResponse.json() as HistoricalManifest
+  const yearByUrl = new Map(manifest.maps.map((entry) => [entry.assetUrl, entry.depictedYear]))
+
+  async function visibleSequence() {
+    return page.locator('.historical-sequence-list > li').evaluateAll((items) => items.map((item) => {
+      const image = item.querySelector<HTMLImageElement>('.historical-map-image')
+      return image?.getAttribute('src') ?? ''
+    }))
+  }
+
+  const currentUrls = await visibleSequence()
+  const expectedUrls = [...currentUrls].sort((left, right) => (yearByUrl.get(left) ?? 0) - (yearByUrl.get(right) ?? 0))
+  await page.locator('.historical-sequence-list > li').nth(2).getByRole('button', { name: /Move map .* earlier/ }).focus()
+  await page.locator('.historical-sequence-list > li').nth(2).getByRole('button', { name: /Move map .* earlier/ }).press('Enter')
+  await expect.poll(visibleSequence).toEqual([currentUrls[0], currentUrls[2], currentUrls[1]])
+  for (let targetIndex = 0; targetIndex < expectedUrls.length; targetIndex += 1) {
+    let urls = await visibleSequence()
+    let currentIndex = urls.indexOf(expectedUrls[targetIndex]!)
+    while (currentIndex > targetIndex) {
+      await page.locator('.historical-sequence-list > li').nth(currentIndex).getByRole('button', { name: /Move map .* earlier/ }).click()
+      currentIndex -= 1
+      urls = await visibleSequence()
+    }
+    expect(urls[targetIndex]).toBe(expectedUrls[targetIndex])
+  }
+
+  await expect.poll(() => page.evaluate(() => {
+    const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<{ gameId?: string; payload?: { format?: string; order?: string[] } }>
+    const session = sessions.find((item) => item.gameId === 'historical-geography')
+    return session?.payload?.format === 'sequence' && session.payload.order?.length === 3
+  })).toBe(true)
+
+  const savedOrder = await visibleSequence()
+  await page.reload()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.locator('.game-setup-panel')).toBeHidden()
+  await expect(page.getByRole('heading', { name: 'Put the maps in order' })).toBeVisible()
+  await expect.poll(visibleSequence).toEqual(savedOrder)
+
+  await page.getByRole('button', { name: 'Check sequence' }).click()
+  await expect(page.locator('.historical-sequence-answer > li')).toHaveCount(3)
+  for (const [index, url] of expectedUrls.entries()) {
+    await expect(page.locator('.historical-sequence-answer > li > strong').nth(index)).toContainText(yearByUrl.get(url)!.toLocaleString('en-US'))
+  }
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await expect(page.getByRole('dialog')).toContainText('3 / 3 correct')
+  await expect(page.locator('.historical-sequence-attribution')).toContainText('non-commercial')
+
+  await page.getByRole('button', { name: 'Order another set' }).click()
+  await expect(page.locator('.historical-sequence-list > li')).toHaveCount(3)
+})
+
+test('historical sequence controls fit a dark, reduced-motion mobile screen', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' })
+  const page = await context.newPage()
+  await startHistorical(page)
+  await page.getByRole('button', { name: 'Historical game settings' }).click()
+  await page.getByRole('group', { name: 'Historical game settings' }).getByLabel('Format').selectOption('sequence')
+  await expect(page.locator('.historical-sequence-list > li')).toHaveCount(3)
+  await page.getByRole('button', { name: 'Switch to dark appearance' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  const dimensions = await page.evaluate(() => ({
+    viewport: window.innerWidth,
+    document: document.documentElement.scrollWidth,
+    page: document.querySelector('.historical-geography-game')?.getBoundingClientRect().width ?? 0,
+    cards: [...document.querySelectorAll<HTMLElement>('.historical-sequence-item')].map((item) => item.getBoundingClientRect().width),
+    controls: [...document.querySelectorAll<HTMLElement>('.historical-sequence-controls .button')].map((button) => button.getBoundingClientRect().height),
+  }))
+  expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport)
+  expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport)
+  expect(dimensions.cards.length).toBe(3)
+  expect(dimensions.cards.every((width) => width > 250)).toBe(true)
+  expect(dimensions.controls.every((height) => height >= 42)).toBe(true)
+  await context.close()
+})
+
 test('a fetched historical map and unfinished guess reopen offline through the service worker', async ({ page, context }) => {
   await startHistorical(page)
   const map = await currentMap(page)

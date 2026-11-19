@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Check, CircleHelp, Clock3 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, CircleHelp, Clock3 } from 'lucide-react'
 import { GameResultsDialog } from '../../components/GameResults'
 import { GameSettingSelect, GameSettingsMenu } from '../../components/GameControls'
 import { InlineNotice, LoadingState } from '../../components/Kit'
 import { loadHistoricalMaps } from '../../geography/historical/loader'
 import type { HistoricalMap } from '../../geography/historical/types'
 import type { GameMode } from '../../geography/types'
-import { createHistoricalDeck, evaluateHistoricalGuess, formatHistoricalYearRange, type HistoricalDifficulty, type HistoricalGuessResult } from '../../puzzles/historical-geography'
+import { createHistoricalDeck, createHistoricalSequenceDeck, createHistoricalSequenceOrder, evaluateHistoricalGuess, evaluateHistoricalSequenceOrder, formatHistoricalYearRange, type HistoricalDifficulty, type HistoricalGuessResult, type HistoricalSequence, type HistoricalSequenceResult } from '../../puzzles/historical-geography'
 import { useGameSession } from '../session'
 import './historical-geography.css'
 
@@ -19,24 +19,38 @@ const difficultyOptions = [
 interface SavedHistoricalProgress {
   round?: unknown
   mapId?: unknown
+  format?: unknown
   difficulty?: unknown
   guess?: unknown
+  sequenceId?: unknown
+  order?: unknown
   result?: unknown
   finished?: unknown
 }
 
+type HistoricalFormat = 'year' | 'sequence'
+
+const historicalFormatOptions = [
+  { value: 'year', label: 'Guess the year' },
+  { value: 'sequence', label: 'Order three maps' },
+]
+
 export function HistoricalGeographyGame({ mode, date, seed }: { mode: GameMode; date: string; seed: string }) {
   const session = useGameSession('historical-geography', mode, date, seed)
   const saved = session.progress as SavedHistoricalProgress | null
+  const savedFormat: HistoricalFormat = isHistoricalFormat(saved?.format) ? saved.format : 'year'
   const savedDifficulty = isHistoricalDifficulty(saved?.difficulty) ? saved.difficulty : 'medium'
   const restoredRound = Number.isInteger(saved?.round) && Number(saved?.round) >= 0 ? Number(saved?.round) : 0
+  const [format, setFormat] = useState<HistoricalFormat>(savedFormat)
   const [difficulty, setDifficulty] = useState<HistoricalDifficulty>(savedDifficulty)
   const [round, setRound] = useState(restoredRound)
-  const [roundFinished, setRoundFinished] = useState(saved?.finished === true)
+  const [roundFinished, setRoundFinished] = useState(saved?.finished === true && savedFormat === format)
   const [maps, setMaps] = useState<HistoricalMap[] | null>(null)
   const [loadError, setLoadError] = useState('')
   const deck = useMemo(() => maps ? createHistoricalDeck(maps, seed) : [], [maps, seed])
+  const sequenceDeck = useMemo(() => maps ? createHistoricalSequenceDeck(maps, seed) : [], [maps, seed])
   const map = deck.length ? deck[round % deck.length] : undefined
+  const sequence = sequenceDeck.length ? sequenceDeck[round % sequenceDeck.length] : undefined
 
   useEffect(() => {
     let active = true
@@ -52,35 +66,63 @@ export function HistoricalGeographyGame({ mode, date, seed }: { mode: GameMode; 
     setRound((value) => value + 1)
   }
 
+  function changeFormat(value: string) {
+    if (!isHistoricalFormat(value)) return
+    setFormat(value)
+    setRound(0)
+    setRoundFinished(false)
+  }
+
   const settings = mode === 'freeplay' && !roundFinished && <GameSettingsMenu label="Historical game settings">
     <div className="practice-config">
-      <GameSettingSelect label="Difficulty" value={difficulty} options={difficultyOptions} onChange={(value) => setDifficulty(value as HistoricalDifficulty)} />
-      <p className="historical-settings-note">Tolerance is inclusive. The accepted year range appears with each result.</p>
+      <GameSettingSelect label="Format" value={format} options={historicalFormatOptions} onChange={changeFormat} />
+      {format === 'year'
+        ? <>
+          <GameSettingSelect label="Difficulty" value={difficulty} options={difficultyOptions} onChange={(value) => setDifficulty(value as HistoricalDifficulty)} />
+          <p className="historical-settings-note">Tolerance is inclusive. The accepted year range appears with each result.</p>
+        </>
+        : <p className="historical-settings-note">Reorder three unlabeled snapshots from oldest to newest. Each result reveals the dates and historical context.</p>}
     </div>
   </GameSettingsMenu>
 
   if (loadError) return <div className="game-body historical-geography-game">{settings}<InlineNotice title="The historical atlas could not open" tone="warning">{loadError} Reconnect and reopen Explore so the map catalogue can be cached for offline play.</InlineNotice></div>
-  if (!maps || !map) return <div className="game-body historical-geography-game">{settings}<LoadingState label="Opening the historical atlas…" /></div>
+  if (!maps || (format === 'year' ? !map : !sequence)) return <div className="game-body historical-geography-game">{settings}<LoadingState label="Opening the historical atlas…" /></div>
 
-  const savedForRound = saved?.round === round && saved.mapId === map.id && isHistoricalDifficulty(saved.difficulty) ? saved : null
+  const savedFormatMatches = historicalProgressFormatMatches(saved?.format, format)
+  const savedForRound = savedFormatMatches && saved?.round === round ? saved : null
 
   return (
     <div className="game-body historical-geography-game">
       {settings}
-      <HistoricalMapRound
-        key={`${round}:${map.id}`}
-        map={map}
-        mapsCount={deck.length}
-        mode={mode}
-        round={round}
-        difficulty={difficulty}
-        saved={savedForRound}
-        saveProgress={session.saveProgress}
-        save={session.save}
-        saveError={session.saveError}
-        onFinish={() => setRoundFinished(true)}
-        onReplay={mode === 'freeplay' ? replay : undefined}
-      />
+      {format === 'year' && map
+        ? <HistoricalMapRound
+          key={`${round}:${map.id}`}
+          map={map}
+          mapsCount={deck.length}
+          mode={mode}
+          round={round}
+          difficulty={difficulty}
+          saved={savedForRound?.mapId === map.id && isHistoricalDifficulty(savedForRound.difficulty) ? savedForRound : null}
+          saveProgress={session.saveProgress}
+          save={session.save}
+          saveError={session.saveError}
+          onFinish={() => setRoundFinished(true)}
+          onReplay={mode === 'freeplay' ? replay : undefined}
+        />
+        : sequence && <HistoricalSequenceRound
+          key={`${round}:${sequence.id}`}
+          sequence={sequence}
+          sequenceCount={sequenceDeck.length}
+          mode={mode}
+          round={round}
+          seed={seed}
+          saved={savedForRound?.sequenceId === sequence.id && savedForRound.format === 'sequence' ? savedForRound : null}
+          saveProgress={session.saveProgress}
+          save={session.save}
+          saveError={session.saveError}
+          onFinish={() => setRoundFinished(true)}
+          onReplay={mode === 'freeplay' ? replay : undefined}
+        />}
     </div>
   )
 }
@@ -119,6 +161,7 @@ function HistoricalMapRound({ map, mapsCount, mode, round, difficulty, saved, sa
     if (result) return
     void saveProgress({
       version: 1,
+      format: 'year',
       round,
       mapId: map.id,
       difficulty,
@@ -139,7 +182,7 @@ function HistoricalMapRound({ map, mapsCount, mode, round, difficulty, saved, sa
     setInputError('')
     setResult(nextResult)
     onFinish()
-    await saveProgress({ version: 1, round, mapId: map.id, difficulty, guess: String(guess), result: nextResult, finished: true })
+    await saveProgress({ version: 1, format: 'year', round, mapId: map.id, difficulty, guess: String(guess), result: nextResult, finished: true })
     await save(nextResult.score, nextResult.withinTolerance ? 1 : 0, 1, {
       historicalPuzzleId: `historical-geography:${map.id}:v1`,
       mapId: map.id,
@@ -206,6 +249,145 @@ function HistoricalMapRound({ map, mapsCount, mode, round, difficulty, saved, sa
   )
 }
 
+function HistoricalSequenceRound({ sequence, sequenceCount, mode, round, seed, saved, saveProgress, save, saveError, onFinish, onReplay }: {
+  sequence: HistoricalSequence
+  sequenceCount: number
+  mode: GameMode
+  round: number
+  seed: string
+  saved: SavedHistoricalProgress | null
+  saveProgress: (payload: Record<string, unknown>) => Promise<void>
+  save: ReturnType<typeof useGameSession>['save']
+  saveError: string
+  onFinish: () => void
+  onReplay?: () => void
+}) {
+  const canonicalOrder = sequence.maps
+  const initialOrder = useMemo(() => createHistoricalSequenceOrder(sequence, `${seed}:round:${round}`), [round, seed, sequence])
+  const mapById = useMemo(() => new Map(sequence.maps.map((map) => [map.id, map])), [sequence.maps])
+  const restoredOrder = Array.isArray(saved?.order) && saved.order.length === 3
+    && saved.order.every((id) => typeof id === 'string' && mapById.has(id))
+    && new Set(saved.order).size === 3
+    ? saved.order.map((id) => mapById.get(String(id))!)
+    : initialOrder
+  const [order, setOrder] = useState(restoredOrder)
+  const [result, setResult] = useState<HistoricalSequenceResult | null>(isHistoricalSequenceResult(saved?.result) ? saved.result : null)
+  const [showResults, setShowResults] = useState(false)
+  const [orderAnnouncement, setOrderAnnouncement] = useState('')
+  const labels = useMemo(() => new Map(initialOrder.map((map, index) => [map.id, String.fromCharCode(65 + index)])), [initialOrder])
+
+  useEffect(() => {
+    if (!result) return
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+    const timer = window.setTimeout(() => setShowResults(true), reducedMotion ? 0 : 700)
+    return () => window.clearTimeout(timer)
+  }, [result])
+
+  useEffect(() => {
+    if (result) return
+    void saveProgress({ version: 1, format: 'sequence', round, sequenceId: sequence.id, order: order.map((map) => map.id), finished: false })
+  }, [order, result, round, saveProgress, sequence.id])
+
+  function moveMap(index: number, direction: -1 | 1) {
+    const destination = index + direction
+    if (destination < 0 || destination >= order.length) return
+    const nextOrder = [...order]
+    ;[nextOrder[index], nextOrder[destination]] = [nextOrder[destination]!, nextOrder[index]!]
+    setOrder(nextOrder)
+    setOrderAnnouncement(`Map ${labels.get(order[index]!.id)} moved to position ${destination + 1}.`)
+  }
+
+  async function submitSequence() {
+    if (result) return
+    const nextResult = evaluateHistoricalSequenceOrder(canonicalOrder.map((map) => map.id), order.map((map) => map.id))
+    setResult(nextResult)
+    onFinish()
+    await saveProgress({ version: 1, format: 'sequence', round, sequenceId: sequence.id, order: order.map((map) => map.id), result: nextResult, finished: true })
+    await save(nextResult.score, nextResult.correctPairs, nextResult.totalPairs, {
+      historicalPuzzleId: `historical-geography:sequence:${sequence.id}:v1`,
+      format: 'sequence',
+      sequenceId: sequence.id,
+      guessedMapIds: order.map((map) => map.id),
+      answerMapIds: canonicalOrder.map((map) => map.id),
+      answerYears: canonicalOrder.map((map) => map.depictedYear),
+      correctPairs: nextResult.correctPairs,
+      totalPairs: nextResult.totalPairs,
+    })
+  }
+
+  return (
+    <section className="historical-round historical-sequence-round" aria-labelledby="historical-round-title">
+      <header className="historical-round-heading">
+        <div>
+          <span className="eyebrow">Historical geography · sequence {round % sequenceCount + 1} of {sequenceCount}</span>
+          <h2 id="historical-round-title">Put the maps in order</h2>
+          <p>Compare the boundary changes, then arrange these snapshots from oldest to newest.</p>
+        </div>
+        <div className="historical-round-meta" aria-label="Three-map chronological sequence"><Clock3 size={15} aria-hidden="true" /><span>Oldest → newest</span></div>
+      </header>
+
+      <ol className="historical-sequence-list" aria-label="Your current map order">
+        {order.map((map, index) => {
+          const label = labels.get(map.id) ?? 'Map'
+          return (
+            <li className="historical-sequence-item" key={map.id}>
+              <figure className="historical-sequence-map">
+                <img className="historical-map-image" src={map.assetUrl} alt={`Unlabeled world political-boundary snapshot, map ${label}.`} loading="lazy" decoding="async" />
+                <figcaption><strong>Map {label}</strong><span>Position {index + 1}</span></figcaption>
+              </figure>
+              {!result && <div className="historical-sequence-controls" role="group" aria-label={`Reorder map ${label}`}>
+                <button type="button" className="button button-outline" aria-label={`Move map ${label} earlier`} disabled={index === 0} onClick={() => moveMap(index, -1)}><ArrowUp size={15} aria-hidden="true" /><span>Earlier</span></button>
+                <button type="button" className="button button-outline" aria-label={`Move map ${label} later`} disabled={index === order.length - 1} onClick={() => moveMap(index, 1)}><ArrowDown size={15} aria-hidden="true" /><span>Later</span></button>
+              </div>}
+            </li>
+          )
+        })}
+      </ol>
+
+      {!result
+        ? <>
+          <p className="historical-sequence-status" role="status">{orderAnnouncement || 'Use the Earlier and Later buttons to arrange the three maps.'}</p>
+          <button type="button" className="button button-dark historical-sequence-submit" onClick={() => void submitSequence()}>Check sequence <Check size={16} aria-hidden="true" /></button>
+        </>
+        : <section className="historical-sequence-reveal" aria-live="polite" aria-labelledby="historical-sequence-reveal-title">
+          <span className="eyebrow">{result.exact ? 'All pairings in order' : `${result.correctPairs} of ${result.totalPairs} map pairs in order`}</span>
+          <h3 id="historical-sequence-reveal-title">The timeline, oldest to newest</h3>
+          <ol className="historical-sequence-answer">
+            {canonicalOrder.map((map, index) => <li key={map.id}>
+              <strong><span>{index + 1}</span>{map.depictedYear.toLocaleString('en-US')}</strong>
+              <p>{map.historicalContext}</p>
+              <details className="historical-source-details">
+                <summary>Map date and context sources</summary>
+                <p>This is a Maproom-generated CShapes 2.1 snapshot dated <strong>{map.depictedDate}</strong>, not an archival map published in that year.</p>
+                <p>{map.datingUncertainty}</p>
+                <ul>{map.contextSources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul>
+              </details>
+            </li>)}
+          </ol>
+          <p className="historical-sequence-attribution">CShapes 2.1 · Maproom-generated · ETH Zürich · CC BY-NC-SA 4.0 · non-commercial. <a href={canonicalOrder[0]!.source.licenseUrl} target="_blank" rel="noreferrer">License terms</a>.</p>
+        </section>}
+
+      <div className="historical-attribution">
+        <span>CShapes 2.1 · Maproom-generated · ETH Zürich · CC BY-NC-SA 4.0 · non-commercial</span>
+        <a href={canonicalOrder[0]!.source.originalUrl} target="_blank" rel="noreferrer">Source and reuse terms</a>
+      </div>
+      <GameResultsDialog
+        complete={showResults}
+        gameId="historical-geography"
+        mode={mode}
+        score={result?.score ?? 0}
+        correct={result?.correctPairs ?? 0}
+        total={result?.totalPairs ?? 3}
+        title={result?.exact ? 'The maps are in order.' : `${result?.correctPairs ?? 0} of 3 map pairs are in order.`}
+        message={result ? `Oldest to newest: ${canonicalOrder.map((map) => map.depictedYear.toLocaleString('en-US')).join(' → ')}.` : ''}
+        saveError={saveError}
+        onReplay={onReplay}
+        replayLabel="Order another set"
+      />
+    </section>
+  )
+}
+
 function HistoricalReveal({ map, result, difficulty }: { map: HistoricalMap; result: HistoricalGuessResult; difficulty: HistoricalDifficulty }) {
   const acceptedRange = formatHistoricalYearRange(result.acceptedMinimum, result.acceptedMaximum)
   return (
@@ -232,10 +414,26 @@ function isHistoricalDifficulty(value: unknown): value is HistoricalDifficulty {
   return value === 'easy' || value === 'medium' || value === 'hard'
 }
 
+function isHistoricalFormat(value: unknown): value is HistoricalFormat {
+  return value === 'year' || value === 'sequence'
+}
+
+function historicalProgressFormatMatches(value: unknown, format: HistoricalFormat): boolean {
+  return format === 'year' ? value === undefined || value === 'year' : value === 'sequence'
+}
+
 function isHistoricalGuessResult(value: unknown): value is HistoricalGuessResult {
   if (typeof value !== 'object' || value === null) return false
   const result = value as Partial<HistoricalGuessResult>
   return Number.isInteger(result.guess) && Number.isInteger(result.answer) && Number.isInteger(result.distance)
     && Number.isInteger(result.tolerance) && Number.isInteger(result.acceptedMinimum) && Number.isInteger(result.acceptedMaximum)
     && typeof result.withinTolerance === 'boolean' && Number.isInteger(result.score)
+}
+
+function isHistoricalSequenceResult(value: unknown): value is HistoricalSequenceResult {
+  if (typeof value !== 'object' || value === null) return false
+  const result = value as Partial<HistoricalSequenceResult>
+  return Number.isInteger(result.correctPairs) && Number(result.correctPairs) >= 0 && Number(result.correctPairs) <= 3
+    && result.totalPairs === 3 && Number.isInteger(result.score) && Number(result.score) >= 0 && Number(result.score) <= 1000
+    && typeof result.exact === 'boolean'
 }
