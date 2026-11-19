@@ -29,14 +29,16 @@ export function makeDistanceQuestions(
   if (eligible.length < 3) return []
   const random = seededRandom(seed)
   const questions: DistanceQuestion[] = []
-  const triples = new Set<string>()
+  const questionKeys = new Set<string>()
   for (let attempt = 0; attempt < count * 2500 && questions.length < count; attempt += 1) {
     const origin = eligible[Math.floor(random() * eligible.length)]!
     let left = eligible[Math.floor(random() * eligible.length)]!
     let right = eligible[Math.floor(random() * eligible.length)]!
     if (origin.id === left.id || origin.id === right.id || left.id === right.id) continue
-    const key = [origin.id, left.id, right.id].sort().join('|')
-    if (triples.has(key)) continue
+    // A new origin changes the comparison even when the same three cities recur.
+    // Prevent repeats of an exact origin and unordered choice pair instead.
+    const key = `${origin.id}|${[left.id, right.id].sort().join('|')}`
+    if (questionKeys.has(key)) continue
     const leftPoint: Coordinates = { lat: left.lat, lon: left.lon }
     const rightPoint: Coordinates = { lat: right.lat, lon: right.lon }
     const originPoint: Coordinates = { lat: origin.lat, lon: origin.lon }
@@ -50,8 +52,10 @@ export function makeDistanceQuestions(
     const ratio = Math.max(leftValue, rightValue) / Math.max(0.001, Math.min(leftValue, rightValue))
     if (measure === 'distance') {
       if (difficulty === 'close' ? ratio > 1.35 || ratio < 1.01 : ratio < 1.25) continue
-    } else if (difference < (difficulty === 'close' ? 0.35 : 4)) continue
-    triples.add(key)
+    } else if (difficulty === 'close'
+      ? difference < 0.35 || difference >= 4
+      : difference < 4) continue
+    questionKeys.add(key)
     questions.push({
       origin, left, right, measure, leftDistanceKm, rightDistanceKm,
       leftDirection: directionFromTo(originPoint, leftPoint),

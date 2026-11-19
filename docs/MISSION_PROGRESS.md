@@ -1,10 +1,10 @@
 # Maproom expansion mission progress
 
-Updated 18 November 2026. All changes remain local. No remote push, deployment, publishing, infrastructure or production-data action was performed.
+Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees/product-quality` on `codex/maproom-product-quality-20261119`; authorized checkpoints have been pushed to that branch. No deployment, publishing, infrastructure or production-data action was performed.
 
 ## Baseline and preserved workspace
 
-- Repository: `/home/charlie/maproom`, branch `codex/maproom-daily-gameplay-corrections`.
+- Original baseline: `/home/charlie/maproom`, branch `codex/maproom-daily-gameplay-corrections`; active mission worktree: `/home/charlie/maproom-worktrees/product-quality`, branch `codex/maproom-product-quality-20261119`.
 - The worktree already contained the Free Play setup overlay, route transitions and other UI/game changes. They were inspected and preserved; no reset or cleanup discarded them.
 - At baseline, `npm run typecheck`, `npm run lint`, `npm test` (62 tests across 9 files) and `npm run build` passed.
 - The baseline full Playwright run passed 40 of 41 tests. The remaining keyboard regression reproduced inconsistently after autocomplete accepted a suggestion in Country Outlines: the next Enter sometimes did not submit. The shared autocomplete now tracks that accepted label and submits on the following Enter. The focused regression plus adjacent outline test passed 2/2.
@@ -323,3 +323,10 @@ Updated 18 November 2026. All changes remain local. No remote push, deployment, 
 - Compared five World Bank World Development Indicators series at the exact 2023 observation year against Maproom's Standard (195) and Extended (243) country identities. Coverage, positive-value counts, possible pair totals under the existing Standard and Close ratio bands, API source notes and candidate limitations are documented in [GAME_RESEARCH.md](GAME_RESEARCH.md).
 - Life expectancy is the strongest source candidate for a separate content review (194/195 Standard and 215/243 Extended observations; 17,506 and 21,469 possible close pairs respectively). No new metric or data was approved or added.
 - Corrected the Higher or Lower result copy and source documentation: population uses the 2023 World Bank series when available and country-catalog fallback otherwise; area is from the country catalog and has no recorded observation year. Comparison, scoring and data files are unchanged. No deployment occurred.
+
+## Distance & Direction pair calibration — 19 November 2026
+
+- Deterministic sampling found that coordinate Close calls had no upper bound: the old 100-question samples had median gaps up to 20.31° latitude and 82.57° longitude. Close coordinate comparisons now stay from 0.35° to below the 4° Standard threshold; distance ratios remain 1.01–1.35 for Close and at least 1.25 for Standard.
+- Comparison identity now includes the origin plus the unordered answer pair, allowing a different origin to create a distinct question while preventing exact repeats. Regions with fewer than three eligible current cities at the chosen population threshold no longer appear in the selector. If a requested finite round still has fewer unique questions, the game names the available count and offers settings that can broaden the pool.
+- Five-seed World samples produced all 20 requested questions per configuration; correct-answer keys landed on the left 45–60% of the time across 100-question samples. A 50-question audit found six constrained Oceania/1-million/Close decks with 13 distance, 32 latitude or 4 longitude questions. These are generator measurements only; player completion and accuracy remain unknown.
+- The two-choice interaction remains unchanged. Validation passed: full unit suite 125/125, lint, production build/artifact validation (22 route snapshots, 19 sitemap URLs, 200 precached assets), and two focused production-preview browser checks. No deployment occurred.

@@ -7,7 +7,7 @@ import { InlineNotice, LoadingState } from '../../components/Kit'
 import { loadMajorCities } from '../../geography/data'
 import { isCurrentWholeSettlement } from '../../geography/cityRecords'
 import { formatCoordinates } from '../../geography/coordinates'
-import type { City, GameMode, GeographyData } from '../../geography/types'
+import type { City, Country, GameMode, GeographyData } from '../../geography/types'
 import { hashSeed } from '../../puzzles/engine'
 import { distancePrompt, makeDistanceQuestions, type DistanceDifficulty, type DistanceMeasure } from '../../puzzles/distance'
 import { useGameSession } from '../session'
@@ -15,6 +15,19 @@ import { eligibleCountries, initialGeographyEligibility, type GeographyEligibili
 import { useAppData } from '../../app/useAppData'
 
 type CountOption = '10' | '20' | '50' | 'infinite'
+
+function getDistanceScopes(cities: City[] | null, countries: Country[], minimumPopulation: number): string[] {
+  if (!cities) return []
+  const eligibleCountryCodes = new Set(countries.map((country) => country.iso3))
+  const countryByCode = new Map(countries.map((country) => [country.iso3, country]))
+  const continentCounts = new Map<string, number>()
+  for (const city of cities) {
+    if (city.population < minimumPopulation || !isCurrentWholeSettlement(city) || !eligibleCountryCodes.has(city.countryIso3)) continue
+    const continent = countryByCode.get(city.countryIso3)?.continent
+    if (continent) continentCounts.set(continent, (continentCounts.get(continent) ?? 0) + 1)
+  }
+  return [...continentCounts].filter(([, cityCount]) => cityCount >= 3).map(([continent]) => continent).sort()
+}
 
 export function DistanceGame({ data, mode, date, seed }: { data: GeographyData; mode: GameMode; date: string; seed: string }) {
   const { state } = useAppData()
@@ -36,11 +49,21 @@ export function DistanceGame({ data, mode, date, seed }: { data: GeographyData; 
     return () => { active = false }
   }, [])
   const countries = useMemo(() => eligibleCountries(data.countries, eligibility), [data.countries, eligibility])
-  const scopes = useMemo(() => [...new Set(countries.map((country) => country.continent).filter((value): value is string => Boolean(value)))].sort(), [countries])
+  const scopes = useMemo(() => getDistanceScopes(cities, countries, minimumPopulation), [cities, countries, minimumPopulation])
+  const activeScope = scope === 'World' || scopes.includes(scope) ? scope : 'World'
+  const changeMinimumPopulation = (value: number) => {
+    setMinimumPopulation(value)
+    if (scope !== 'World' && !getDistanceScopes(cities, countries, value).includes(scope)) setScope('World')
+  }
+  const changeEligibility = (value: GeographyEligibility) => {
+    const nextCountries = eligibleCountries(data.countries, value)
+    setEligibility(value)
+    if (scope !== 'World' && !getDistanceScopes(cities, nextCountries, minimumPopulation).includes(scope)) setScope('World')
+  }
   const dailyMeasure: DistanceMeasure = (['distance', 'latitude', 'longitude'] as const)[hashSeed(seed) % 3] ?? 'distance'
   if (error) return <div className="game-body"><InlineNotice title="The city gazetteer could not open" tone="warning">{error}</InlineNotice></div>
   if (!cities) return <LoadingState label="Opening city coordinates…" />
-  return <DistanceRound key={`${round}:${measure}:${scope}:${minimumPopulation}:${difficulty}:${count}:${timed}:${eligibility}`} data={data} cities={cities} countries={countries} mode={mode} date={date} seed={`${seed}:${round}:${measure}:${scope}:${minimumPopulation}:${difficulty}:${count}:${timed}:${eligibility}`} measure={mode === 'daily' ? dailyMeasure : measure} scope={scope} eligibility={eligibility} minimumPopulation={minimumPopulation} difficulty={difficulty} count={count} timed={timed} scopes={scopes} onMeasure={setMeasure} onScope={setScope} onEligibility={setEligibility} onPopulation={setMinimumPopulation} onDifficulty={setDifficulty} onCount={setCount} onTimed={setTimed} onReplay={() => setRound((value) => value + 1)} />
+  return <DistanceRound key={`${round}:${measure}:${activeScope}:${minimumPopulation}:${difficulty}:${count}:${timed}:${eligibility}`} data={data} cities={cities} countries={countries} mode={mode} date={date} seed={`${seed}:${round}:${measure}:${activeScope}:${minimumPopulation}:${difficulty}:${count}:${timed}:${eligibility}`} measure={mode === 'daily' ? dailyMeasure : measure} scope={activeScope} eligibility={eligibility} minimumPopulation={minimumPopulation} difficulty={difficulty} count={count} timed={timed} scopes={scopes} onMeasure={setMeasure} onScope={setScope} onEligibility={changeEligibility} onPopulation={changeMinimumPopulation} onDifficulty={setDifficulty} onCount={setCount} onTimed={setTimed} onReplay={() => setRound((value) => value + 1)} />
 }
 
 function DistanceRound({ data, cities, countries, mode, date, seed, measure, scope, eligibility, minimumPopulation, difficulty, count, timed, scopes, onMeasure, onScope, onEligibility, onPopulation, onDifficulty, onCount, onTimed, onReplay }: {
@@ -188,6 +211,7 @@ function DistanceRound({ data, cities, countries, mode, date, seed, measure, sco
   const revealed = Boolean(choice)
 
   return <div className="game-body distance-game-body">
+    {!infinite && deck.length < totalQuestions && <InlineNotice title={`Only ${deck.length} of ${totalQuestions} comparisons fit these settings`} tone="warning"><span>Each comparison remains distinct. Try a wider region, lower population minimum or Standard difficulty for a longer round.</span></InlineNotice>}
     <div className="question-toolbar"><div><h2 ref={questionHeading} className="distance-prompt" tabIndex={-1}>{prompt}</h2></div><div className="question-toolbar-tools">{settings}{!infinite && <RoundProgress current={index + 1} total={deck.length} label="comparisons" />}{infinite && <span className="sr-only" role="status" aria-live="polite">Comparison {resolved + 1}</span>}</div></div>
     <div className="distance-origin"><span><MapPin size={16} /> Starting point</span><strong>{question.origin.name}</strong>{revealed && <><small>{data.countriesByCode.get(question.origin.countryIso3)?.name}</small><code>{formatCoordinates(question.origin, 2)}</code></>}</div>
     <div className="distance-live"><span aria-live="polite"><strong>{score.toLocaleString()}</strong> points</span><span aria-live="polite">{streak} streak <small>best {bestStreak}</small></span>{timed ? <span role="timer" aria-label={`Time remaining: ${seconds} seconds`}>{seconds}s left</span> : <span role="status" aria-live="polite" aria-atomic="true">{correct} correct</span>}{infinite && resolved > 0 && !finished && <button className="button button-outline" type="button" onClick={() => void finishRound()}>End session</button>}</div>

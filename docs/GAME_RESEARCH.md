@@ -68,6 +68,22 @@ Coverage counts include every finite, non-null observation. Pair counts are the 
 
 The audit also corrected an existing provenance mismatch: population uses the 2023 World Bank series where it has an observation and falls back to catalog population otherwise; catalog area has no observation year. Density inherits those inputs. The result copy now states those sources rather than describing all values as 2023. No metric, data file, or comparison rule was added or changed.
 
+## Distance & Direction: pair calibration — 19 November 2026
+
+I sampled the current `cities-major.json` input (12,405 records, 11,577 after the Free Play current-settlement filter) across Standard and Extended country pools. Five deterministic seeds generated 20 questions per World-pool configuration at the 50,000 and 1 million population thresholds. These generator samples measure available questions and correct-answer position, not player completion or player accuracy; no aggregate player-response data was available for this audit.
+
+The audit showed that the old Close filter for latitude and longitude had only a 0.35° lower bound. In 100-question samples, median latitude gaps reached 20.31° and median longitude gaps reached 82.57°, despite the “Close calls” label. The filter now accepts coordinate gaps from 0.35° to below 4°, matching the Standard threshold of at least 4°. Distance Close calls retain their existing ratio band of 1.01–1.35; Standard remains at least 1.25.
+
+| Measure | Close-sample median gap across pool and population settings | 90th-percentile gap | Correct key shown on left |
+| --- | ---: | ---: | ---: |
+| Distance | 1.11–1.19 ratio | 1.26–1.31 ratio | 45–51% |
+| Latitude | 1.80–2.06° | 3.51–3.64° | 49–55% |
+| Longitude | 1.98–2.46° | 3.45–3.69° | 47–60% |
+
+All 12 world-scope samples produced their requested 20 questions. A separate 50-question sample covered 84 pool/region/threshold/measure combinations; six were shorter because the candidate cities could not supply 50 distinct questions. Each short deck was an Oceania round at the 1 million population minimum: both pools produced 13 Close distance, 32 Close latitude, and 4 Close longitude questions. The Extended pool previously exposed an Antarctic scope through South Georgia, but no current settlement cities qualify there; the selector now offers only regions with at least three eligible cities at the selected population threshold. The generator avoids repeating an exact origin plus unordered choice pair, while allowing the same three-city set to form a different comparison from another origin. Finite short rounds explain the available count and suggest broader settings; the existing no-comparisons message handles combinations with no valid pair.
+
+The two-choice input and answer feedback remain unchanged. The pair bands and generator fill are now explicit and reproducible; whether people finish the new close bands or find them appropriately challenging remains a player-research question.
+
 ## Research limits
 
 This was a focused product and architecture review, not a formal usability, accessibility or performance study. Sites change their rules and free tiers over time. Some third-party interfaces depend on browser scripts or external media, so their inspected mode set may differ by region or session. The project-specific recommendations above are design judgments based on Maproom's current static architecture and bundled data.

@@ -69,7 +69,7 @@ Audit started 18 November 2026 and updated 19 November across all fourteen integ
 
 ### Distance & Direction
 
-- **Gameplay, rules and balance:** Compare cities by distance from an origin, latitude or signed longitude. Population thresholds and Close Calls tune the question set while preserving coordinate reasoning.
+- **Gameplay, rules and balance:** Compare cities by distance from an origin, latitude or signed longitude. Close Calls bound distance ratios to 1.01–1.35 and coordinate gaps to 0.35°–under 4°; Standard requires a 1.25 distance ratio or a 4° coordinate gap. Exact origin-and-choice combinations do not repeat. Finite rounds disclose when a sparse filter yields fewer comparisons than requested.
 - **Feedback and replay:** The answer is hidden until a selection; feedback then reveals coordinates, distance and bearing. Streak scoring and finite/unlimited formats support repeat practice.
 - **Visual, mobile and accessibility:** Large choice cards, keyboard selection and responsive stacking make the comparison usable without precision map input. The selected side and reveal state remain visible during brief feedback before the next pair appears automatically. Revealed coordinates use explicit N/S and E/W hemisphere cues. In timed Free Play, the countdown uses a quiet timer role outside the polite score/streak announcements.
 - **Performance and geographic accuracy:** Loads an order-preserving subset of places with population at least 50,000 and uses a Haversine great-circle calculation. Free Play comparisons omit historical, abandoned, destroyed and section records; coverage and population thresholds still follow the GeoNames-derived bundled file.

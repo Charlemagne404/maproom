@@ -1744,6 +1744,27 @@ test('Distance & Direction uses coordinate comparisons, keyboard controls and lo
   await expect(page.locator('.history-result').first()).toContainText('/ 10 correct')
 })
 
+test('Distance & Direction reports when filtered close calls cannot fill the requested round', async ({ page }) => {
+  await openGame(page, 'distance')
+  await page.getByRole('button', { name: 'Game settings' }).click()
+  await page.getByLabel('Country pool').selectOption('extended')
+  await page.keyboard.press('Escape')
+  await page.getByRole('button', { name: 'Game settings' }).click()
+  const regions = await page.getByLabel('City region').locator('option').allTextContents()
+  expect(regions).not.toContain('Antarctic')
+  await page.keyboard.press('Escape')
+  for (const [label, value] of [
+    ['Country pool', 'standard'], ['Challenge', 'longitude'], ['City region', 'Oceania'],
+    ['Minimum population', '1000000'], ['Questions', '50'], ['Difficulty', 'close'],
+  ] as const) {
+    await page.getByRole('button', { name: 'Game settings' }).click()
+    await page.getByLabel(label).selectOption(value)
+    await page.keyboard.press('Escape')
+  }
+  await expect(page.getByText('Only 4 of 50 comparisons fit these settings')).toBeVisible()
+  await expect(page.locator('.distance-city-choice')).toHaveCount(2)
+})
+
 test('timed Neighbor and Distance rounds keep the countdown outside polite live regions', async ({ page }) => {
   for (const [game, summary] of [['neighbours', '.neighbour-live'], ['distance', '.distance-live']] as const) {
     await openGame(page, game)

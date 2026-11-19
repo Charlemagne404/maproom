@@ -229,6 +229,7 @@ describe('expanded daily and practice puzzle builders', () => {
     for (const measure of ['distance', 'latitude', 'longitude'] as const) {
       const questions = makeDistanceQuestions(cities, countriesByCode, `distance:${measure}`, 15, { measure, minimumPopulation: 100_000, difficulty: 'standard' })
       expect(questions).toHaveLength(15)
+      expect(new Set(questions.map((question) => `${question.origin.id}|${[question.left.id, question.right.id].sort().join('|')}`)).size).toBe(questions.length)
       for (const question of questions) {
         expect(question.origin.id).not.toBe(question.left.id)
         expect(question.origin.id).not.toBe(question.right.id)
@@ -238,10 +239,32 @@ describe('expanded daily and practice puzzle builders', () => {
         const leftValue = measure === 'distance' ? question.leftDistanceKm : measure === 'latitude' ? question.left.lat : question.left.lon
         const rightValue = measure === 'distance' ? question.rightDistanceKm : measure === 'latitude' ? question.right.lat : question.right.lon
         expect(question.answer === 'left' ? (measure === 'distance' ? leftValue < rightValue : leftValue > rightValue) : (measure === 'distance' ? rightValue < leftValue : rightValue > leftValue)).toBe(true)
+        if (measure === 'distance') expect(Math.max(leftValue, rightValue) / Math.max(0.001, Math.min(leftValue, rightValue))).toBeGreaterThanOrEqual(1.25)
+        else expect(Math.abs(leftValue - rightValue)).toBeGreaterThanOrEqual(4)
       }
       const closeRegional = makeDistanceQuestions(cities, countriesByCode, `distance:close:europe:${measure}`, 10, { scope: 'Europe', measure, minimumPopulation: 100_000, difficulty: 'close' })
       expect(closeRegional.length).toBeGreaterThan(0)
       expect(closeRegional.every((question) => countriesByCode.get(question.left.countryIso3)?.continent === 'Europe' && countriesByCode.get(question.right.countryIso3)?.continent === 'Europe')).toBe(true)
+      expect(new Set(closeRegional.map((question) => `${question.origin.id}|${[question.left.id, question.right.id].sort().join('|')}`)).size).toBe(closeRegional.length)
+      for (const question of closeRegional) {
+        const leftValue = measure === 'distance' ? question.leftDistanceKm : measure === 'latitude' ? question.left.lat : question.left.lon
+        const rightValue = measure === 'distance' ? question.rightDistanceKm : measure === 'latitude' ? question.right.lat : question.right.lon
+        if (measure === 'distance') {
+          const ratio = Math.max(leftValue, rightValue) / Math.max(0.001, Math.min(leftValue, rightValue))
+          expect(ratio).toBeGreaterThanOrEqual(1.01)
+          expect(ratio).toBeLessThanOrEqual(1.35)
+        } else {
+          const difference = Math.abs(leftValue - rightValue)
+          expect(difference).toBeGreaterThanOrEqual(0.35)
+          expect(difference).toBeLessThan(4)
+        }
+      }
     }
+
+    const sparseClose = makeDistanceQuestions(cities, countriesByCode, 'distance:sparse-close-oceania', 50, {
+      scope: 'Oceania', measure: 'longitude', minimumPopulation: 1_000_000, difficulty: 'close',
+    })
+    expect(sparseClose.length).toBeGreaterThan(0)
+    expect(sparseClose.length).toBeLessThan(50)
   })
 })
