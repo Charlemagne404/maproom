@@ -1,0 +1,91 @@
+import { expect, test, type Page } from '@playwright/test'
+
+async function openGame(page: Page) {
+  await page.goto('/games/population-pyramid?mode=freeplay')
+  const setup = page.getByRole('dialog')
+  await expect(setup).toBeVisible()
+  await expect(setup.getByRole('heading', { name: 'Population Pyramid Sort' })).toBeVisible()
+  await expect(setup.locator('.game-setup-description')).toContainText('2023 age profiles')
+  await setup.getByRole('button', { name: 'Start free play' }).click()
+  await expect(setup).toBeHidden()
+  await expect(page.locator('.population-pyramid-game')).toBeVisible({ timeout: 30_000 })
+}
+
+test('Population Pyramid Sort reveals sourced profiles, saves ordering, scores five rounds and replays', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.goto('/explore')
+  const card = page.locator('.game-card-population-pyramid')
+  await expect(card).toBeVisible()
+  await expect(card.getByRole('heading', { name: 'Population Pyramid Sort' })).toBeVisible()
+  await expect(card.getByRole('link')).toHaveAttribute('href', '/games/population-pyramid?mode=freeplay')
+  await expect(card.locator('.art-population-pyramid svg')).toBeVisible()
+
+  await openGame(page)
+  const cards = page.locator('.population-pyramid-card')
+  await expect(cards).toHaveCount(3)
+  await expect(page.locator('.population-pyramid-row')).toHaveCount(51)
+  await expect(page.locator('.population-pyramid-source')).toContainText('World Population Prospects 2024')
+  await expect(page.locator('.population-pyramid-source')).toContainText('2023 estimates')
+  await page.screenshot({ path: 'artifacts/qa/product-quality/population-pyramid-desktop.png', fullPage: true })
+
+  const moveEarlier = page.getByRole('button', { name: 'Move Profile B earlier' })
+  await moveEarlier.focus()
+  await page.keyboard.press('Space')
+  await expect(cards.first()).toContainText('Profile B')
+  const movedCodes = await cards.evaluateAll((items) => items.map((item) => item.getAttribute('data-iso3')))
+  await expect.poll(() => page.evaluate(() => {
+    const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<{ gameId: string; payload?: { order?: string[] } }>
+    return sessions.find((session) => session.gameId === 'population-pyramid')?.payload?.order ?? []
+  })).toEqual(movedCodes)
+
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Start free play' })).toBeVisible()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  expect(await cards.evaluateAll((items) => items.map((item) => item.getAttribute('data-iso3')))).toEqual(movedCodes)
+  await page.getByRole('button', { name: 'Check this order' }).click()
+  await expect(page.locator('.population-pyramid-reveal')).toHaveCount(3)
+  await expect(page.locator('.population-pyramid-feedback [role="status"]')).toContainText(/Perfect order|\d of 3 country pairs/)
+  await page.screenshot({ path: 'artifacts/qa/product-quality/population-pyramid-reveal.png', fullPage: true })
+
+  for (let round = 1; round < 5; round += 1) {
+    await page.getByRole('button', { name: 'Next round' }).click()
+    await expect(page.locator('.population-pyramid-heading .eyebrow')).toContainText(`${round + 1} of 5`)
+    await page.getByRole('button', { name: 'Check this order' }).click()
+  }
+  await page.getByRole('button', { name: 'Finish set' }).click()
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-dialog .game-results-summary')).toContainText('/ 5 correct')
+  await expect(page.locator('.game-results-dialog .game-results-message')).toContainText('15 pairwise comparisons')
+  await expect(page.locator('.game-results-dialog .game-results-score')).toContainText(/\d+points/)
+  await page.locator('.game-results-dialog').getByRole('button', { name: 'Compare another set' }).click()
+  await expect(page.locator('.population-pyramid-heading .eyebrow')).toContainText('1 of 5')
+  await expect(page.locator('.population-pyramid-card')).toHaveCount(3)
+})
+
+test('Population Pyramid Sort fits mobile, respects dark theme and opens its profiles offline', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
+  const page = await context.newPage()
+  try {
+    await openGame(page)
+    await page.getByRole('button', { name: 'Switch to dark appearance' }).tap()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    await expect.poll(() => page.locator('.population-pyramid-order').evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(1)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0)
+    await page.screenshot({ path: 'artifacts/qa/product-quality/population-pyramid-mobile-dark.png', fullPage: true })
+
+    await page.getByRole('button', { name: 'Move Profile B earlier' }).tap()
+    await expect(page.locator('.population-pyramid-card').first()).toContainText('Profile B')
+    await page.getByRole('button', { name: 'Check this order' }).tap()
+    await expect(page.locator('.population-pyramid-reveal')).toHaveCount(3)
+
+    await page.evaluate(async () => { await navigator.serviceWorker.ready })
+    await context.setOffline(true)
+    await page.reload()
+    await expect(page.getByRole('button', { name: 'Start free play' })).toBeVisible()
+    await page.getByRole('button', { name: 'Start free play' }).tap()
+    await expect(page.locator('.population-pyramid-card')).toHaveCount(3)
+    await expect(page.locator('.population-pyramid-row')).toHaveCount(51)
+  } finally {
+    await context.close()
+  }
+})

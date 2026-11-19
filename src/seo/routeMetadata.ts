@@ -157,6 +157,11 @@ const gameCopy = {
     description: 'Compare four world map projections and match each one to a mapping task, from equal-area maps to globe-like views.',
     summary: 'Match Equal Earth, Mercator, Equirectangular and Orthographic maps to the tasks they suit, then learn what each projection distorts.',
   },
+  'population-pyramid': {
+    title: 'Population Pyramid Sort',
+    description: 'Compare sourced 2023 population pyramids and order countries by their share of people aged 65 and older.',
+    summary: 'Read three anonymous age-and-sex population profiles, order them by the share aged 65+, and reveal the countries and data sources.',
+  },
 } satisfies Record<string, { title: string; description: string; summary: string }>
 
 export const gamePages: PageMetadata[] = games.map((game) => {

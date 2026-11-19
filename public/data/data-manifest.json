@@ -137,6 +137,60 @@
       "transformations": [
         "Bundled local SVG flags with the application stylesheet"
       ]
+    },
+    {
+      "name": "World Bank World Development Indicators population age profiles",
+      "source": "https://api.worldbank.org/v2/country/all/indicator/{indicator}?date=2023&format=json&per_page=20000",
+      "series": [
+        "SP.POP.0004.MA.5Y",
+        "SP.POP.0004.FE.5Y",
+        "SP.POP.0509.MA.5Y",
+        "SP.POP.0509.FE.5Y",
+        "SP.POP.1014.MA.5Y",
+        "SP.POP.1014.FE.5Y",
+        "SP.POP.1519.MA.5Y",
+        "SP.POP.1519.FE.5Y",
+        "SP.POP.2024.MA.5Y",
+        "SP.POP.2024.FE.5Y",
+        "SP.POP.2529.MA.5Y",
+        "SP.POP.2529.FE.5Y",
+        "SP.POP.3034.MA.5Y",
+        "SP.POP.3034.FE.5Y",
+        "SP.POP.3539.MA.5Y",
+        "SP.POP.3539.FE.5Y",
+        "SP.POP.4044.MA.5Y",
+        "SP.POP.4044.FE.5Y",
+        "SP.POP.4549.MA.5Y",
+        "SP.POP.4549.FE.5Y",
+        "SP.POP.5054.MA.5Y",
+        "SP.POP.5054.FE.5Y",
+        "SP.POP.5559.MA.5Y",
+        "SP.POP.5559.FE.5Y",
+        "SP.POP.6064.MA.5Y",
+        "SP.POP.6064.FE.5Y",
+        "SP.POP.6569.MA.5Y",
+        "SP.POP.6569.FE.5Y",
+        "SP.POP.7074.MA.5Y",
+        "SP.POP.7074.FE.5Y",
+        "SP.POP.7579.MA.5Y",
+        "SP.POP.7579.FE.5Y",
+        "SP.POP.80UP.MA.5Y",
+        "SP.POP.80UP.FE.5Y",
+        "SP.POP.TOTL.MA.IN",
+        "SP.POP.TOTL.FE.IN",
+        "SP.POP.65UP.TO.ZS"
+      ],
+      "version": "2023 observations; World Bank API last updated 2026-11-11",
+      "retrievedAt": "2026-11-19T05:41:50.142Z",
+      "sha256": "c0b6085ac2794fb3608b0f11e1676c3ff61ea1721c9a3f4579a716775381419b",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0) with World Bank dataset terms",
+      "licenseUrl": "https://data.worldbank.org/summary-terms-of-use",
+      "attribution": "World Bank, World Development Indicators; age-distribution estimates sourced from the United Nations World Population Prospects 2024 Revision.",
+      "transformations": [
+        "Joined the 2023 observations by ISO3 code and retained Standard quiz identities with complete age bands, sex-specific population totals and the 65+ share.",
+        "Converted each male/female age-band percentage from its sex-specific population denominator to a percentage of total population using the 2023 male and female totals.",
+        "Checked that each weighted profile totals 100% and its 65+ cohort sum agrees with the separate World Bank SP.POP.65UP.TO.ZS series; identities without complete values have no fallback."
+      ]
     }
   ],
   "artifacts": {
@@ -1733,6 +1787,7 @@
     "riversSha256": "735cec99562a3d12f0b6ea22f2453fed5ed8cb3fd99b8576f53d7f2a8a2ad4dc",
     "majorCitiesSha256": "ddc5ae8c604bc56359c48aba4f619db6e51a6b1c3e0eab39f55e80b804298010",
     "countriesTopologySha256": "c185df69dc8ed6f2bd9396810c5b5e46ac9148308ce3894e429d0ebf56116b1a",
-    "countriesOutlineTopologySha256": "dc0c84a0de2278125c5d1625911883bcaa3829390c41142e918a67bda433606d"
+    "countriesOutlineTopologySha256": "dc0c84a0de2278125c5d1625911883bcaa3829390c41142e918a67bda433606d",
+    "populationAgeProfilesSha256": "c0b6085ac2794fb3608b0f11e1676c3ff61ea1721c9a3f4579a716775381419b"
   }
 }

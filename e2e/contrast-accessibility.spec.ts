@@ -13,6 +13,7 @@ const freePlayRoutes = [
   '/games/distance?mode=freeplay',
   '/games/rivers?mode=freeplay',
   '/games/latitude-ladder?mode=freeplay&format=west-east',
+  '/games/population-pyramid?mode=freeplay',
 ]
 
 async function visibleTextContrastFailures(page: Page) {

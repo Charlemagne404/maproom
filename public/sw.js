@@ -11,6 +11,7 @@ const APP_FILES = [
   '/data/countries.json',
   '/data/coverage.json',
   '/data/data-manifest.json',
+  '/data/population-age-profiles.json',
   '/data/region-index.json',
 ]
 

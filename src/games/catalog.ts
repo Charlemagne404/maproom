@@ -1,4 +1,4 @@
-import { AlignHorizontalSpaceAround, ArrowDownUp, Clock3, Compass, Flag, Globe2, Grid3X3, Map, MapPin, Route, Shuffle, Waves, type LucideIcon } from 'lucide-react'
+import { AlignHorizontalSpaceAround, ArrowDownUp, BarChart3, Clock3, Compass, Flag, Globe2, Grid3X3, Map, MapPin, Route, Shuffle, Waves, type LucideIcon } from 'lucide-react'
 import type { GameId } from '../geography/types'
 
 // Daily games are curated explicitly. Registering a game in `games` never opts it in.
@@ -53,6 +53,7 @@ export const games: GameInfo[] = [
   ], requiresCountryGeometry: true },
   { id: 'historical-geography', title: 'When Was This Map?', shortTitle: 'Historical maps', category: 'Historical geography', description: 'Read a Maproom-generated snapshot of historical boundaries, then guess its depicted year.', action: 'Place the year', icon: Clock3, path: '/games/historical-geography', requiresCountryGeometry: false },
   { id: 'projection-match', title: 'Map Projection Match', shortTitle: 'Projection Match', category: 'Map literacy', description: 'Match four map projections to the jobs they suit, and see the tradeoffs each one makes.', action: 'Match the maps', icon: Globe2, path: '/games/projection-match', requiresCountryGeometry: true },
+  { id: 'population-pyramid', title: 'Population Pyramid Sort', shortTitle: 'Population Pyramid', category: 'Human geography', description: 'Order anonymous 2023 age profiles by the share of people aged 65 and older.', action: 'Order age profiles', icon: BarChart3, path: '/games/population-pyramid', requiresCountryGeometry: false },
 ]
 
 export function formatsForGame(gameId: GameId): GameFormat[] {

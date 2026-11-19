@@ -31,3 +31,5 @@ Rank is a product judgment based on expected gameplay benefit, evidence, source 
 ## New game evaluation
 
 **Map Projection Match** is implemented as a four-task Free Play set. It uses the existing country geometry and D3 projection library, and it remains outside Daily. The local checks establish deterministic task coverage, answer persistence and responsive map rendering; a player study still needs to assess whether the map differences and task wording are clear enough without prior cartography knowledge.
+
+**Population Pyramid Sort** is implemented as a five-round Free Play game with 194 sourced 2023 age profiles, pairwise ordering score, progressively narrower data-derived gaps, answer reveals and an offline-bundled dataset. It remains outside Daily. Data coverage and arithmetic are validated; conduct a first-read and replay review with players before tuning the gap bands or adding more scopes. See the [source and rules review](STUDIES/population-pyramid-sort.md).

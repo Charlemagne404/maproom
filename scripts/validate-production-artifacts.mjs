@@ -45,7 +45,7 @@ const requiredFiles = [
   'robots.txt', 'sitemap.xml', 'social/maproom-preview.png', 'icons/maproom.svg',
   'data/countries.json', 'data/countries.topo.json', 'data/countries-outline.topo.json',
   'data/cities.json', 'data/cities-major.json', 'data/rivers.json', 'data/data-manifest.json',
-  'data/coverage.json', 'data/region-index.json', 'data/historical/manifest.json',
+  'data/population-age-profiles.json', 'data/coverage.json', 'data/region-index.json', 'data/historical/manifest.json',
 ]
 for (const relative of requiredFiles) await requiredFile(relative)
 
@@ -56,7 +56,7 @@ const snapshotPaths = [
   'games/flags/index.html', 'games/grid/index.html', 'games/cities/index.html',
   'games/connections/index.html', 'games/higher-lower/index.html', 'games/neighbours/index.html',
   'games/distance/index.html', 'games/rivers/index.html', 'games/latitude-ladder/index.html',
-  'games/historical-geography/index.html', 'games/projection-match/index.html',
+  'games/historical-geography/index.html', 'games/projection-match/index.html', 'games/population-pyramid/index.html',
 ]
 for (const relative of snapshotPaths) {
   const html = await readFile(await requiredFile(relative), 'utf8')
@@ -70,7 +70,7 @@ if (allHtml.length !== snapshotPaths.length) fail(`expected ${snapshotPaths.leng
 
 const sitemap = await readFile(await requiredFile('sitemap.xml'), 'utf8')
 const sitemapUrls = sitemap.match(/<loc>/g) ?? []
-if (sitemapUrls.length !== 19) fail(`expected 19 indexable sitemap URLs, found ${sitemapUrls.length}`)
+if (sitemapUrls.length !== 20) fail(`expected 20 indexable sitemap URLs, found ${sitemapUrls.length}`)
 const deployment = await readFile(path.join(root, 'scripts/finalize-deployment.sh'), 'utf8')
 const domain = deployment.match(/^readonly DOMAIN='([^']+)'$/m)?.[1]
 if (!domain || !sitemap.includes(`<loc>https://${domain}/`)) fail('sitemap origin does not match the deployment hostname')
@@ -110,6 +110,33 @@ const dataManifest = await json('data/data-manifest.json')
 const artifacts = dataManifest.artifacts
 const countryCatalog = await json('data/countries.json')
 if (!Array.isArray(countryCatalog.countries)) fail('the country catalog has no country records')
+const ageProfiles = await json('data/population-age-profiles.json')
+const ageProfileCodes = ['0004', '0509', '1014', '1519', '2024', '2529', '3034', '3539', '4044', '4549', '5054', '5559', '6064', '6569', '7074', '7579', '80UP']
+if (ageProfiles.schemaVersion !== 1 || ageProfiles.year !== 2023 || ageProfiles.cohortCodes?.join(',') !== ageProfileCodes.join(',')
+  || !Array.isArray(ageProfiles.profiles) || ageProfiles.profiles.length < 190) {
+  fail('population age profiles have an unsupported format, year, cohort list or coverage')
+}
+const ageProfileIdentities = new Set()
+for (const profile of ageProfiles.profiles) {
+  if (!/^[A-Z]{3}$/.test(profile.iso3) || ageProfileIdentities.has(profile.iso3)
+    || !countryCatalog.countries.some((country) => country.iso3 === profile.iso3)) {
+    fail(`population age profile identity is invalid: ${profile.iso3}`)
+  }
+  ageProfileIdentities.add(profile.iso3)
+  if (!Array.isArray(profile.male) || !Array.isArray(profile.female) || profile.male.length !== 17 || profile.female.length !== 17
+    || [...profile.male, ...profile.female, profile.age65Plus].some((value) => !Number.isFinite(value) || value < 0 || value > 100)) {
+    fail(`population age cohort values are invalid for ${profile.iso3}`)
+  }
+  const total = [...profile.male, ...profile.female].reduce((sum, value) => sum + value, 0)
+  const age65Plus = [...profile.male.slice(13), ...profile.female.slice(13)].reduce((sum, value) => sum + value, 0)
+  if (Math.abs(total - 100) > 0.03 || Math.abs(age65Plus - profile.age65Plus) > 0.03) {
+    fail(`population age bands do not reconcile for ${profile.iso3}`)
+  }
+}
+if (!dataManifest.sources.some((source) => source.name === 'World Bank World Development Indicators population age profiles'
+  && /^[a-f0-9]{64}$/.test(source.sha256 ?? '') && Array.isArray(source.series) && source.series.length === 37)) {
+  fail('the 2023 population age-profile source is missing from the data manifest')
+}
 const lifeExpectancyValues = countryCatalog.countries.filter((country) => country.lifeExpectancyYears2023 !== null)
 if (countryCatalog.countries.some((country) => country.lifeExpectancyYears2023 !== null
   && (!Number.isFinite(country.lifeExpectancyYears2023) || country.lifeExpectancyYears2023 <= 0))) {
@@ -127,6 +154,7 @@ const checksums = new Map([
   ['data/cities.json', artifacts.citiesSha256],
   ['data/cities-major.json', artifacts.majorCitiesSha256],
   ['data/rivers.json', artifacts.riversSha256],
+  ['data/population-age-profiles.json', artifacts.populationAgeProfilesSha256],
   ['data/coverage.json', artifacts.coverageSha256],
   ['data/region-index.json', artifacts.regionIndexSha256],
 ])

@@ -5,6 +5,7 @@ import { mkdir, readdir, unlink, writeFile } from 'node:fs/promises';
 import { topology } from 'topojson-server';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildPopulationAgeProfiles } from './build-population-age-profiles.mjs';
 import { mergeDetailedFallback, normalizeNaturalEarthGeometry, territoryParentIso3 } from './country-geometry.mjs';
 import { supplementalTerritories } from './supplemental-territories.mjs';
 
@@ -473,6 +474,7 @@ const manifest = {
   },
 };
 await writeFile(path.join(dataDir, 'data-manifest.json'), JSON.stringify(manifest, null, 2));
+await buildPopulationAgeProfiles();
 
 await writeCoverageReport(coverage, regionResults, countryOutput);
 console.log(JSON.stringify(coverage, null, 2));

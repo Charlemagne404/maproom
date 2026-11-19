@@ -17,6 +17,7 @@ test('build emits route-specific metadata and useful HTML snapshots before JavaS
     { path: '/data', title: 'Geography data sources | Maproom', heading: 'Geography data sources' },
     { path: '/games/cities', title: 'Capital city quiz and map game | Maproom', heading: 'Capitals & cities' },
     { path: '/games/projection-match', title: 'Map projection quiz | Maproom', heading: 'Map Projection Match' },
+    { path: '/games/population-pyramid', title: 'Population Pyramid Sort | Maproom', heading: 'Population Pyramid Sort' },
   ]
 
   for (const route of cases) {
@@ -33,12 +34,13 @@ test('build emits route-specific metadata and useful HTML snapshots before JavaS
 test('the sitemap lists only canonical public content routes', async () => {
   const sitemap = await readFile(path.join(distDir, 'sitemap.xml'), 'utf8')
   const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]!)
-  expect(urls).toHaveLength(19)
+  expect(urls).toHaveLength(20)
   expect(urls).toContain(`${productionOrigin}/`)
   expect(urls).toContain(`${productionOrigin}/explore`)
   expect(urls).toContain(`${productionOrigin}/games/countries`)
   expect(urls).toContain(`${productionOrigin}/games/historical-geography`)
   expect(urls).toContain(`${productionOrigin}/games/projection-match`)
+  expect(urls).toContain(`${productionOrigin}/games/population-pyramid`)
   expect(urls).not.toContain(`${productionOrigin}/settings`)
   expect(urls).not.toContain(`${productionOrigin}/statistics`)
   expect(urls.every((url) => !url.includes('?'))).toBe(true)

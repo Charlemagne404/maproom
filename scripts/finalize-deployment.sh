@@ -130,7 +130,7 @@ grep -Fq 'id="root"' "$BUILD_SOURCE/index.html" || fail 'dist/index.html has no 
 [[ -d "$BUILD_SOURCE/assets" ]] || fail 'dist/assets is missing.'
 find "$BUILD_SOURCE/assets" -maxdepth 1 -type f -name '*.js' -print -quit | grep -q . || fail 'No compiled JavaScript bundle was found.'
 find "$BUILD_SOURCE/assets" -maxdepth 1 -type f -name '*.css' -print -quit | grep -q . || fail 'No compiled stylesheet was found.'
-for relative in manifest.webmanifest sw.js offline.html precache-manifest.json robots.txt sitemap.xml social/maproom-preview.png icons/maproom.svg data/countries.json data/countries.topo.json data/countries-outline.topo.json data/cities.json data/cities-major.json data/rivers.json data/data-manifest.json data/coverage.json data/region-index.json data/historical/manifest.json; do
+for relative in manifest.webmanifest sw.js offline.html precache-manifest.json robots.txt sitemap.xml social/maproom-preview.png icons/maproom.svg data/countries.json data/countries.topo.json data/countries-outline.topo.json data/cities.json data/cities-major.json data/rivers.json data/population-age-profiles.json data/data-manifest.json data/coverage.json data/region-index.json data/historical/manifest.json; do
   [[ -s "$BUILD_SOURCE/$relative" ]] || fail "Required production file is missing or empty: dist/$relative"
 done
 for relative in explore about data privacy statistics settings 404 games/countries games/outlines games/routes games/flags games/grid games/cities games/connections games/higher-lower games/neighbours games/distance games/rivers games/latitude-ladder games/historical-geography; do

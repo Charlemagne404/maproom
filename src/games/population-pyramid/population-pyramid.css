@@ -1,0 +1,92 @@
+.population-pyramid-game { --pyramid-male: #4f738f; --pyramid-female: #bb6837; display: flex; flex-direction: column; gap: 13px; }
+.population-pyramid-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.population-pyramid-heading h2 { margin: 3px 0 5px; font-size: clamp(1.4rem, 3vw, 2rem); }
+.population-pyramid-heading p { max-width: 720px; color: var(--muted); font-size: .83rem; line-height: 1.5; }
+.population-pyramid-score { min-width: 115px; display: flex; flex-direction: column; align-items: flex-end; padding: 8px 11px; border: 1px solid var(--border); background: var(--surface); }
+.population-pyramid-score strong { font-size: 1.15rem; line-height: 1.15; }
+.population-pyramid-score span, .population-pyramid-score small { color: var(--muted); font-size: .65rem; }
+.population-pyramid-progress { display: flex; justify-content: space-between; gap: 12px; padding: 7px 10px; border-left: 3px solid var(--accent); background: var(--surface-soft, var(--surface)); color: var(--muted); font-size: .69rem; }
+.population-pyramid-key { display: flex; align-items: center; gap: 15px; color: var(--muted); font-size: .67rem; }
+.population-pyramid-key > span { display: inline-flex; align-items: center; gap: 6px; }
+.population-pyramid-key p { margin-left: auto; text-align: right; }
+.population-pyramid-swatch { width: 12px; height: 8px; display: inline-block; border-radius: 1px; }
+.population-pyramid-swatch.is-male { background: var(--pyramid-male); }
+.population-pyramid-swatch.is-female { background: var(--pyramid-female); }
+.population-pyramid-order { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: none; }
+.population-pyramid-card { min-width: 0; padding: 10px 10px 9px; border: 1px solid var(--border); background: var(--surface); }
+.population-pyramid-card.is-in-place { border-color: var(--success); }
+.population-pyramid-card.is-misplaced { border-color: var(--error); }
+.population-pyramid-card-heading { min-height: 34px; display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 1px 6px; }
+.population-pyramid-rank { color: var(--muted); font-size: .61rem; text-transform: uppercase; letter-spacing: .04em; }
+.population-pyramid-card-heading h3 { grid-column: 1; margin: 0; font-size: .9rem; }
+.population-pyramid-result-rank { grid-column: 2; grid-row: 1 / span 2; align-self: center; color: var(--accent-ink); font-size: .62rem; text-align: right; }
+.population-pyramid-figure { margin: 6px 0 0; }
+.population-pyramid-chart { min-width: 0; }
+.population-pyramid-axis, .population-pyramid-row { display: grid; grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr); align-items: center; gap: 4px; }
+.population-pyramid-axis { min-height: 18px; color: var(--muted); font-size: .5rem; line-height: 1; }
+.population-pyramid-axis span:first-child { text-align: left; }
+.population-pyramid-axis span:nth-child(2) { text-align: center; white-space: nowrap; }
+.population-pyramid-axis span:last-child { text-align: right; }
+.population-pyramid-row { height: 11px; }
+.population-pyramid-age { color: var(--muted); font-size: .54rem; line-height: 1; text-align: center; }
+.population-pyramid-bar-track { height: 7px; display: flex; overflow: hidden; background: var(--surface-soft, #ede5da); }
+.population-pyramid-bar-track.is-male { justify-content: flex-end; }
+.population-pyramid-bar-track i { height: 100%; display: block; }
+.population-pyramid-bar-track.is-male i { background: var(--pyramid-male); }
+.population-pyramid-bar-track.is-female i { background: var(--pyramid-female); }
+.population-pyramid-reveal { min-height: 46px; display: flex; flex-direction: column; gap: 1px; padding: 6px 0 1px; color: var(--muted); font-size: .64rem; line-height: 1.4; }
+.population-pyramid-reveal strong { color: var(--ink); font-size: .78rem; }
+.population-pyramid-move-controls { display: flex; justify-content: space-between; gap: 8px; margin-top: 7px; }
+.population-pyramid-move-controls button { min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; padding: 5px 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-size: .66rem; cursor: pointer; }
+.population-pyramid-move-controls button:disabled { color: var(--muted); opacity: .55; cursor: not-allowed; }
+.population-pyramid-check { align-self: flex-start; min-width: 160px; }
+.population-pyramid-feedback { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 9px 15px; padding: 12px; border: 1px solid var(--border); background: var(--surface); }
+.population-pyramid-feedback > p { grid-column: 1 / -1; color: var(--muted); font-size: .77rem; }
+.population-pyramid-feedback > p strong { color: var(--ink); }
+.population-pyramid-feedback ol { grid-column: 1; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.population-pyramid-feedback li { min-width: 155px; flex: 1; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 5px; padding: 6px 7px; background: var(--surface-soft, #ede5da); font-size: .68rem; }
+.population-pyramid-feedback li > span { width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: var(--ink); color: var(--paper); font-size: .62rem; }
+.population-pyramid-feedback li > strong { font-weight: 600; }
+.population-pyramid-feedback li > b { white-space: nowrap; }
+.population-pyramid-feedback .button { grid-column: 2; grid-row: 2; min-width: 120px; }
+.population-pyramid-source { max-width: 1000px; color: var(--muted); font-size: .62rem; line-height: 1.5; }
+.population-pyramid-game > .game-results-dialog { align-self: start; }
+
+@media (max-width: 920px) {
+  .population-pyramid-order { gap: 7px; }
+  .population-pyramid-card { padding: 8px 7px; }
+  .population-pyramid-axis, .population-pyramid-row { grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr); gap: 3px; }
+}
+
+@media (max-width: 680px) {
+  .population-pyramid-heading { gap: 10px; }
+  .population-pyramid-heading h2 { font-size: 1.4rem; }
+  .population-pyramid-heading p { font-size: .74rem; }
+  .population-pyramid-score { min-width: 82px; padding: 6px 7px; }
+  .population-pyramid-score strong { font-size: .95rem; }
+  .population-pyramid-score small { font-size: .56rem; }
+  .population-pyramid-progress { font-size: .62rem; }
+  .population-pyramid-key { flex-wrap: wrap; gap: 5px 12px; }
+  .population-pyramid-key p { flex-basis: 100%; margin-left: 0; text-align: left; }
+  .population-pyramid-order { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .population-pyramid-card { padding: 8px 9px; }
+  .population-pyramid-card-heading { min-height: 31px; }
+  .population-pyramid-axis, .population-pyramid-row { grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr); gap: 5px; }
+  .population-pyramid-row { height: 10px; }
+  .population-pyramid-age { font-size: .53rem; }
+  .population-pyramid-bar-track { height: 6px; }
+  .population-pyramid-feedback { grid-template-columns: minmax(0, 1fr); }
+  .population-pyramid-feedback .button { grid-column: 1; grid-row: auto; }
+  .population-pyramid-feedback li { min-width: 100%; }
+  .population-pyramid-source { font-size: .59rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .population-pyramid-game *, .population-pyramid-game *::before, .population-pyramid-game *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
+
+html[data-theme='dark'] .population-pyramid-swatch.is-male { background: #8eb8d5; }
+html[data-theme='dark'] .population-pyramid-swatch.is-female { background: #f0a16d; }
+html[data-theme='dark'] .population-pyramid-bar-track.is-male i { background: #8eb8d5; }
+html[data-theme='dark'] .population-pyramid-bar-track.is-female i { background: #f0a16d; }
+html[data-theme='dark'] .population-pyramid-result-rank { color: #f0a16d; }

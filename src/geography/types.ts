@@ -110,7 +110,7 @@ export interface CityData {
 
 export const GAME_IDS = [
   'countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections',
-  'higher-lower', 'neighbours', 'distance', 'rivers', 'latitude-ladder', 'historical-geography', 'projection-match',
+  'higher-lower', 'neighbours', 'distance', 'rivers', 'latitude-ladder', 'historical-geography', 'projection-match', 'population-pyramid',
 ] as const
 export type GameId = typeof GAME_IDS[number]
 export type GameMode = 'daily' | 'freeplay'
