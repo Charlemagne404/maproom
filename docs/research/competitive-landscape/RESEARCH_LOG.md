@@ -60,7 +60,7 @@
 ## 19 November 2026 — Climate Twins source shortlist
 
 - WorldClim 2.1 offers monthly climate surfaces for 1970–2000 at resolutions down to about 1 km, but its license page limits use to academic/noncommercial purposes and requires prior permission for redistribution or commercial use. It remains unsuitable for Maproom bundling without permission.
-- The public CCKP S3 archive exposed CRU TS 4.09 monthly temperature and precipitation NetCDFs for 1991–2020 on a 0.5° grid. Its collection page says 4.07 and the indexed World Bank metadata page says 4.08, so version documentation is inconsistent. Each NetCDF's embedded `wb_data_license_comment` says UK Open Government Licence v3, CCKP metadata says CC BY 4.0, and the AWS Registry lists ODbL. Climate data will not be bundled or used to derive gameplay content until the World Bank clarifies which terms/version apply.
+- The public CCKP S3 archive exposed CRU TS 4.09 monthly temperature and precipitation NetCDFs for 1991–2020 on a 0.5° grid. Its collection page says 4.07 and the indexed World Bank metadata page says 4.08, so version documentation is inconsistent. Each NetCDF's embedded `wb_data_license_comment` says UK Open Government Licence v3, CCKP metadata says CC BY 4.0, and the AWS Registry lists ODbL. Do not bundle or derive gameplay content from these CRU files until the World Bank clarifies which terms/version apply.
 - A temporary extraction audit matched the files to 11,577 current whole settlements in Maproom's 12,405-record major-city file: 11,559 had all twelve months; 18 nearest cells were masked. The broad pool had 6,344 valid cells, 2,003 shared by several records, and 6,330 profiles after rounding temperature to 1°C and precipitation to 10 mm. All 179 capital-marked records had data and yielded 178 profiles; Brazzaville and Kinshasa shared one cell/profile. This favors a curated capital-only sample if rights clear and shows the broad pool needs substantial de-duplication.
 - Analysis files and the NetCDF dependency stayed in `/tmp`; no climate data or dependency was added to the project. The candidate remains held rather than implemented.
 
@@ -70,6 +70,13 @@
 - Downloaded the temperature and precipitation files temporarily and inspected their metadata: 12 months, °C average for `tas`, mm sum for `pr`, 0.25° grid, period 1991–2020, raw source ECMWF/Copernicus and CCKP processing. Recorded file hashes in the [source study](STUDIES/climate-twins-source-review.md); the full rasters remain in `/tmp` and are not part of Maproom.
 - Nearest-grid sampling of 179 capital-marked Maproom records found complete values for all, 178 distinct cells and 178 unique profiles after rounding to 1°C/10 mm per month. Brazzaville and Kinshasa remain the only collision; it is stable under tested 0.5°C/5 mm and 2°C/20 mm rounding. Coastal/elevation review is still needed.
 - Decision: CCKP ERA5 is a source path for a curated Free Play prototype, provided its attribution and terms are disclosed. CRU TS remains held; Climate Twins remains outside Daily pending player evaluation. No game code or data was added.
+
+## 19 November 2026 — Climate Twins full capital-pool screen
+
+- Corrected the sample frame: `cities-major.json` omits places below 50,000 population, while the full `cities.json` includes 241 GeoNames `PPLC` records across countries and territories. All 241 nearest CCKP ERA5 cells have data; the 1°C/10 mm display profile has 237 unique answers before screening.
+- Natural Earth 1:10m point-in-polygon checks identified offshore nearest centers, cross-border centers, and some city coordinates outside the mapped land. Requiring both the city coordinate and nearest grid center to fall inside the same country, and excluding the two Antarctic-classified records, leaves 155 profiles with no rounding collisions.
+- Joined all capital IDs to the current GeoNames cities500 dump (2026-11-19; SHA-256 in the study). Its city fields matched the pinned Maproom snapshot. The GeoNames DEM is a coarse area-average signal; excluding values at or above 1,000 m leaves 127 profiles across Africa, Asia, Europe, North America, Oceania and South America. This is a conservative review pool, not a final published answer set.
+- Copernicus' ECV product is a direct CC BY 4.0 alternative with the same 1991–2020 climatology period, but access requires CDS login; no CDS API configuration is available here. The CCKP source remains the accessible path if its added terms are accepted. No code/data asset was added.
 
 ## 19 November 2026 — Higher or Lower life-expectancy measure
 
