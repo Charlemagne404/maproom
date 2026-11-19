@@ -564,6 +564,11 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 - Compared the 24 authored tile sets against the EU's current 21-country euro-area list: Atlas 02, 04, 13 and 23 contain exact unassigned euro-area quartets; Atlas 11 and 22 contain five members. Atlas 19 and 24 already use their matching four countries as an authored EEC-founding-state group. The official list includes Bulgaria as a euro-area member since 2026.
 - Updated the editorial guide, game audit, backlog and blinded-study priorities. This extends the developer self-play lead; it does not establish player salience. No puzzle answers or audit behavior changed. Review the prioritized boards with independent players before edits.
 
+## Geography Connections advisory fact audit — 19 November 2026
+
+- Added the current EU euro-area list as a source-backed advisory fact set. The audit now reports exact and five-member matches separately from hard uniqueness failures, preserving the authored boards while making the review candidates visible.
+- Added a regression check for the four exact candidates and two larger overlaps; the intended EEC-founding groups on Atlas 19 and 24 are not flagged. Focused Connections validation passed (11/11), lint passed, and production build/artifact validation passed (24 route snapshots, 21 sitemap URLs, 206 precached assets). Independent player review remains the gate before changing any answer group.
+
 ## Riverways trace visibility — 19 November 2026
 
 - A direct Medium Free Play round showed that a short far-northern trace was difficult to inspect at world scale and moved out of view after a centre-anchored zoom. After dragging it back into view, the path measured about 10 × 1 pixels at 1.4× zoom. Two wrong guesses gave centre-distance/direction clues and then the Russia centre-country clue.

@@ -83,6 +83,18 @@ describe('Geography Connections editorial boards', () => {
     expect(result.issues, result.issues.join('\n')).toEqual([])
   })
 
+  it('surfaces current euro-area overlaps as editorial advisories, not validated answer rules', () => {
+    const result = auditConnectionsLibrary(catalog.countries)
+    expect(result.advisories).toEqual([
+      'atlas-02: euro-area-members matches 4 board tiles (BEL, ESP, LUX, PRT).',
+      'atlas-04: euro-area-members matches 4 board tiles (FIN, FRA, IRL, NLD).',
+      'atlas-11: euro-area-members matches 5 board tiles (AUT, DEU, FRA, HRV, SVN).',
+      'atlas-13: euro-area-members matches 4 board tiles (AUT, FIN, IRL, LUX).',
+      'atlas-22: euro-area-members matches 5 board tiles (BEL, BGR, FRA, ITA, LUX).',
+      'atlas-23: euro-area-members matches 4 board tiles (FRA, HRV, LUX, SVN).',
+    ])
+  })
+
   it('documents every hand-authored fact set and uses unique, known members', () => {
     expect(CONNECTIONS_NAMED_FACT_SETS.length).toBeGreaterThanOrEqual(12)
     const ids = new Set<string>()

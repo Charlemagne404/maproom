@@ -40,11 +40,13 @@ export interface ConnectionsNamedFactSet {
   members: string[]
   source: string
   note: string
+  advisory?: boolean
 }
 
 /**
- * The line/sea/history sets are authored once and referenced by clue facts.
- * Their editorial notes name the precise interpretation used by the puzzle.
+ * Named sets are authored once and referenced by clue facts. Advisory-only
+ * sets are surfaced for editorial review, but do not validate answer groups or
+ * block boards until their relevance has been reviewed with players.
  */
 export const CONNECTIONS_NAMED_FACT_SETS: ConnectionsNamedFactSet[] = [
   {
@@ -166,6 +168,13 @@ export const CONNECTIONS_NAMED_FACT_SETS: ConnectionsNamedFactSet[] = [
     members: ['BEL', 'DEU', 'FRA', 'ITA', 'LUX', 'NLD'],
     source: 'European Commission, “Together in the EU” founding-members timeline.',
     note: 'The six Treaty of Rome signatories that established the EEC were Belgium, France, Germany, Italy, Luxembourg and the Netherlands. A board may include four of those six.',
+  },
+  {
+    id: 'euro-area-members',
+    members: ['AUT', 'BEL', 'BGR', 'CYP', 'HRV', 'EST', 'FIN', 'FRA', 'DEU', 'GRC', 'IRL', 'ITA', 'LVA', 'LTU', 'LUX', 'MLT', 'NLD', 'PRT', 'SVK', 'SVN', 'ESP'],
+    source: 'European Union, “Countries using the euro” (accessed 19 November 2026), https://european-union.europa.eu/institutions-law-budget/euro/countries-using-euro_en.',
+    note: 'Current official currency membership of 21 EU countries, including Bulgaria from 2026. This political membership set is advisory-only until blinded player review assesses whether it creates a usable alternate connection.',
+    advisory: true,
   },
 ]
 

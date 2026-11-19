@@ -26,6 +26,7 @@ export interface ConnectionsPuzzle {
 export interface ConnectionsPuzzleAudit {
   issues: string[]
   overlaps: string[]
+  advisories: string[]
 }
 
 const namedFactSetById = new Map(CONNECTIONS_NAMED_FACT_SETS.map((set) => [set.id, set]))
@@ -61,9 +62,9 @@ export function generateConnectionsPuzzle(
 
 /**
  * Checks the authored answer shape, fact declarations, and exact alternate
- * four-country matches in the editorial fact bank and common catalog facts.
- * Larger attribute intersections are returned separately for human review as
- * intentional red herrings rather than being treated as a second exact group.
+ * four-country matches in reviewed answer rules. Larger attribute intersections
+ * and unreviewed named-set matches are returned separately for human review;
+ * advisory sets do not make a board fail until editors establish their salience.
  */
 export function auditConnectionsPuzzle(
   puzzle: Pick<ConnectionsPuzzle, 'id' | 'groups' | 'tiles' | 'difficulty' | 'eligibility'>,
@@ -71,6 +72,7 @@ export function auditConnectionsPuzzle(
 ): ConnectionsPuzzleAudit {
   const issues: string[] = []
   const overlaps: string[] = []
+  const advisories: string[] = []
   const eligible = eligibleCountries(countries, puzzle.eligibility)
   const byCode = new Map(eligible.map((country) => [country.iso3, country]))
   const tileCodes = puzzle.tiles.map((country) => country.iso3)
@@ -111,7 +113,13 @@ export function auditConnectionsPuzzle(
     else overlaps.push(`${label} matches ${matched.size} board tiles (${[...matched].join(', ')}).`)
   }
 
-  return { issues: [...new Set(issues)], overlaps: [...new Set(overlaps)] }
+  for (const set of CONNECTIONS_NAMED_FACT_SETS.filter((candidate) => candidate.advisory)) {
+    const matched = matchingTilesForFact({ type: 'named-set', id: set.id }, board, byCode)
+    if (matched.size < 4 || answerSets.some((answer) => sameSet(answer, matched))) continue
+    advisories.push(`${puzzle.id}: ${set.id} matches ${matched.size} board tiles (${[...matched].sort().join(', ')}).`)
+  }
+
+  return { issues: [...new Set(issues)], overlaps: [...new Set(overlaps)], advisories: [...new Set(advisories)] }
 }
 
 export function connectionsBoardIsUnambiguous(puzzle: ConnectionsPuzzle, countries: Country[]): boolean {
@@ -121,6 +129,7 @@ export function connectionsBoardIsUnambiguous(puzzle: ConnectionsPuzzle, countri
 export function auditConnectionsLibrary(countries: Country[]): ConnectionsPuzzleAudit {
   const issues: string[] = []
   const overlaps: string[] = []
+  const advisories: string[] = []
   const expectedCounts: Record<ConnectionsDifficulty, number> = { easy: 8, medium: 8, hard: 8 }
   for (const difficulty of Object.keys(expectedCounts) as ConnectionsDifficulty[]) {
     const actual = CONNECTIONS_PUZZLES.filter((puzzle) => puzzle.difficulty === difficulty).length
@@ -140,20 +149,23 @@ export function auditConnectionsLibrary(countries: Country[]): ConnectionsPuzzle
     const result = auditConnectionsPuzzle(puzzle, countries)
     issues.push(...result.issues)
     overlaps.push(...result.overlaps.map((overlap) => `${source.id}: ${overlap}`))
+    advisories.push(...result.advisories)
   }
   for (const set of CONNECTIONS_NAMED_FACT_SETS) {
     const unique = new Set(set.members)
     if (unique.size !== set.members.length) issues.push(`Named fact set ${set.id} contains duplicate countries.`)
     for (const code of unique) if (!countries.some((country) => country.iso3 === code)) issues.push(`Named fact set ${set.id} references unknown country ${code}.`)
   }
-  return { issues: [...new Set(issues)], overlaps: [...new Set(overlaps)] }
+  return { issues: [...new Set(issues)], overlaps: [...new Set(overlaps)], advisories: [...new Set(advisories)] }
 }
 
 function auditFacts(groups: ConnectionsGroup[], countries: Country[]): ConnectionsFactRule[] {
   const rules = new Map<string, ConnectionsFactRule>()
   const add = (rule: ConnectionsFactRule) => rules.set(factKey(rule), rule)
   for (const group of groups) add(group.fact)
-  for (const set of CONNECTIONS_NAMED_FACT_SETS) add({ type: 'named-set', id: set.id })
+  for (const set of CONNECTIONS_NAMED_FACT_SETS) {
+    if (!set.advisory) add({ type: 'named-set', id: set.id })
+  }
   add({ type: 'landlocked' })
   add({ type: 'country-name-direction' })
   for (const initial of new Set(countries.map((country) => normalize(country.name).slice(0, 1).toUpperCase()).filter(Boolean))) {
