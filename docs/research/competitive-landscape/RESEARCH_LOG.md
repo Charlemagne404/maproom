@@ -264,7 +264,12 @@ Europe and Oceania produce more close pairs on some axes, while world west–eas
 ## 19 November 2026 — Geography Connections Atlas 04 self-play
 
 - In fixed-seed developer self-play, the four tiles Finland, France, Ireland and the Netherlands were submitted as euro-area members and received “No match.” The current [official European Union list](https://european-union.europa.eu/institutions-law-budget/euro/countries-using-euro_en) names all four among the 21 euro-area members. A separate island-country guess received “One away”; this is consistent with the authored “end in land” quartet, but the game did not identify the outlier.
-- **Assessment:** This is a plausible exact alternative not covered by the current known-fact audit, not participant evidence. No board content changed. The blinded pilot now prioritizes at least two Atlas 04 observations without disclosing the proposed grouping. Focused Connections content validation passed (10/10). Screenshots: [euro-area no-match](STUDIES/evidence/connections-atlas-04-euro-area-no-match.png) and [island one-away](STUDIES/evidence/connections-atlas-04-island-one-away.png).
+- **Assessment:** This is a plausible exact alternative not covered by the current known-fact audit, not participant evidence. No board content changed. The initial pilot update prioritized Atlas 04; a later whole-library scan expanded those priorities below. Focused Connections content validation passed (10/10). Screenshots: [euro-area no-match](STUDIES/evidence/connections-atlas-04-euro-area-no-match.png) and [island one-away](STUDIES/evidence/connections-atlas-04-island-one-away.png).
+
+### Euro-area tile-set scan
+
+- Compared the 24 authored board tile sets with the current 21-member list on the [official EU euro-area page](https://european-union.europa.eu/institutions-law-budget/euro/countries-using-euro_en), including Bulgaria's 2026 membership. Exact unassigned matches occur on Atlas 02 (BEL, ESP, LUX, PRT), Atlas 04 (FIN, FRA, IRL, NLD), Atlas 13 (AUT, FIN, IRL, LUX) and Atlas 23 (FRA, HRV, LUX, SVN). Atlas 11 and Atlas 22 have five euro-area tiles each. Atlas 19 and Atlas 24 also match four euro-area members, but those are already their authored EEC-founding-state answer groups.
+- **Assessment:** This is a systematic named-membership gap in the current audit bank, not proof that every player will consider the set fair or salient. No answer groups changed. The blinded study now prioritizes the four exact-match boards, then the two five-tile overlaps, without telling participants the candidate association.
 
 ## 19 November 2026 — Riverways trace visibility self-play
 

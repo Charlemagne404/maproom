@@ -556,8 +556,13 @@ Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees
 ## Geography Connections Atlas 04 developer self-play — 19 November 2026
 
 - A fixed-seed direct-play pass submitted Finland, France, Ireland and the Netherlands as euro-area members; Atlas 04 returned “No match.” The current official European Union list includes all four. An island-country guess returned “One away,” matching three countries in the authored “end in land” answer. Screenshots are retained in the [study evidence folder](research/competitive-landscape/STUDIES/evidence/).
-- This indicates a possible exact alternate connection that the current known-fact audit does not cover; it is not independent-player evidence. Corrected Atlas 04's stale internal editorial note. No puzzle groups or gameplay rules changed. The blinded review protocol now prioritizes two observations of Atlas 04 without revealing the candidate association.
+- This indicated a possible exact alternate connection that the current known-fact audit does not cover; it is not independent-player evidence. Corrected Atlas 04's stale internal editorial note. No puzzle groups or gameplay rules changed. The first study update prioritized Atlas 04; a later whole-library scan expanded that list as recorded below.
 - Focused Connections content validation passed (10/10).
+
+## Geography Connections euro-area overlap audit — 19 November 2026
+
+- Compared the 24 authored tile sets against the EU's current 21-country euro-area list: Atlas 02, 04, 13 and 23 contain exact unassigned euro-area quartets; Atlas 11 and 22 contain five members. Atlas 19 and 24 already use their matching four countries as an authored EEC-founding-state group. The official list includes Bulgaria as a euro-area member since 2026.
+- Updated the editorial guide, game audit, backlog and blinded-study priorities. This extends the developer self-play lead; it does not establish player salience. No puzzle answers or audit behavior changed. Review the prioritized boards with independent players before edits.
 
 ## Riverways trace visibility — 19 November 2026
 
