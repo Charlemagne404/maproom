@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" role="img" aria-labelledby="map-title map-description">
+<!-- Cliopatria v0.2.1 by the Seshat Global History Databank, CC BY 4.0. Maproom clipped, oriented, simplified and rendered these source polygons for a historical geography game. Source: https://github.com/Seshat-Global-History-Databank/cliopatria/releases/tag/v0.2.1 License: https://creativecommons.org/licenses/by/4.0/ -->
+<title id="map-title">Unlabelled historical political map</title>
+<desc id="map-description">A Maproom-generated reconstruction of mapped political territory in a Nile Valley in Nubia frame. Labels are omitted until the answer is revealed.</desc>
+<rect width="1000" height="560" rx="14" fill="#eee6d8"/>
+<rect x="20" y="20" width="960" height="520" rx="10" fill="#f7f1e7" stroke="#cfc4b4" stroke-width="1"/>
+<path d="M448.6,524L448.6,36M294.5,472.6L358.7,472.6L422.9,472.6L487.2,472.6L551.4,472.6L615.6,472.6L679.8,472.6L705.5,472.6M294.5,215.8L358.7,215.8L422.9,215.8L487.2,215.8L551.4,215.8L615.6,215.8L679.8,215.8L705.5,215.8" fill="none" stroke="#d8d0c3" stroke-width="0.65"/>
+<g><path d="M547.2,162.4L545.3,162.4L547.1,164L544.8,173.9L546.7,173.9L558,225.1L563.4,231.7L566.7,243.3L573.9,251.6L575.5,259.8L584.8,264.8L589.9,276.3L602.8,284.6L604.1,297.8L594.3,306L569.7,306L565.6,312.6L568.9,324.2L553.9,322.6L547.8,332.5L513.6,339.1L513.7,335.8L502.4,334.1L493.2,329.2L487.9,319.2L488.1,312.6L484.4,309.3L486.6,302.7L483,297.8L480,276.3L478.1,276.3L471.2,207L469.2,207L469.7,195.4L467.7,195.4L468.2,182.2L466.3,182.2L465,165.7L463.1,165.7L467.2,157.4L467.7,142.6L462.4,129.4L491.5,119.5L501,121.1L539.5,117.8L545,122.8L546.5,134.3L548.4,134.3Z" fill="#d88454" fill-opacity="0.78" stroke="#4d4841" stroke-width="1.1" stroke-linejoin="round"/></g>
+<path d="M34 514H966" stroke="#d9d0c3" stroke-width="1"/>
+<text x="42" y="532" fill="#777164" font-family="system-ui, sans-serif" font-size="10" letter-spacing="1.1">NILE VALLEY IN NUBIA</text>
+<text x="958" y="532" fill="#777164" font-family="system-ui, sans-serif" font-size="10" text-anchor="end" letter-spacing="1.1">UNLABELLED POLITY OUTLINE</text>
+</svg>

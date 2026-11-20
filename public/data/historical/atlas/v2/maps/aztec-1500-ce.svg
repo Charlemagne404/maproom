@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" role="img" aria-labelledby="map-title map-description">
+<!-- Cliopatria v0.2.1 by the Seshat Global History Databank, CC BY 4.0. Maproom clipped, oriented, simplified and rendered these source polygons for a historical geography game. Source: https://github.com/Seshat-Global-History-Databank/cliopatria/releases/tag/v0.2.1 License: https://creativecommons.org/licenses/by/4.0/ -->
+<title id="map-title">Unlabelled historical political map</title>
+<desc id="map-description">A Maproom-generated reconstruction of mapped political territory in a Central Mexico and Mesoamerica frame. Labels are omitted until the answer is revealed.</desc>
+<rect width="1000" height="560" rx="14" fill="#eee6d8"/>
+<rect x="20" y="20" width="960" height="520" rx="10" fill="#f7f1e7" stroke="#cfc4b4" stroke-width="1"/>
+<path d="M378,524L378,36M784.7,524L784.7,36M174.7,198.7L276.3,198.7L378,198.7L479.7,198.7L581.3,198.7L683,198.7L784.7,198.7L825.3,198.7" fill="none" stroke="#d8d0c3" stroke-width="0.65"/>
+<g><path d="M662.6,388.6L673.1,378.2L679.1,378.2L699.2,393.9L693.2,393.9L693.9,399.1L683.7,412.2L672.6,396.5L663,391.2ZM550.2,247.4L584.1,252.7L574.8,268.4L551.7,273.6L541,281.4L530.2,271L517.7,268.4L512,252.7L500.4,255.3L493.5,250.1L482.8,257.9L473.8,257.9L471.7,263.1L453.3,260.5L455.1,271L461.6,273.6L459.5,278.8L496.9,286.7L516.6,297.1L521,305L516.3,312.8L501.3,312.8L488,305L444.3,312.8L400.1,299.7L394.5,302.3L395.4,307.6L405.3,312.8L415.2,336.3L400.2,336.3L377.1,323.3L332.9,310.2L308.2,289.3L312.3,278.8L321.3,278.8L328.3,284L380.7,291.9L382.3,284L378.4,278.8L383.5,273.6L370,265.7L358.5,268.4L358.2,250.1L363.7,247.4L362.9,226.5L365.9,226.5L362,205.6L348,195.2L335.4,192.5L334.9,189.9L331.9,189.9L333.9,184.7L352,184.7L375.6,197.8L384.6,197.8L385.2,184.7L388.2,184.7L384.7,182.1L385.7,171.6L401.3,174.2L403.3,169L430.5,169L443.5,174.2L445.1,166.4L436.1,150.7L485.9,142.9L496.8,169L519.7,195.2L530.5,221.3L533.5,221.3Z" fill="#d88454" fill-opacity="0.78" stroke="#4d4841" stroke-width="1.1" stroke-linejoin="round"/></g>
+<path d="M34 514H966" stroke="#d9d0c3" stroke-width="1"/>
+<text x="42" y="532" fill="#777164" font-family="system-ui, sans-serif" font-size="10" letter-spacing="1.1">CENTRAL MEXICO AND MESOAMERICA</text>
+<text x="958" y="532" fill="#777164" font-family="system-ui, sans-serif" font-size="10" text-anchor="end" letter-spacing="1.1">UNLABELLED POLITY OUTLINE</text>
+</svg>

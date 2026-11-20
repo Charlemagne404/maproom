@@ -1,0 +1,487 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "historical-flags-v1",
+  "artworkLicense": "Creative Commons Attribution 4.0 International",
+  "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "scope": "A curated learning set of historically documented flags and standards with explicit periods of use. A reconstructed drawing is identified as such on its question and reveal.",
+  "items": [
+    {
+      "id": "france-revolutionary-tricolour",
+      "entity": "France",
+      "entityType": "republic",
+      "flagName": "French tricolour",
+      "periodStartYear": 1794,
+      "periodEndYear": 1814,
+      "periodLabel": "1794–1814",
+      "region": "Europe",
+      "designStatus": "documented",
+      "artworkNote": "Simple vector redraw of the documented blue-white-red national flag; the exact shades varied in surviving material.",
+      "visibleClue": "The colours of Paris and the monarchy were joined during the French Revolution.",
+      "explanation": "The tricolour was established as France’s national flag by decree in 1794. The monarchy restored a plain white flag from 1814 to 1830; the tricolour returned in 1830.",
+      "source": {
+        "title": "Le drapeau français · Élysée",
+        "url": "https://www.elysee.fr/la-presidence/le-drapeau-francais"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Le drapeau français · Élysée. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/france-revolutionary-tricolour.svg",
+      "assetSha256": "77598fd2dfa10841fef346656c043b04935a7f0a7f2f30c1e6195d1886b0894d"
+    },
+    {
+      "id": "france-restoration-white",
+      "entity": "France",
+      "entityType": "kingdom",
+      "flagName": "Restoration white flag",
+      "periodStartYear": 1814,
+      "periodEndYear": 1830,
+      "periodLabel": "1814–1830",
+      "region": "Europe",
+      "designStatus": "documented",
+      "artworkNote": "Plain white field, as described in the official French presidential history; historical cloth and proportions varied.",
+      "visibleClue": "The Bourbon Restoration removed the revolutionary colours from the national flag.",
+      "explanation": "During the Bourbon Restoration, France used a white flag from 1814 to 1830. The tricolour returned with the July Revolution of 1830.",
+      "source": {
+        "title": "Le drapeau français · Élysée",
+        "url": "https://www.elysee.fr/la-presidence/le-drapeau-francais"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Le drapeau français · Élysée. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/france-restoration-white.svg",
+      "assetSha256": "d93af3221d81f0e8b8f6c29fda068b9253895607869b959a4fba3b3204ceff37"
+    },
+    {
+      "id": "united-states-thirteen-stars",
+      "entity": "United States",
+      "entityType": "republic",
+      "flagName": "Thirteen-star flag",
+      "periodStartYear": 1777,
+      "periodEndYear": 1795,
+      "periodLabel": "1777–1795",
+      "region": "Americas",
+      "designStatus": "reconstructed",
+      "artworkNote": "The 1777 resolution specifies thirteen stripes and thirteen stars in a blue field, but not the star arrangement. The circular arrangement shown here is an illustrative reconstruction, not a uniquely attested pattern.",
+      "visibleClue": "The 1777 resolution described thirteen alternating stripes and thirteen white stars in a blue union.",
+      "explanation": "The Second Continental Congress adopted the first U.S. flag resolution on 14 June 1777. It fixed the number of stars and stripes but did not specify how the stars were arranged; this vector uses a clearly disclosed illustrative ring.",
+      "source": {
+        "title": "Flag Day and National Flag Week, 2005 · U.S. White House archive",
+        "url": "https://georgewbush-whitehouse.archives.gov/news/releases/2005/06/text/20050610-12.html"
+      },
+      "additionalSources": [
+        {
+          "title": "Act making an alteration in the Flag of the United States · U.S. National Archives",
+          "url": "https://www.archives.gov/files/historical-docs/doc-content/images/flag-act-15-stripes.pdf"
+        }
+      ],
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Flag Day and National Flag Week, 2005 · U.S. White House archive. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/united-states-thirteen-stars.svg",
+      "assetSha256": "57a05486a3fe62c926fb547c67aa5844afafd3dd702b584e00c727d3bdcab358"
+    },
+    {
+      "id": "united-kingdom-union-1801",
+      "entity": "United Kingdom of Great Britain and Ireland",
+      "entityType": "kingdom",
+      "flagName": "Union Flag of 1801",
+      "periodStartYear": 1801,
+      "periodEndYear": 1921,
+      "periodLabel": "1801–1921",
+      "region": "Europe",
+      "designStatus": "documented",
+      "artworkNote": "A simplified vector redraw of the official 1801 Union Flag; the diagonal cross geometry is approximated for clarity.",
+      "visibleClue": "Three heraldic crosses combine after the union with Ireland.",
+      "explanation": "The 1801 design added St Patrick’s Cross to the earlier flags of England and Scotland. The Royal Family notes that this is the Union Flag that has flown since 1801; the Welsh dragon is not part of it.",
+      "source": {
+        "title": "Union Jack · The Royal Family",
+        "url": "https://www.royal.uk/union-jack?page=1"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Union Jack · The Royal Family. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/united-kingdom-union-1801.svg",
+      "assetSha256": "e4fdd43870cea2724392062298eea3545793036e54ed18896951f857e689262e"
+    },
+    {
+      "id": "spain-royal-navy-1785",
+      "entity": "Spanish Royal Navy",
+      "entityType": "naval ensign",
+      "flagName": "1785 naval ensign",
+      "periodStartYear": 1785,
+      "periodEndYear": 1843,
+      "periodLabel": "1785–1843 · naval ensign",
+      "region": "Europe",
+      "designStatus": "reconstructed",
+      "artworkNote": "The broad red-yellow-red naval layout is documented. The small royal arms are a simplified original vector redraw, not a reproduction of a specific surviving flag.",
+      "visibleClue": "The middle yellow band is twice the height of either red band; the design was selected for visibility at sea.",
+      "explanation": "In 1785 Charles III selected a red-and-yellow design for Spanish naval ships because earlier Bourbon white ensigns could be confused at distance. The colors later became Spain’s national colors; the arms shown here are simplified.",
+      "source": {
+        "title": "Origin of the Spanish flag · Spanish Navy, Ministry of Defence",
+        "url": "https://armada.defensa.gob.es/ArmadaPortal/page/Portal/ArmadaEspannola/conocenosespeciales/prefLang-es/02dia-de-las-fuerzas-armadas--07dia-de-las-fuerzas-armadas-2012--01conoce-a-la-armada--00historiade-la-armada--05origen-bandera-es"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Origin of the Spanish flag · Spanish Navy, Ministry of Defence. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/spain-royal-navy-1785.svg",
+      "assetSha256": "25ab239ec7aa84d058989a0042c902f803d3944cd24d135e23a31d0b0f11b97c"
+    },
+    {
+      "id": "mexico-trigarante-1821",
+      "entity": "Army of the Three Guarantees",
+      "entityType": "army and political movement",
+      "flagName": "Trigarante flag",
+      "periodStartYear": 1821,
+      "periodEndYear": 1822,
+      "periodLabel": "1821–1822",
+      "region": "Americas",
+      "designStatus": "reconstructed",
+      "artworkNote": "A vector reconstruction of the documented diagonal white-green-red bands, three stars and central crown. Fine details vary across surviving examples.",
+      "visibleClue": "Three diagonal bands represent religion, independence and union during the final stage of Mexican independence.",
+      "explanation": "The Army of the Three Guarantees used this 1821 banner as Mexico’s independence was achieved. Mexican government sources describe the diagonal bands and stars; some surviving versions also show a crown representing the transition toward the First Mexican Empire.",
+      "source": {
+        "title": "Flag of the Army of the Three Guarantees · Mexican Secretariat of Government",
+        "url": "https://www.gob.mx/segob/es/articulos/conoce-bandera-del-ejercito-trigarante-1821"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Flag of the Army of the Three Guarantees · Mexican Secretariat of Government. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/mexico-trigarante-1821.svg",
+      "assetSha256": "ec732af1ba9d0a8b2719da690f490040b70c4f51595561e081f31a507e3e3f93"
+    },
+    {
+      "id": "brazil-empire-1822",
+      "entity": "Empire of Brazil",
+      "entityType": "empire",
+      "flagName": "Imperial flag of Brazil",
+      "periodStartYear": 1822,
+      "periodEndYear": 1889,
+      "periodLabel": "1822–1889",
+      "region": "Americas",
+      "designStatus": "reconstructed",
+      "artworkNote": "The green field, yellow diamond and imperial arms follow the 1822 specification; the arms and crown are simplified vector redraws.",
+      "visibleClue": "A green field and yellow lozenge frame the crowned arms of a newly independent South American empire.",
+      "explanation": "Brazil’s 1822 imperial flag was specified as a green rectangle with a yellow diamond and the country’s coat of arms at its center. The arms used stars for the provinces and were updated as provinces changed.",
+      "source": {
+        "title": "Brazilian flags before the Republic · Brazilian Observatory of National Museums",
+        "url": "https://www.gov.br/observatorio/pt-br/assuntos/areas-de-atuacao/divulgacao-e-popularizacao-da-ciencia/revistas/pdf/bandeiras.pdf"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Brazilian flags before the Republic · Brazilian Observatory of National Museums. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/brazil-empire-1822.svg",
+      "assetSha256": "b5e8ffb92ec711fc4b5378655514494ecd8bd176285ed8cc18a98145b23dd02b"
+    },
+    {
+      "id": "ottoman-1844",
+      "entity": "Ottoman Empire",
+      "entityType": "empire",
+      "flagName": "Ottoman crescent-and-star flag",
+      "periodStartYear": 1844,
+      "periodEndYear": 1922,
+      "periodLabel": "1844–1922",
+      "region": "West Asia and Europe",
+      "designStatus": "documented",
+      "artworkNote": "Vector redraw of the red field and white crescent and five-point star described for the surviving National Maritime Museum flag.",
+      "visibleClue": "A white crescent and star sit on a red field; this five-pointed-star design dates from the mid-nineteenth century.",
+      "explanation": "Royal Museums Greenwich identifies a surviving national flag of Turkey and its empire as a design from after 1844. Earlier Ottoman standards varied, so this entry covers only the documented later design.",
+      "source": {
+        "title": "National flag of Turkey and its empire (after 1844) · Royal Museums Greenwich",
+        "url": "https://www.rmg.co.uk/collections/objects/rmgc-object-560"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on National flag of Turkey and its empire (after 1844) · Royal Museums Greenwich. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/ottoman-1844.svg",
+      "assetSha256": "a447bebfa439e1cbd9f4af15fff384c2f63a14f3a48463f773e33083789afc28"
+    },
+    {
+      "id": "kingdom-italy-state-flag",
+      "entity": "Kingdom of Italy",
+      "entityType": "kingdom",
+      "flagName": "State flag with Savoy arms",
+      "periodStartYear": 1925,
+      "periodEndYear": 1946,
+      "periodLabel": "1925–1946 · state flag",
+      "region": "Europe",
+      "designStatus": "reconstructed",
+      "artworkNote": "The vertical tricolour and crowned Savoy shield follow the 1925 state-flag specification; the small heraldic details are simplified.",
+      "visibleClue": "A crowned Savoy shield sits on the green-white-red tricolour of the Italian monarchy.",
+      "explanation": "The Kingdom of Italy began in 1861, but its flag practices varied until a 1925 law distinguished the state flag from the national flag. The state version included the royal coat of arms and crown; this question uses that defined version.",
+      "source": {
+        "title": "Italian Tricolour Flag · Office of the President of the Italian Republic",
+        "url": "https://new.quirinale.it/page/tricolore_en"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Italian Tricolour Flag · Office of the President of the Italian Republic. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/kingdom-italy-state-flag.svg",
+      "assetSha256": "41e5250aaacaa879b95535c8d9d84b9d303a7735e8eda6f7c87439b2d0b0fe87"
+    },
+    {
+      "id": "german-empire-1871",
+      "entity": "German Empire",
+      "entityType": "empire",
+      "flagName": "Imperial black-white-red",
+      "periodStartYear": 1871,
+      "periodEndYear": 1918,
+      "periodLabel": "1871–1918",
+      "region": "Europe",
+      "designStatus": "documented",
+      "artworkNote": "Vector redraw of the black-white-red imperial national colours; proportions follow the common horizontal tricolour presentation.",
+      "visibleClue": "These imperial colours combined Prussian black and white with red associated with the Hanseatic cities.",
+      "explanation": "The German Empire used black, white and red as its national colours after unification. The Bundestag’s historical account distinguishes them from the black-red-gold colours adopted by the Weimar Republic in 1919.",
+      "source": {
+        "title": "The Federal Flag · German Bundestag",
+        "url": "https://www.bundestag.de/en/parliament/symbols/flag/flag-199494"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on The Federal Flag · German Bundestag. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/german-empire-1871.svg",
+      "assetSha256": "18f792f67af536c3b1a0236e8a6d4494b6b726838b79938923cd2aaf66a45740"
+    },
+    {
+      "id": "weimar-germany-1919",
+      "entity": "Weimar Republic",
+      "entityType": "republic",
+      "flagName": "Black-red-gold national flag",
+      "periodStartYear": 1919,
+      "periodEndYear": 1933,
+      "periodLabel": "1919–1933",
+      "region": "Europe",
+      "designStatus": "documented",
+      "artworkNote": "Vector redraw of the black-red-gold national colours named in the 1919 Weimar Constitution.",
+      "visibleClue": "The new republic revived colours associated with the unity and freedom movement of 1848.",
+      "explanation": "On 3 July 1919, the Weimar National Assembly made black-red-gold the Reich colours. The constitution separately retained black-white-red with a small black-red-gold canton for the merchant flag.",
+      "source": {
+        "title": "The Federal Flag · German Bundestag",
+        "url": "https://www.bundestag.de/en/parliament/symbols/flag/flag-199494"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on The Federal Flag · German Bundestag. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/weimar-germany-1919.svg",
+      "assetSha256": "1a564881787486a2003c3f3a1afc26b446fa8945699102f6fb9db0d88d542248"
+    },
+    {
+      "id": "japan-hinomaru-1870",
+      "entity": "Japan",
+      "entityType": "state",
+      "flagName": "Hinomaru (Japanese flag)",
+      "periodStartYear": 1870,
+      "periodEndYear": 2026,
+      "periodLabel": "1870–present · merchant ordinance and current national flag",
+      "region": "East Asia",
+      "designStatus": "documented",
+      "artworkNote": "Vector redraw of the white field and centered red sun specified in the 1870 merchant-vessel ordinance; the same design is now Japan’s national flag.",
+      "visibleClue": "A red sun disc sits on white; an 1870 ordinance specified its use on Japanese merchant vessels.",
+      "explanation": "The 1870 Meiji government ordinance specified the Hinomaru for merchant vessels. The flag continued in broad use after the Empire of Japan ended; Japan gave the national flag statutory recognition in 1999 without changing this design.",
+      "source": {
+        "title": "When was the Hinomaru legally established? · National Diet Library Reference Database",
+        "url": "https://crd.ndl.go.jp/reference/entry/reference/show?asc=desc&dtltbs=1&fi=3_%E4%BA%8B%E5%AE%9F%E8%AA%BF%E6%9F%BB+8_21+5_%E7%A4%BE%E4%BC%9A%E4%BA%BA+6_0&id=1000057111&ldtl=1&mcmd=25&ndc1=28&ndc_lk=1&page=ref_view&pg=22&st=update"
+      },
+      "additionalSources": [
+        {
+          "title": "Act on National Flag and Anthem · Government of Japan e-Gov",
+          "url": "https://elaws.e-gov.go.jp/document?lawid=411AC1000000127"
+        }
+      ],
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on When was the Hinomaru legally established? · National Diet Library Reference Database. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/japan-hinomaru-1870.svg",
+      "assetSha256": "c4989111f2b852b65a6a425e30cdb3a649f3bdb7dc9d7b0d4809e195c9df1c24"
+    },
+    {
+      "id": "australia-commonwealth-1901",
+      "entity": "Commonwealth of Australia",
+      "entityType": "federation",
+      "flagName": "Early Commonwealth Blue Ensign composite",
+      "periodStartYear": 1901,
+      "periodEndYear": 1908,
+      "periodLabel": "1901–1908 · competition-era design",
+      "region": "Oceania",
+      "designStatus": "reconstructed",
+      "artworkNote": "Illustrative composite redraw based on the National Archives account of five joint-winning 1901 competition designs; it is not a copy of one entry. The six-point Federation Star predates the 1908 change to seven points.",
+      "visibleClue": "The Federation Star has six points, one for each original state, below a Union Flag canton.",
+      "explanation": "The 1901 competition produced five joint-winning designs; the published composite combined their general ideas but differed in detail. This vector is an illustrative reconstruction of the early Commonwealth design, not one uniquely attested competition entry. The Federation Star gained a seventh point in 1908.",
+      "source": {
+        "title": "The Australian flag · National Archives of Australia",
+        "url": "https://www.naa.gov.au/help-your-research/fact-sheets/australian-flag"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on The Australian flag · National Archives of Australia. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/australia-commonwealth-1901.svg",
+      "assetSha256": "7c684cc3cfcd8e3ed255bc08c52559ff8e79dd32f11adc1fe1d688e03c024893"
+    },
+    {
+      "id": "canada-red-ensign-1921",
+      "entity": "Canada",
+      "entityType": "dominion",
+      "flagName": "Canadian Red Ensign",
+      "periodStartYear": 1921,
+      "periodEndYear": 1957,
+      "periodLabel": "1921–1957",
+      "region": "Americas",
+      "designStatus": "reconstructed",
+      "artworkNote": "The Red Ensign, Union Flag canton and 1921 Canadian arms follow Canadian Heritage’s reference image; the arms are redrawn in simplified form.",
+      "visibleClue": "A Union Flag canton and Canada’s 1921 coat of arms appear on a red ensign.",
+      "explanation": "Canadian Heritage records the 1921 version as a Red Ensign with the new Canadian coat of arms. It was widely used and flown during the Second World War, though it was not formally adopted as Canada’s national flag.",
+      "source": {
+        "title": "The history of the National Flag of Canada · Canadian Heritage",
+        "url": "https://www.canada.ca/en/canadian-heritage/services/flag-canada-history.html"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on The history of the National Flag of Canada · Canadian Heritage. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/canada-red-ensign-1921.svg",
+      "assetSha256": "5d439b5da706e76bb6430015f2904cd9250031b2b9467118097ef04600a5a4e2"
+    },
+    {
+      "id": "republic-china-five-colour-1912",
+      "entity": "Republic of China (Beiyang government)",
+      "entityType": "republic",
+      "flagName": "Five-colour flag",
+      "periodStartYear": 1912,
+      "periodEndYear": 1928,
+      "periodLabel": "1912–1928",
+      "region": "East Asia",
+      "designStatus": "documented",
+      "artworkNote": "Vector redraw of the five horizontal red-yellow-blue-white-black stripes documented by the National Government Archives and ROC Presidential Office.",
+      "visibleClue": "Five horizontal colours were selected as the early republic’s national flag, before the later blue-sky-and-white-sun design.",
+      "explanation": "The provisional Senate selected the five-colour flag in January 1912. ROC archival and presidential sources connect it with the early Republic; it was not the later flag with a white sun in a blue canton.",
+      "source": {
+        "title": "National flag · Office of the President, Republic of China (Taiwan)",
+        "url": "https://english.president.gov.tw/Page/96"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on National flag · Office of the President, Republic of China (Taiwan). Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/republic-china-five-colour-1912.svg",
+      "assetSha256": "ba98c17118a0ff30bccf2a54bbea8401431a42a83b414b37d605c49fbbcf86a1"
+    },
+    {
+      "id": "israel-1948",
+      "entity": "State of Israel",
+      "entityType": "state",
+      "flagName": "Israeli national flag",
+      "periodStartYear": 1948,
+      "periodEndYear": 2026,
+      "periodLabel": "1948–present",
+      "region": "West Asia",
+      "designStatus": "documented",
+      "artworkNote": "Vector redraw based on the proclamation’s stated white field, two blue stripes and central Star of David.",
+      "visibleClue": "Two blue stripes frame a central Star of David on white.",
+      "explanation": "The Provisional Council of State proclaimed this flag on 28 October 1948. Israel’s government history explains that it was adapted from the flag used by the World Zionist Organization since 1897.",
+      "source": {
+        "title": "The Flag and the Emblem · Israel Ministry of Foreign Affairs",
+        "url": "https://www.gov.il/en/pages/the-flag-and-the-emblem"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on The Flag and the Emblem · Israel Ministry of Foreign Affairs. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/israel-1948.svg",
+      "assetSha256": "20ced8e4703f10c022a38ed8930b886f856ad3362836de4a4555c3904e547d7d"
+    },
+    {
+      "id": "india-tiranga-1947",
+      "entity": "Dominion of India",
+      "entityType": "dominion",
+      "flagName": "Tiranga with Ashoka Chakra",
+      "periodStartYear": 1947,
+      "periodEndYear": 1950,
+      "periodLabel": "1947–1950 · Dominion of India",
+      "region": "South Asia",
+      "designStatus": "documented",
+      "artworkNote": "Vector redraw of the Constituent Assembly’s 1947 flag: equal saffron, white and green bands with a navy 24-spoke Ashoka Chakra.",
+      "visibleClue": "The Ashoka Chakra replaced an earlier spinning-wheel motif when the Constituent Assembly chose this tricolour.",
+      "explanation": "The Constituent Assembly adopted this design on 22 July 1947. It was the flag of the Dominion of India until the republic began in 1950; the same design continued afterward.",
+      "source": {
+        "title": "Evolution of the Indian National Flag · Government of India Press Information Bureau",
+        "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=1749614&lang=1&reg=3"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Evolution of the Indian National Flag · Government of India Press Information Bureau. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/india-tiranga-1947.svg",
+      "assetSha256": "d91ac75bd60f906d841348073067792be88cfd9000c7644c8d4e2e6503f32f26"
+    },
+    {
+      "id": "prc-five-stars-1949",
+      "entity": "People’s Republic of China",
+      "entityType": "republic",
+      "flagName": "Five-star red flag",
+      "periodStartYear": 1949,
+      "periodEndYear": 2026,
+      "periodLabel": "1949–present",
+      "region": "East Asia",
+      "designStatus": "documented",
+      "artworkNote": "Vector redraw using the flag’s official 1949 dimensions and star placement directions.",
+      "visibleClue": "One large yellow star is surrounded by four smaller stars in an arc on red.",
+      "explanation": "The first plenary session of the Chinese People’s Political Consultative Conference promulgated the flag-making directions on 28 September 1949. The PRC flag law preserves the red field and five yellow stars.",
+      "source": {
+        "title": "Law of the People’s Republic of China on the National Flag · Supreme People’s Court",
+        "url": "https://english.court.gov.cn/2016-04/14/c_1170197.htm"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Law of the People’s Republic of China on the National Flag · Supreme People’s Court. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/prc-five-stars-1949.svg",
+      "assetSha256": "aa30569fa0a3aac77eb31a87f6317639639918460a959cd20596ecb01aef1fed"
+    },
+    {
+      "id": "ussr-1924",
+      "entity": "Union of Soviet Socialist Republics",
+      "entityType": "union",
+      "flagName": "State flag of the USSR",
+      "periodStartYear": 1924,
+      "periodEndYear": 1991,
+      "periodLabel": "1924–1991",
+      "region": "Eastern Europe and northern Asia",
+      "designStatus": "reconstructed",
+      "artworkNote": "The 1924 constitution’s red field, gold hammer and sickle, and red star with gold edging are redrawn as a simple vector emblem.",
+      "visibleClue": "A hammer and sickle beneath a red star appear near the hoist of a red union flag.",
+      "explanation": "The 1924 Constitution described the USSR flag as a red field with a gold hammer and sickle and a red five-point star edged in gold. The flag was lowered over the Kremlin when the Soviet Union dissolved in December 1991.",
+      "source": {
+        "title": "Milestones in the History of U.S. Foreign Relations: Collapse of the Soviet Union · U.S. Department of State",
+        "url": "https://history.state.gov/milestones/1989-1992/collapse-soviet-union"
+      },
+      "additionalSources": [
+        {
+          "title": "Soviet Union Study · U.S. Marine Corps",
+          "url": "https://www.marines.mil/Portals/1/Publications/Soviet%20Union%20Study_5.pdf"
+        }
+      ],
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on Milestones in the History of U.S. Foreign Relations: Collapse of the Soviet Union · U.S. Department of State. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/ussr-1924.svg",
+      "assetSha256": "e863d8719b36cd959e0603cd50c199df209dd7df864ffadda865245ba8673e58"
+    },
+    {
+      "id": "gdr-1959",
+      "entity": "German Democratic Republic",
+      "entityType": "republic",
+      "flagName": "GDR state flag",
+      "periodStartYear": 1959,
+      "periodEndYear": 1990,
+      "periodLabel": "1959–1990",
+      "region": "Europe",
+      "designStatus": "documented",
+      "artworkNote": "Vector redraw of the black-red-gold flag with the GDR’s emblem added in 1959; the emblem is simplified.",
+      "visibleClue": "A wreath containing a hammer and compass distinguishes this black-red-gold state flag.",
+      "explanation": "East Germany shared the black-red-gold tricolour but added a hammer-and-compass emblem within a wreath in 1959. The German Bundestag contrasts this with the flag of the Federal Republic and the Weimar period.",
+      "source": {
+        "title": "The Federal Flag · German Bundestag",
+        "url": "https://www.bundestag.de/en/parliament/symbols/flag/flag-199494"
+      },
+      "artworkLicense": "Creative Commons Attribution 4.0 International",
+      "artworkLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "artworkAttribution": "Maproom original vector redraw based on The Federal Flag · German Bundestag. Creative Commons Attribution 4.0 International.",
+      "assetUrl": "/data/historical/flags/v1/flags/gdr-1959.svg",
+      "assetSha256": "0ecebf3f8822017c54372aa83fb2689e3e0384d2e046bf1933f275fb7e412646"
+    }
+  ]
+}

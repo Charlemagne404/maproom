@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" role="img" aria-labelledby="map-title map-description">
+<!-- Cliopatria v0.2.1 by the Seshat Global History Databank, CC BY 4.0. Maproom clipped, oriented, simplified and rendered these source polygons for a historical geography game. Source: https://github.com/Seshat-Global-History-Databank/cliopatria/releases/tag/v0.2.1 License: https://creativecommons.org/licenses/by/4.0/ -->
+<title id="map-title">Unlabelled historical political map</title>
+<desc id="map-description">A Maproom-generated reconstruction of mapped political territory in a Nile Valley and Delta frame. Labels are omitted until the answer is revealed.</desc>
+<rect width="1000" height="560" rx="14" fill="#eee6d8"/>
+<rect x="20" y="20" width="960" height="520" rx="10" fill="#f7f1e7" stroke="#cfc4b4" stroke-width="1"/>
+<path d="M183.3,524L183.3,48.9M500,524L500,48.9M183.3,492.3L262.5,492.3L341.6,492.3L420.8,492.3L500,492.3L579.2,492.3L658.4,492.3L737.5,492.3L816.7,492.3M183.3,175.6L262.5,175.6L341.6,175.6L420.8,175.6L500,175.6L579.2,175.6L658.4,175.6L737.5,175.6L816.7,175.6" fill="none" stroke="#d8d0c3" stroke-width="0.65"/>
+<g><path d="M534.9,124.9L549.3,129.9L560.9,127.1L569.8,134.7L563.9,131.9L560.5,127.2L556.3,135.1L567.9,141.6L572.2,140L570.1,135L573.8,135.4L585.1,142.5L587.5,148.1L586.4,157.9L590.2,170.5L578.5,177.6L574.1,188.4L580.4,194.4L559.3,198.8L543.4,197.6L531.7,222.8L529.5,237.9L531.1,257.4L543.8,262.2L548.3,270.7L568.8,289.3L591.9,296.1L593.4,305.8L585.3,318.3L591.7,328.7L598.4,332.6L599.2,365.8L587,365.6L587.6,343.1L583.5,333.8L571,324.3L574.4,311L580.6,305.7L558.5,304.1L551.3,288.5L523.7,263.3L514.2,216.4L501.7,214.5L498.3,210L500.9,201.4L512.2,193.9L511.9,184.5L503.7,173.5L484.2,159.7L484.1,145.7L502,133.8L509.2,136.4L511.3,128L530.3,125.7L517.2,131.5L528.6,130.6L535.7,128.2L531,125.5Z" fill="#d88454" fill-opacity="0.78" stroke="#4d4841" stroke-width="1.1" stroke-linejoin="round"/></g>
+<path d="M34 514H966" stroke="#d9d0c3" stroke-width="1"/>
+<text x="42" y="532" fill="#777164" font-family="system-ui, sans-serif" font-size="10" letter-spacing="1.1">NILE VALLEY AND DELTA</text>
+<text x="958" y="532" fill="#777164" font-family="system-ui, sans-serif" font-size="10" text-anchor="end" letter-spacing="1.1">UNLABELLED POLITY OUTLINE</text>
+</svg>

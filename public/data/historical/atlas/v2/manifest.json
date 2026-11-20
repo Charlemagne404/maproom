@@ -1,0 +1,1413 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "title": "Cliopatria",
+    "version": "v0.2.1",
+    "repositoryUrl": "https://github.com/Seshat-Global-History-Databank/cliopatria",
+    "releasePageUrl": "https://github.com/Seshat-Global-History-Databank/cliopatria/releases/tag/v0.2.1",
+    "releaseCommit": "5f433377139a6eeaeacbdc894b70f8805b72c8b5",
+    "archiveUrl": "https://raw.githubusercontent.com/Seshat-Global-History-Databank/cliopatria/v0.2.1/cliopatria.geojson.zip",
+    "archiveSha256": "e10a4e429fca708788ff9e7572a95fce801fae55852d217cffabc1c59cd4eed4",
+    "dataSha256": "fc6f0d1e4cc42f45da83522b3696db6f2cc85ec0d12259a85c89b31347b8fc0a",
+    "license": "Creative Commons Attribution 4.0 International",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "Cliopatria v0.2.1 by the Seshat Global History Databank, CC BY 4.0. Maproom clipped, oriented, simplified and rendered these source polygons for a historical geography game."
+  },
+  "snapshotConvention": "Each asset is a Maproom-generated regional view of one selected POLITY at sampleYear. Its accepted date interval is the inclusive source interval shared by every displayed geometry. The map has no labels before a guess and is not an archival map or a complete inventory of historical societies.",
+  "maps": [
+    {
+      "id": "sumer-3400-bce",
+      "sampleYear": -3300,
+      "acceptedFromYear": -3400,
+      "acceptedToYear": -3201,
+      "assetUrl": "/data/historical/atlas/v2/maps/sumer-3400-bce.svg",
+      "assetSha256": "9a26036ace88afe75db436614f1325e472a0f131b200b92b74b43a615dab6969",
+      "region": {
+        "id": "lower-mesopotamia",
+        "name": "Lower Mesopotamia",
+        "west": 43.5,
+        "east": 48.3,
+        "south": 29.3,
+        "north": 34.5
+      },
+      "visibleClue": "This river plain lies at the head of the Persian Gulf, where the Tigris and Euphrates approach one another.",
+      "historicalContext": "The earliest selected frame is a reconstruction of the city-state landscape of southern Mesopotamia. The source window spans several centuries, so the outline supports an era guess rather than a precise event date.",
+      "contextSources": [
+        {
+          "title": "Sumerian City-States · historical overview",
+          "url": "https://en.wikipedia.org/wiki/History_of_Sumer"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Sumerian City-States geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 2,
+      "polities": [
+        {
+          "name": "Sumerian City-States",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/History_of_Sumer",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q2345840"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "sumer-3200-bce",
+      "sampleYear": -3100,
+      "acceptedFromYear": -3200,
+      "acceptedToYear": -3001,
+      "assetUrl": "/data/historical/atlas/v2/maps/sumer-3200-bce.svg",
+      "assetSha256": "8e9f943e569744f172b27ebdf0aae07bce21b2988ce42c558913d4d9c4622e65",
+      "region": {
+        "id": "lower-mesopotamia",
+        "name": "Lower Mesopotamia",
+        "west": 43.5,
+        "east": 48.3,
+        "south": 29.3,
+        "north": 34.5
+      },
+      "visibleClue": "Look for a compact river plain rather than a modern national boundary.",
+      "historicalContext": "This is a second, visibly changed Sumerian reconstruction. Cliopatria records a new territorial phase, while its coverage remains selective and does not inventory every community in the region.",
+      "contextSources": [
+        {
+          "title": "Sumerian City-States · historical overview",
+          "url": "https://en.wikipedia.org/wiki/History_of_Sumer"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Sumerian City-States geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 2,
+      "polities": [
+        {
+          "name": "Sumerian City-States",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/History_of_Sumer",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q2345840"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "sumer-2800-bce",
+      "sampleYear": -2800,
+      "acceptedFromYear": -3000,
+      "acceptedToYear": -2701,
+      "assetUrl": "/data/historical/atlas/v2/maps/sumer-2800-bce.svg",
+      "assetSha256": "3f980b91dfa3949901b96ecfb761256f804a8672a3c908a7563b8793b49faca9",
+      "region": {
+        "id": "lower-mesopotamia",
+        "name": "Lower Mesopotamia",
+        "west": 43.5,
+        "east": 48.3,
+        "south": 29.3,
+        "north": 34.5
+      },
+      "visibleClue": "The focus is the lower Tigris–Euphrates plain, close to the ancient shoreline of the Gulf.",
+      "historicalContext": "The source shows another change in the territory it assigns to the Sumerian city-states. Ancient shorelines have shifted, so the modern regional frame is for orientation only.",
+      "contextSources": [
+        {
+          "title": "Sumerian City-States · historical overview",
+          "url": "https://en.wikipedia.org/wiki/History_of_Sumer"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Sumerian City-States geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 2,
+      "polities": [
+        {
+          "name": "Sumerian City-States",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/History_of_Sumer",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q2345840"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "old-kingdom-egypt-2500-bce",
+      "sampleYear": -2500,
+      "acceptedFromYear": -2500,
+      "acceptedToYear": -2301,
+      "assetUrl": "/data/historical/atlas/v2/maps/old-kingdom-egypt-2500-bce.svg",
+      "assetSha256": "220878b459d4eac3837ba7e6e02de00d7f44220908aee2b8a5b5eb33bfc97936",
+      "region": {
+        "id": "nile-valley",
+        "name": "Nile Valley and Delta",
+        "west": 20,
+        "east": 40,
+        "south": 19,
+        "north": 34
+      },
+      "visibleClue": "The Nile corridor is the geographic spine of this frame.",
+      "historicalContext": "This reconstruction follows the Nile-centered extent associated with Egypt's Old Kingdom. The source gives a broad date interval and should not be read as a precise survey of every frontier.",
+      "contextSources": [
+        {
+          "title": "Old Kingdom of Egypt · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Old_Kingdom_of_Egypt"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Old Kingdom of Egypt geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 2,
+      "polities": [
+        {
+          "name": "Old Kingdom of Egypt",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Old_Kingdom_of_Egypt",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q177819"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "new-kingdom-egypt-1500-bce",
+      "sampleYear": -1500,
+      "acceptedFromYear": -1500,
+      "acceptedToYear": -1401,
+      "assetUrl": "/data/historical/atlas/v2/maps/new-kingdom-egypt-1500-bce.svg",
+      "assetSha256": "843d1505863a6c3e4d9f6aecdd289f7c2b34ddc4f101764c6f4615c4d607c422",
+      "region": {
+        "id": "nile-and-levant",
+        "name": "Nile Valley and the Levant",
+        "west": 20,
+        "east": 43,
+        "south": 18,
+        "north": 38
+      },
+      "visibleClue": "The frame follows the Nile north into the eastern Mediterranean corridor.",
+      "historicalContext": "The map shows the New Kingdom reconstruction in its eastern Mediterranean setting. The source period is an interval, and the outline is a modern scholarly GIS reconstruction rather than an archival map.",
+      "contextSources": [
+        {
+          "title": "New Kingdom of Egypt · historical overview",
+          "url": "https://en.wikipedia.org/wiki/New_Kingdom_of_Egypt"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed New Kingdom of Egypt geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 2,
+      "polities": [
+        {
+          "name": "New Kingdom of Egypt",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/New_Kingdom_of_Egypt",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q180568"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "assyria-1000-bce",
+      "sampleYear": -1000,
+      "acceptedFromYear": -1000,
+      "acceptedToYear": -901,
+      "assetUrl": "/data/historical/atlas/v2/maps/assyria-1000-bce.svg",
+      "assetSha256": "01bd0bcaa0aa44a0e90db957f778120e26c4136d86be1d1ff75189b7509d9ce1",
+      "region": {
+        "id": "upper-mesopotamia",
+        "name": "Upper Mesopotamia",
+        "west": 32,
+        "east": 52,
+        "south": 28,
+        "north": 42
+      },
+      "visibleClue": "The Tigris basin sits near the center of this West Asian frame.",
+      "historicalContext": "This regional outline represents the Assyrian polity as recorded in the source for a broad interval. The blank areas outside the mapped polygon are not evidence that no other societies lived there.",
+      "contextSources": [
+        {
+          "title": "Assyria · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Assyria"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Assyria geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 2,
+      "polities": [
+        {
+          "name": "Assyria",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Assyria",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q41137"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "kush-1000-bce",
+      "sampleYear": -1000,
+      "acceptedFromYear": -1000,
+      "acceptedToYear": -801,
+      "assetUrl": "/data/historical/atlas/v2/maps/kush-1000-bce.svg",
+      "assetSha256": "0ba13d96f2b6b4b1bfc5f52b6fafed52eee7e5d1e378ec70c34b1edf4fa43a69",
+      "region": {
+        "id": "nubia",
+        "name": "Nile Valley in Nubia",
+        "west": 24,
+        "east": 40,
+        "south": 8,
+        "north": 27
+      },
+      "visibleClue": "Follow the Nile south of Egypt into Nubia.",
+      "historicalContext": "The source places Kush along the Nubian Nile during this long-lived phase. Its outline is a selected reconstruction and does not imply that the Nile valley was politically empty beyond the mapped area.",
+      "contextSources": [
+        {
+          "title": "Kingdom of Kush · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Kingdom_of_Kush"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Kingdom of Kush geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 2,
+      "polities": [
+        {
+          "name": "Kingdom of Kush",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Kingdom_of_Kush",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q241790"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "achaemenid-550-bce",
+      "sampleYear": -550,
+      "acceptedFromYear": -550,
+      "acceptedToYear": -541,
+      "assetUrl": "/data/historical/atlas/v2/maps/achaemenid-550-bce.svg",
+      "assetSha256": "75467de3710a76c66f75aaafd9c821ae52cceadabc57812967c817f87ae881aa",
+      "region": {
+        "id": "iranian-plateau",
+        "name": "Iranian Plateau and West Asia",
+        "west": 32,
+        "east": 72,
+        "south": 18,
+        "north": 44
+      },
+      "visibleClue": "The frame spans the Iranian Plateau and neighboring West Asian routes.",
+      "historicalContext": "This map captures an early Achaemenid territorial phase. Cliopatria divides the reconstruction into dated rows; its date window is the defensible answer range for this depiction.",
+      "contextSources": [
+        {
+          "title": "Achaemenid Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Achaemenid_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Achaemenid Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Achaemenid Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Achaemenid_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q389688"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "achaemenid-500-bce",
+      "sampleYear": -500,
+      "acceptedFromYear": -500,
+      "acceptedToYear": -481,
+      "assetUrl": "/data/historical/atlas/v2/maps/achaemenid-500-bce.svg",
+      "assetSha256": "fc8abad08187fcb62b634d948eff937922f4b1845e8d5dc984b4a86eb2b0d703",
+      "region": {
+        "id": "iranian-plateau",
+        "name": "Iranian Plateau and West Asia",
+        "west": 32,
+        "east": 72,
+        "south": 18,
+        "north": 44
+      },
+      "visibleClue": "Compare the western and eastern reach across the Iranian Plateau.",
+      "historicalContext": "The outline is the later Achaemenid phase recorded around 500 BCE. Its shape differs substantially from the earlier sample, while the source still describes one reconstruction rather than a certain line on the ground.",
+      "contextSources": [
+        {
+          "title": "Achaemenid Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Achaemenid_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Achaemenid Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Achaemenid Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Achaemenid_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q389688"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "maurya-250-bce",
+      "sampleYear": -250,
+      "acceptedFromYear": -256,
+      "acceptedToYear": -248,
+      "assetUrl": "/data/historical/atlas/v2/maps/maurya-250-bce.svg",
+      "assetSha256": "5d1379eab29990482dc1f596c54f7283500ca61980a2f00441a8508329d2817c",
+      "region": {
+        "id": "north-india",
+        "name": "Northern India",
+        "west": 65,
+        "east": 92,
+        "south": 5,
+        "north": 34
+      },
+      "visibleClue": "The Ganges plain and the routes toward the northwest anchor this South Asian view.",
+      "historicalContext": "This is a dated reconstruction of the Maurya Empire in northern India. Its source interval is short; the outline is a digital historical model, not a contemporary map.",
+      "contextSources": [
+        {
+          "title": "Maurya Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Maurya_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Maurya Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Maurya Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Maurya_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q62943"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "han-1-ce",
+      "sampleYear": 1,
+      "acceptedFromYear": -36,
+      "acceptedToYear": 5,
+      "assetUrl": "/data/historical/atlas/v2/maps/han-1-ce.svg",
+      "assetSha256": "b3db5e8465eede193fe7b44f65bbbd0ed153030be22677f99d851724798edd4c",
+      "region": {
+        "id": "east-asia",
+        "name": "East Asia",
+        "west": 95,
+        "east": 132,
+        "south": 15,
+        "north": 48
+      },
+      "visibleClue": "The frame is anchored by the eastern Asian coast and the broad river plains inland.",
+      "historicalContext": "The map shows a Han territorial phase that crosses the BCE/CE boundary in the source's no-year-zero chronology. The accepted interval is converted to modern BCE/CE notation for play.",
+      "contextSources": [
+        {
+          "title": "Han Dynasty · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Han_dynasty"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Han Dynasty geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Han Dynasty",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Han_dynasty",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q1068371"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "roman-100-ce",
+      "sampleYear": 100,
+      "acceptedFromYear": 91,
+      "acceptedToYear": 105,
+      "assetUrl": "/data/historical/atlas/v2/maps/roman-100-ce.svg",
+      "assetSha256": "bd86513213c52aeb70fa1442a7a4cef64501059132272fdd1964a395a49f52ea",
+      "region": {
+        "id": "mediterranean",
+        "name": "Mediterranean Basin",
+        "west": -14,
+        "east": 48,
+        "south": 20,
+        "north": 56
+      },
+      "visibleClue": "The Mediterranean Sea is the central geographic reference in this frame.",
+      "historicalContext": "This reconstruction shows the Roman Empire around the Mediterranean at the beginning of the second century CE. It is a dated source polygon, not a claim that every frontier was equally certain.",
+      "contextSources": [
+        {
+          "title": "Roman Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Roman_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Roman Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Roman Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Roman_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q12544"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "kushan-100-ce",
+      "sampleYear": 100,
+      "acceptedFromYear": 91,
+      "acceptedToYear": 116,
+      "assetUrl": "/data/historical/atlas/v2/maps/kushan-100-ce.svg",
+      "assetSha256": "abe021d520e312ea722023b36842f4e01d5c4ada510a419ecaacdc7f388a384d",
+      "region": {
+        "id": "central-south-asia",
+        "name": "Central and South Asia",
+        "west": 52,
+        "east": 92,
+        "south": 18,
+        "north": 42
+      },
+      "visibleClue": "The Hindu Kush and routes between Central Asia and northern India orient this map.",
+      "historicalContext": "The source places the Kushan polity across a corridor connecting Central and South Asia. The regional frame helps distinguish this reconstruction from a world map with missing coverage.",
+      "contextSources": [
+        {
+          "title": "Kushan Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Kushan_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Kushan Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Kushan Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Kushan_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q25979"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "gupta-400-ce",
+      "sampleYear": 400,
+      "acceptedFromYear": 387,
+      "acceptedToYear": 409,
+      "assetUrl": "/data/historical/atlas/v2/maps/gupta-400-ce.svg",
+      "assetSha256": "b1ffc3857d12265bbb52a8ad8807176566eac7cdebc2d3474cceab00ef91e9be",
+      "region": {
+        "id": "north-india",
+        "name": "Northern India",
+        "west": 65,
+        "east": 92,
+        "south": 5,
+        "north": 34
+      },
+      "visibleClue": "The Ganges basin and the northern Indian plain are the geographic anchors.",
+      "historicalContext": "This outline represents the Gupta Empire during the source's dated phase in northern India. It is a regional reconstruction, not a complete picture of South Asian political relationships.",
+      "contextSources": [
+        {
+          "title": "Gupta Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Gupta_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Gupta Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Gupta Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Gupta_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q11774"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "western-rome-470-ce",
+      "sampleYear": 470,
+      "acceptedFromYear": 469,
+      "acceptedToYear": 475,
+      "assetUrl": "/data/historical/atlas/v2/maps/western-rome-470-ce.svg",
+      "assetSha256": "a284868b0d6231504f589beaf9a6ee13c4757f7b2e6b34b6f98d1cb1f80d16b8",
+      "region": {
+        "id": "western-mediterranean",
+        "name": "Western Mediterranean",
+        "west": -15,
+        "east": 28,
+        "south": 25,
+        "north": 56
+      },
+      "visibleClue": "The western Mediterranean and its surrounding coasts define the frame.",
+      "historicalContext": "The source separates the western Roman polity into a late fifth-century phase. This regional view makes the reduced territorial extent easier to compare with the earlier Roman map.",
+      "contextSources": [
+        {
+          "title": "Western Roman Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Western_Roman_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Western Roman Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Western Roman Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Western_Roman_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q42834"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "sasanian-642-ce",
+      "sampleYear": 642,
+      "acceptedFromYear": 641,
+      "acceptedToYear": 643,
+      "assetUrl": "/data/historical/atlas/v2/maps/sasanian-642-ce.svg",
+      "assetSha256": "7d732d6a0e2eeb8e1f2c2f78a0b5761391d93ffa81544ab3775e885f040f8f7b",
+      "region": {
+        "id": "iranian-plateau",
+        "name": "Iranian Plateau and West Asia",
+        "west": 32,
+        "east": 72,
+        "south": 18,
+        "north": 44
+      },
+      "visibleClue": "The Iranian Plateau lies between the Mesopotamian lowlands and Central Asian routes.",
+      "historicalContext": "This map shows the Sasanian Empire in its final recorded phase in the source. The short date interval helps bound the question, while the outline remains a modern reconstruction.",
+      "contextSources": [
+        {
+          "title": "Sasanian Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Sasanian_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Sasanian Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Sasanian Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Sasanian_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q1661685"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "tang-700-ce",
+      "sampleYear": 700,
+      "acceptedFromYear": 692,
+      "acceptedToYear": 704,
+      "assetUrl": "/data/historical/atlas/v2/maps/tang-700-ce.svg",
+      "assetSha256": "47314a9f4f4a072566dcebd3a1f8ba433c8b33ee67b660dd2c3cbdf2864c4963",
+      "region": {
+        "id": "east-asia",
+        "name": "East Asia",
+        "west": 95,
+        "east": 132,
+        "south": 15,
+        "north": 48
+      },
+      "visibleClue": "The eastern Asian coast and inland river basins orient this regional map.",
+      "historicalContext": "Cliopatria records this Tang territorial phase at the start of the eighth century. The visual shows the selected polity only; it is not a disjoint map of every neighboring authority.",
+      "contextSources": [
+        {
+          "title": "Tang Dynasty · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Tang_dynasty"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Tang Dynasty geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Tang Dynasty",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Tang_dynasty",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q9683"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "abbasid-800-ce",
+      "sampleYear": 800,
+      "acceptedFromYear": 800,
+      "acceptedToYear": 813,
+      "assetUrl": "/data/historical/atlas/v2/maps/abbasid-800-ce.svg",
+      "assetSha256": "8c2bc49b714f249d4f7c48a67c301f72909a565ea15078a4b69df2c924900889",
+      "region": {
+        "id": "west-asia",
+        "name": "West Asia",
+        "west": 25,
+        "east": 70,
+        "south": 12,
+        "north": 45
+      },
+      "visibleClue": "The Tigris–Euphrates corridor and routes toward the Arabian Peninsula frame the territory.",
+      "historicalContext": "The Abbasid reconstruction spans a broad West Asian region in the source. Its polygon is shown alone so that overlapping dependencies are not rendered as neighboring sovereign states.",
+      "contextSources": [
+        {
+          "title": "Abbasid Caliphate · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Abbasid_Caliphate"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Abbasid Caliphate geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Abbasid Caliphate",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Abbasid_Caliphate",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q12536"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "tang-900-ce",
+      "sampleYear": 900,
+      "acceptedFromYear": 900,
+      "acceptedToYear": 910,
+      "assetUrl": "/data/historical/atlas/v2/maps/tang-900-ce.svg",
+      "assetSha256": "5e761ba1adff9673198ffe9e8dd00641488dddc43667ce2cfba1aa4b195f42a3",
+      "region": {
+        "id": "east-asia",
+        "name": "East Asia",
+        "west": 95,
+        "east": 132,
+        "south": 15,
+        "north": 48
+      },
+      "visibleClue": "Compare the inland reach with the coastlines of East Asia.",
+      "historicalContext": "This later Tang outline offers a comparison with the earlier eighth-century sample. Cliopatria assigns a separate dated territorial phase to this reconstruction.",
+      "contextSources": [
+        {
+          "title": "Tang Dynasty · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Tang_dynasty"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Tang Dynasty geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Tang Dynasty",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Tang_dynasty",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q9683"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "ghana-1200-ce",
+      "sampleYear": 1200,
+      "acceptedFromYear": 1192,
+      "acceptedToYear": 1201,
+      "assetUrl": "/data/historical/atlas/v2/maps/ghana-1200-ce.svg",
+      "assetSha256": "44aa5c6dfbaff4d8eb526af7e29048990fafa97b4b0ed22e60ae62e74cfeebbf",
+      "region": {
+        "id": "west-africa",
+        "name": "West Africa",
+        "west": -10.5,
+        "east": -2.5,
+        "south": 11.5,
+        "north": 19.5
+      },
+      "visibleClue": "The Niger and Senegal basins help orient this West African frame.",
+      "historicalContext": "This short source interval places the Ghana polity in a West African regional view. The source record, not modern borders, determines the displayed extent.",
+      "contextSources": [
+        {
+          "title": "Ghana Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Ghana_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Ghana Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Ghana Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Ghana_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q206789"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "mongol-1250-ce",
+      "sampleYear": 1250,
+      "acceptedFromYear": 1250,
+      "acceptedToYear": 1259,
+      "assetUrl": "/data/historical/atlas/v2/maps/mongol-1250-ce.svg",
+      "assetSha256": "8f13825033aacf8e0e1af975ce425587ca8f635cd82a58fb66670da1fc61ecb9",
+      "region": {
+        "id": "eurasian-steppe",
+        "name": "Eurasian Steppe",
+        "west": 25,
+        "east": 145,
+        "south": 12,
+        "north": 68
+      },
+      "visibleClue": "The map stretches across steppe routes from East Asia toward Eastern Europe.",
+      "historicalContext": "This is a reconstruction of the Mongol Empire during a rapid expansion phase. The very large extent makes it visually distinctive, though the source's political categories are not equivalent to modern sovereign borders.",
+      "contextSources": [
+        {
+          "title": "Mongol Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Mongol_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Mongol Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Mongol Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Mongol_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q12557"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "ethiopia-1300-ce",
+      "sampleYear": 1300,
+      "acceptedFromYear": 1285,
+      "acceptedToYear": 1332,
+      "assetUrl": "/data/historical/atlas/v2/maps/ethiopia-1300-ce.svg",
+      "assetSha256": "57885c9c6c9eed8c1378600d3da1bd5275f093fa8a2d4baa4c283d197c7716cd",
+      "region": {
+        "id": "horn-of-africa",
+        "name": "Horn of Africa",
+        "west": 28,
+        "east": 52,
+        "south": -2,
+        "north": 24
+      },
+      "visibleClue": "The highlands and the Red Sea approach orient this East African view.",
+      "historicalContext": "The source places the Ethiopian polity in the Horn of Africa during this phase. The regional framing avoids suggesting that unmapped parts of the continent had no political communities.",
+      "contextSources": [
+        {
+          "title": "Ethiopian Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Ethiopian_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Ethiopian Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 2,
+      "polities": [
+        {
+          "name": "Ethiopian Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Ethiopian_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q207521"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "ming-1400-ce",
+      "sampleYear": 1400,
+      "acceptedFromYear": 1385,
+      "acceptedToYear": 1401,
+      "assetUrl": "/data/historical/atlas/v2/maps/ming-1400-ce.svg",
+      "assetSha256": "0ca58e31598db80294777b9cf8ad0ce4eea2e2ae2327e676b3166b3ff4c53124",
+      "region": {
+        "id": "east-asia",
+        "name": "East Asia",
+        "west": 95,
+        "east": 132,
+        "south": 15,
+        "north": 48
+      },
+      "visibleClue": "The East Asian coast is the reference for this inland-and-coastal outline.",
+      "historicalContext": "This reconstruction shows a Ming territorial phase around 1400 CE. It is sourced to a dated row in the Cliopatria dataset and can be compared with the later Ming sample.",
+      "contextSources": [
+        {
+          "title": "Ming Dynasty · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Ming_dynasty"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Ming Dynasty geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Ming Dynasty",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Ming_dynasty",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q9903"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "ottoman-1400-ce",
+      "sampleYear": 1400,
+      "acceptedFromYear": 1395,
+      "acceptedToYear": 1401,
+      "assetUrl": "/data/historical/atlas/v2/maps/ottoman-1400-ce.svg",
+      "assetSha256": "36e0bbff3bd563a2d854a4ebfee2e3384148c8561cd594ee799ce328faefcb09",
+      "region": {
+        "id": "eastern-mediterranean",
+        "name": "Eastern Mediterranean",
+        "west": 18,
+        "east": 52,
+        "south": 25,
+        "north": 50
+      },
+      "visibleClue": "The Aegean, Anatolia and the eastern Mediterranean frame the map.",
+      "historicalContext": "The selected Ottoman outline is tied to a short early fifteenth-century source interval. The map shows one polity's reconstruction rather than every overlapping dependency.",
+      "contextSources": [
+        {
+          "title": "Ottoman Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Ottoman_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Ottoman Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Ottoman Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Ottoman_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q12560"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "aztec-1500-ce",
+      "sampleYear": 1500,
+      "acceptedFromYear": 1497,
+      "acceptedToYear": 1501,
+      "assetUrl": "/data/historical/atlas/v2/maps/aztec-1500-ce.svg",
+      "assetSha256": "2c912a713e3301496963a27f877c1c06f78d56117db145e3bdfe14822eb24b11",
+      "region": {
+        "id": "mesoamerica",
+        "name": "Central Mexico and Mesoamerica",
+        "west": -105,
+        "east": -89,
+        "south": 12,
+        "north": 24
+      },
+      "visibleClue": "The highland basin of central Mexico is the geographic center of this frame.",
+      "historicalContext": "This is the source's Aztec Triple Alliance reconstruction around 1500 CE. The short interval captures a particular phase, not the whole history of the alliance.",
+      "contextSources": [
+        {
+          "title": "Aztec Triple Alliance · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Aztec_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Aztec Triple Alliance geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Aztec Triple Alliance",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Aztec_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q2608489"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "ming-1500-ce",
+      "sampleYear": 1500,
+      "acceptedFromYear": 1468,
+      "acceptedToYear": 1515,
+      "assetUrl": "/data/historical/atlas/v2/maps/ming-1500-ce.svg",
+      "assetSha256": "8403513994694e652526da743bbc8109122bc44ab98810a1d604b17ca0ca2b04",
+      "region": {
+        "id": "east-asia",
+        "name": "East Asia",
+        "west": 95,
+        "east": 132,
+        "south": 15,
+        "north": 48
+      },
+      "visibleClue": "Compare the coast and inland reach with the earlier East Asian map.",
+      "historicalContext": "The Ming reconstruction has a broader accepted source interval than the 1400 sample. Its visual extent is useful for recognizing a period, but not for claiming an exact year.",
+      "contextSources": [
+        {
+          "title": "Ming Dynasty · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Ming_dynasty"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Ming Dynasty geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Ming Dynasty",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Ming_dynasty",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q9903"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "mughal-1600-ce",
+      "sampleYear": 1600,
+      "acceptedFromYear": 1600,
+      "acceptedToYear": 1611,
+      "assetUrl": "/data/historical/atlas/v2/maps/mughal-1600-ce.svg",
+      "assetSha256": "cc2df90ea0bf8bfdccc0903051ab0cd7280218d73bf3e1bac34ecdaab4aba23d",
+      "region": {
+        "id": "north-india",
+        "name": "Northern India",
+        "west": 65,
+        "east": 92,
+        "south": 5,
+        "north": 34
+      },
+      "visibleClue": "The Indus and Ganges plains anchor this South Asian map.",
+      "historicalContext": "The source maps an expanding Mughal phase around 1600 CE. The following Mughal sample offers a direct visual comparison of territorial change.",
+      "contextSources": [
+        {
+          "title": "Mughal Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Mughal_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Mughal Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Mughal Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Mughal_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q33296"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "tokugawa-1600-ce",
+      "sampleYear": 1600,
+      "acceptedFromYear": 1600,
+      "acceptedToYear": 1601,
+      "assetUrl": "/data/historical/atlas/v2/maps/tokugawa-1600-ce.svg",
+      "assetSha256": "cb56bd5108bd24bbf61fc7d5c13f9ea9c4c4ef332261461250fc59577191db76",
+      "region": {
+        "id": "japan",
+        "name": "Japan and the Korean Peninsula",
+        "west": 121,
+        "east": 146,
+        "south": 23,
+        "north": 46
+      },
+      "visibleClue": "The Japanese archipelago is the main geographic anchor.",
+      "historicalContext": "This map shows the Tokugawa polity at the start of its source-recorded phase. The depiction concerns territorial control, not the internal structure of the shogunate.",
+      "contextSources": [
+        {
+          "title": "Tokugawa Shogunate · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Tokugawa_shogunate"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Tokugawa Shogunate geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Tokugawa Shogunate",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Tokugawa_shogunate",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q205662"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "qing-1700-ce",
+      "sampleYear": 1700,
+      "acceptedFromYear": 1700,
+      "acceptedToYear": 1701,
+      "assetUrl": "/data/historical/atlas/v2/maps/qing-1700-ce.svg",
+      "assetSha256": "37423210070c358b9fcc3a12b28b4adfd504c5a6c98a5d60de91512b24cde793",
+      "region": {
+        "id": "east-asia",
+        "name": "East Asia",
+        "west": 95,
+        "east": 138,
+        "south": 12,
+        "north": 52
+      },
+      "visibleClue": "The frame covers the East Asian mainland and its southern approaches.",
+      "historicalContext": "The source records a Qing territorial phase around 1700 CE. The map shows a reconstruction with a narrow time interval, not a claim of precise borders everywhere.",
+      "contextSources": [
+        {
+          "title": "Qing Dynasty · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Qing_dynasty"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Qing Dynasty geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Qing Dynasty",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Qing_dynasty",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q8733"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "mughal-1700-ce",
+      "sampleYear": 1700,
+      "acceptedFromYear": 1700,
+      "acceptedToYear": 1705,
+      "assetUrl": "/data/historical/atlas/v2/maps/mughal-1700-ce.svg",
+      "assetSha256": "46798792604e5f480036092ad49d5b6f4884f5dafb55afa180520db72a37b27b",
+      "region": {
+        "id": "north-india",
+        "name": "Northern India",
+        "west": 65,
+        "east": 92,
+        "south": 5,
+        "north": 34
+      },
+      "visibleClue": "Compare the reach across the northern Indian plain with the earlier Mughal outline.",
+      "historicalContext": "The source records a later Mughal territorial phase. Differences from the 1600 sample show expansion and contraction in the reconstruction over time.",
+      "contextSources": [
+        {
+          "title": "Mughal Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Mughal_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Mughal Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Mughal Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Mughal_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q33296"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "ottoman-1700-ce",
+      "sampleYear": 1700,
+      "acceptedFromYear": 1700,
+      "acceptedToYear": 1705,
+      "assetUrl": "/data/historical/atlas/v2/maps/ottoman-1700-ce.svg",
+      "assetSha256": "b5223e36e855727234c4b0949ab279b1fe7c3cd0ccb7a9f84fb27a104829e18b",
+      "region": {
+        "id": "eastern-mediterranean",
+        "name": "Eastern Mediterranean",
+        "west": 18,
+        "east": 52,
+        "south": 25,
+        "north": 50
+      },
+      "visibleClue": "The eastern Mediterranean and Anatolian routes orient the map.",
+      "historicalContext": "This map represents the Ottoman Empire in a short early eighteenth-century source phase. It can be compared with the 1400 sample to see a substantially different territorial extent.",
+      "contextSources": [
+        {
+          "title": "Ottoman Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Ottoman_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Ottoman Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Ottoman Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Ottoman_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q12560"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "british-1800-ce",
+      "sampleYear": 1800,
+      "acceptedFromYear": 1800,
+      "acceptedToYear": 1802,
+      "assetUrl": "/data/historical/atlas/v2/maps/british-1800-ce.svg",
+      "assetSha256": "7c8ea214c3fa807502bbc0f660d4174d2f5fd2175da5f01d10a849847230d823",
+      "region": {
+        "id": "global-empire",
+        "name": "Global territorial reach",
+        "west": -180,
+        "east": 180,
+        "south": -65,
+        "north": 80
+      },
+      "visibleClue": "The scattered territories span several oceans; the map is global rather than regional.",
+      "historicalContext": "The source records a global British imperial phase around 1800 CE. It is shown as one political entity with overseas territories, not as a set of disjoint modern states.",
+      "contextSources": [
+        {
+          "title": "British Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/British_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed British Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "British Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/British_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q8680"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "qing-1800-ce",
+      "sampleYear": 1800,
+      "acceptedFromYear": 1797,
+      "acceptedToYear": 1804,
+      "assetUrl": "/data/historical/atlas/v2/maps/qing-1800-ce.svg",
+      "assetSha256": "4e7f48ad0c94d324a5a838678ecf87d1252813ab3cca708e8d8faef0da8020cc",
+      "region": {
+        "id": "east-asia",
+        "name": "East Asia",
+        "west": 95,
+        "east": 138,
+        "south": 12,
+        "north": 52
+      },
+      "visibleClue": "The East Asian mainland and southern approaches are the map's geographic anchors.",
+      "historicalContext": "This is the Qing reconstruction at the turn of the nineteenth century. The frame is regional; no contemporary country borders are included.",
+      "contextSources": [
+        {
+          "title": "Qing Dynasty · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Qing_dynasty"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Qing Dynasty geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Qing Dynasty",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Qing_dynasty",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q8733"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "russian-1800-ce",
+      "sampleYear": 1800,
+      "acceptedFromYear": 1799,
+      "acceptedToYear": 1802,
+      "assetUrl": "/data/historical/atlas/v2/maps/russian-1800-ce.svg",
+      "assetSha256": "e5af9d048816d65e716afc71e72182bbe67b5c79b67621af59c7e22bab34b080",
+      "region": {
+        "id": "eurasian-russia",
+        "name": "Northern Eurasia",
+        "west": 20,
+        "east": 180,
+        "south": 35,
+        "north": 80
+      },
+      "visibleClue": "The outline stretches across the northern latitudes of Eurasia.",
+      "historicalContext": "This map presents the Russian Empire in a short source interval around 1800 CE. The wide frame is necessary to show its transcontinental extent.",
+      "contextSources": [
+        {
+          "title": "Russian Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Russian_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Russian Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Russian Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Russian_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q34266"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "qing-1850-ce",
+      "sampleYear": 1850,
+      "acceptedFromYear": 1848,
+      "acceptedToYear": 1852,
+      "assetUrl": "/data/historical/atlas/v2/maps/qing-1850-ce.svg",
+      "assetSha256": "9954bcae79b32fa40f283ab7cc254451407bd59623a7c0907bd881101ddc0c3c",
+      "region": {
+        "id": "east-asia",
+        "name": "East Asia",
+        "west": 95,
+        "east": 138,
+        "south": 12,
+        "north": 52
+      },
+      "visibleClue": "The frame covers the East Asian mainland and its southern approaches.",
+      "historicalContext": "This later Qing phase is compared with the 1700 and 1800 reconstructions. The source dates the geometry to a short interval around the mid-nineteenth century.",
+      "contextSources": [
+        {
+          "title": "Qing Dynasty · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Qing_dynasty"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Qing Dynasty geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Qing Dynasty",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Qing_dynasty",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q8733"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "russian-1850-ce",
+      "sampleYear": 1850,
+      "acceptedFromYear": 1849,
+      "acceptedToYear": 1852,
+      "assetUrl": "/data/historical/atlas/v2/maps/russian-1850-ce.svg",
+      "assetSha256": "e5402af8d5fd006b9a10e203b9540f319d0e35ab338d66dc6c575bc44f696527",
+      "region": {
+        "id": "eurasian-russia",
+        "name": "Northern Eurasia",
+        "west": 20,
+        "east": 180,
+        "south": 35,
+        "north": 80
+      },
+      "visibleClue": "Trace the northern Eurasian extent from Eastern Europe toward the Pacific.",
+      "historicalContext": "This mid-nineteenth-century Russian outline is a distinct source phase. Its broad geographic extent is shown in a regional frame centered on northern Eurasia.",
+      "contextSources": [
+        {
+          "title": "Russian Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Russian_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Russian Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Russian Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Russian_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q34266"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "ottoman-1850-ce",
+      "sampleYear": 1850,
+      "acceptedFromYear": 1849,
+      "acceptedToYear": 1852,
+      "assetUrl": "/data/historical/atlas/v2/maps/ottoman-1850-ce.svg",
+      "assetSha256": "860e1e19f19826b9c82bd07e8037af4d95991ce73ad62dc5278719cec1f71a92",
+      "region": {
+        "id": "eastern-mediterranean",
+        "name": "Eastern Mediterranean",
+        "west": 18,
+        "east": 52,
+        "south": 25,
+        "north": 50
+      },
+      "visibleClue": "The eastern Mediterranean, Anatolia and the approaches to the Black Sea orient this frame.",
+      "historicalContext": "This is the Ottoman reconstruction around 1850 CE. The source interval is explicit; the outline is not a precise claim about every contested border.",
+      "contextSources": [
+        {
+          "title": "Ottoman Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Ottoman_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Ottoman Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Ottoman Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Ottoman_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q12560"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "qing-1900-ce",
+      "sampleYear": 1900,
+      "acceptedFromYear": 1900,
+      "acceptedToYear": 1904,
+      "assetUrl": "/data/historical/atlas/v2/maps/qing-1900-ce.svg",
+      "assetSha256": "738174f78b35bc7c2c90229c9a80c82e2b04a0839cc2a50d84c1c32279e12de0",
+      "region": {
+        "id": "east-asia",
+        "name": "East Asia",
+        "west": 95,
+        "east": 138,
+        "south": 12,
+        "north": 52
+      },
+      "visibleClue": "The map is centered on the East Asian mainland and its coastal approaches.",
+      "historicalContext": "The source records the Qing Empire at the turn of the twentieth century, shortly before the dynasty's end. This is a regional reconstruction, not an archival map.",
+      "contextSources": [
+        {
+          "title": "Qing Dynasty · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Qing_dynasty"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Qing Dynasty geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Qing Dynasty",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Qing_dynasty",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q8733"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "russian-1900-ce",
+      "sampleYear": 1900,
+      "acceptedFromYear": 1900,
+      "acceptedToYear": 1904,
+      "assetUrl": "/data/historical/atlas/v2/maps/russian-1900-ce.svg",
+      "assetSha256": "c40fe289000584c8abeabbe9e64a9ae8be6455de71f805c34f4ea2b874412538",
+      "region": {
+        "id": "eurasian-russia",
+        "name": "Northern Eurasia",
+        "west": 20,
+        "east": 180,
+        "south": 35,
+        "north": 80
+      },
+      "visibleClue": "The northern Eurasian span reaches from Europe toward the Pacific.",
+      "historicalContext": "This turn-of-century Russian outline can be compared with earlier imperial phases. The source provides a narrow year interval for the selected geometry.",
+      "contextSources": [
+        {
+          "title": "Russian Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Russian_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Russian Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Russian Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Russian_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q34266"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "ottoman-1900-ce",
+      "sampleYear": 1900,
+      "acceptedFromYear": 1900,
+      "acceptedToYear": 1904,
+      "assetUrl": "/data/historical/atlas/v2/maps/ottoman-1900-ce.svg",
+      "assetSha256": "7671fb1abf1e98351f7c989900e7cac3f56f484b8122e433dc0680fc9d4d5b5a",
+      "region": {
+        "id": "eastern-mediterranean",
+        "name": "Eastern Mediterranean",
+        "west": 18,
+        "east": 52,
+        "south": 25,
+        "north": 50
+      },
+      "visibleClue": "The eastern Mediterranean and Anatolian routes are the geographic reference.",
+      "historicalContext": "This is the source's Ottoman territorial reconstruction around 1900 CE. It shows one dated phase and does not encode every political relationship in the region.",
+      "contextSources": [
+        {
+          "title": "Ottoman Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/Ottoman_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed Ottoman Empire geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "Ottoman Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/Ottoman_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q12560"
+        }
+      ],
+      "sourceFeatureCount": 1
+    },
+    {
+      "id": "british-1900-ce",
+      "sampleYear": 1900,
+      "acceptedFromYear": 1900,
+      "acceptedToYear": 1904,
+      "assetUrl": "/data/historical/atlas/v2/maps/british-1900-ce.svg",
+      "assetSha256": "81dfc353eee84beaecc1c39ce4ff2faff1edd58da341048dd5d4418dae6a15f1",
+      "region": {
+        "id": "global-empire",
+        "name": "Global territorial reach",
+        "west": -180,
+        "east": 180,
+        "south": -65,
+        "north": 80
+      },
+      "visibleClue": "The mapped territories span multiple continents and oceans.",
+      "historicalContext": "The source depicts the British Empire's global reach around 1900 CE. The selected polygon is a composite political entity and should not be read as a disjoint world partition.",
+      "contextSources": [
+        {
+          "title": "British Empire · historical overview",
+          "url": "https://en.wikipedia.org/wiki/British_Empire"
+        }
+      ],
+      "uncertainty": "The accepted interval is the inclusive Cliopatria FromYear–ToYear range for the displayed (British Empire) geometry. Cliopatria supplies one scholarly reconstruction without per-polygon confidence values. This selected polity map does not show every contemporaneous community, dependency or political relationship.",
+      "visualDistinctiveness": 3,
+      "polities": [
+        {
+          "name": "British Empire",
+          "wikipediaUrl": "https://en.wikipedia.org/wiki/British_Empire",
+          "wikidataUrl": "https://www.wikidata.org/wiki/Q8680"
+        }
+      ],
+      "sourceFeatureCount": 1
+    }
+  ]
+}
