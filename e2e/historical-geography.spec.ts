@@ -1,238 +1,208 @@
+import { mkdirSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
 
-type HistoricalMapEntry = { id: string; assetUrl: string; depictedYear: number }
-type HistoricalManifest = { maps: HistoricalMapEntry[] }
+const screenshotDirectory = 'artifacts/qa/historical-expansion'
 
-const toleranceFor = { easy: 20, medium: 8, hard: 2 } as const
+type AtlasMap = {
+  id: string
+  sampleYear: number
+  acceptedFromYear: number
+  acceptedToYear: number
+  assetUrl: string
+  region: { name: string }
+  polities: Array<{ name: string }>
+}
+type AtlasManifest = { maps: AtlasMap[] }
+type HistoricalFlag = { entity: string; assetUrl: string; source: { url: string }; artworkLicenseUrl: string }
+type FlagsManifest = { items: HistoricalFlag[] }
 
-async function startHistorical(page: Page) {
-  await page.goto('/games/historical-geography?mode=freeplay')
-  const start = page.getByRole('button', { name: 'Start free play' })
-  await expect(start).toBeEnabled({ timeout: 30_000 })
-  await start.click()
-  await expect(page.locator('.game-setup-panel')).toBeHidden()
-  await expect(page.locator('.historical-map-image')).toBeVisible()
-  await expect.poll(() => page.locator('.historical-map-image').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(100)
+test.beforeAll(() => mkdirSync(screenshotDirectory, { recursive: true }))
+
+async function startGame(page: Page, gameId: string) {
+  await page.goto(`/games/${gameId}?mode=freeplay`)
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await expect(page.locator('.game-body')).toBeVisible()
 }
 
-async function currentMap(page: Page): Promise<HistoricalMapEntry> {
-  const source = await page.locator('.historical-map-image').getAttribute('src')
-  const response = await page.request.get('/data/historical/manifest.json')
+async function loadAtlas(page: Page): Promise<AtlasManifest> {
+  const response = await page.request.get('/data/historical/atlas/v2/manifest.json')
   expect(response.ok()).toBe(true)
-  const manifest = await response.json() as HistoricalManifest
-  const map = manifest.maps.find((item) => item.assetUrl === source)
-  expect(map, `manifest entry for ${source}`).toBeDefined()
+  return await response.json() as AtlasManifest
+}
+
+async function currentAtlasMap(page: Page, manifest: AtlasManifest): Promise<AtlasMap> {
+  const assetUrl = await page.locator('.historical-atlas-map-image').getAttribute('src')
+  const map = manifest.maps.find((item) => item.assetUrl === assetUrl)
+  expect(map, `atlas manifest entry for ${assetUrl}`).toBeDefined()
   return map!
 }
 
-async function setDifficulty(page: Page, difficulty: keyof typeof toleranceFor) {
-  await page.getByRole('button', { name: 'Historical game settings' }).click()
-  await page.getByRole('group', { name: 'Historical game settings' }).getByLabel('Difficulty').selectOption(difficulty)
-}
-
-async function submitYear(page: Page, year: number) {
-  const yearInput = page.getByRole('spinbutton', { name: 'Your year guess' })
-  await expect(yearInput).toBeVisible()
-  await yearInput.fill(String(year))
-  await expect(yearInput).toHaveValue(String(year))
-  await page.getByRole('button', { name: 'Reveal year' }).click()
-  await expect(page.locator('.historical-reveal')).toBeVisible()
-}
-
-test('Explore and direct routes launch the authored historical game, accept inclusive bounds, reveal sources and replay', async ({ page }) => {
-  await page.goto('/explore')
-  await expect(page.getByRole('heading', { name: 'Borders across time' })).toBeVisible()
-  await expect(page.getByText('20 generated snapshots · 1886–2011')).toBeVisible()
-  await expect(page.getByText(/CC BY-NC-SA 4.0 · non-commercial use/)).toBeVisible()
-  await page.getByRole('link', { name: /Play When Was This Map/ }).click()
-  await expect(page.locator('.game-setup-panel')).toBeVisible()
-  await page.getByRole('button', { name: 'Hard · within 2 years' }).click()
-  await page.getByRole('button', { name: 'Start free play' }).click()
-  await expect(page.locator('.game-setup-panel')).toBeHidden()
-  await expect(page.locator('.historical-round-heading p')).toContainText('Maproom-generated snapshot')
-  await expect(page.locator('.historical-attribution')).toContainText('non-commercial')
-
-  const firstMap = await currentMap(page)
-  await submitYear(page, firstMap.depictedYear + toleranceFor.hard)
-  await expect(page.locator('.historical-reveal')).toHaveClass(/is-within-range/)
-  await expect(page.locator('.historical-range-note')).toContainText('Hard accepted')
-  await page.locator('.historical-source-details summary').click()
-  await expect(page.locator('.historical-source-details')).toHaveAttribute('open', '')
-  await expect(page.locator('.historical-source-details')).toContainText('Maproom-generated CShapes 2.1 snapshot')
-  await expect(page.locator('.historical-source-details')).toContainText('CC BY-NC-SA 4.0')
-  await expect(page.locator('.historical-source-details a[href="https://creativecommons.org/licenses/by-nc-sa/4.0/"]')).toBeVisible()
-
-  for (const difficulty of ['medium', 'easy'] as const) {
-    await expect(page.getByRole('button', { name: 'Study another map' })).toBeVisible()
-    await page.getByRole('button', { name: 'Study another map' }).click()
-    await expect(page.locator('.historical-map-image')).toBeVisible()
-    await setDifficulty(page, difficulty)
-    const map = await currentMap(page)
-    await submitYear(page, map.depictedYear + toleranceFor[difficulty])
-    await expect(page.locator('.historical-reveal')).toHaveClass(/is-within-range/)
-    await expect(page.locator('.historical-range-note')).toContainText(`${difficulty[0]!.toUpperCase()}${difficulty.slice(1)} accepted`)
-  }
-
+test('Historical Geography accepts BCE years without year zero, uses source intervals and reveals attribution', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 })
   await page.goto('/games/historical-geography?mode=freeplay')
-  await expect(page.locator('.game-setup-panel')).toBeVisible()
-  await page.getByRole('button', { name: 'Start free play' }).click()
-  await expect(page.locator('.game-body')).toBeVisible()
-})
-
-test('an out-of-range year is marked incorrect and the historical context is revealed', async ({ page }) => {
-  await startHistorical(page)
-  await submitYear(page, 1)
-  await expect(page.locator('.historical-reveal')).toHaveClass(/is-outside-range/)
-  await expect(page.locator('.historical-context')).toBeVisible()
   await expect(page.getByRole('dialog')).toBeVisible()
+  const setup = page.getByRole('dialog')
+  await setup.getByLabel('Period').selectOption('ancient')
+  await setup.getByRole('group', { name: 'Difficulty' }).getByRole('button', { name: /Challenge/ }).click()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  const image = page.locator('.historical-atlas-map-image')
+  await expect(image).toBeVisible()
+  await expect.poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(100)
+
+  const manifest = await loadAtlas(page)
+  const map = await currentAtlasMap(page, manifest)
+  expect(map.sampleYear).toBeLessThan(-500)
+  const year = page.getByRole('textbox', { name: 'Your year estimate' })
+  await year.fill('0')
+  await page.getByLabel('BCE or CE').selectOption('CE')
+  await page.getByRole('button', { name: 'Reveal period' }).click()
+  await expect(page.getByRole('alert')).toContainText('Enter a whole CE year from 1 to 9999')
+
+  await page.getByLabel('BCE or CE').selectOption('BCE')
+  await year.fill(String(Math.abs(map.sampleYear)))
+  await year.press('Enter')
+  const reveal = page.locator('.historical-atlas-reveal')
+  await expect(reveal).toBeVisible()
+  await expect(reveal).toHaveClass(/is-within-range/)
+  await expect(reveal.locator('h3')).toContainText('BCE')
+  await expect(reveal).toContainText('Score:')
+  const sourceDetails = reveal.locator('.historical-source-details')
+  await sourceDetails.locator('summary').click()
+  await expect(sourceDetails).toContainText('Cliopatria v0.2.1 data and documentation')
+  await expect(sourceDetails.locator('a[href="https://creativecommons.org/licenses/by/4.0/"]')).toBeVisible()
+  await page.screenshot({ path: `${screenshotDirectory}/historical-atlas-bce-desktop.png`, fullPage: true })
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-dialog')).toContainText('Inside the source period')
+  await page.locator('.game-results-dialog').getByRole('button', { name: 'Study another map' }).click()
+  await expect(page.locator('.historical-atlas-map-image')).toBeVisible()
+  await expect(page.getByRole('textbox', { name: 'Your year estimate' })).toHaveValue('')
 })
 
-test('Free Play can order curated snapshots, explain the timeline and restore sequence progress', async ({ page }) => {
-  await startHistorical(page)
-  await page.getByRole('button', { name: 'Historical game settings' }).click()
-  await page.getByRole('group', { name: 'Historical game settings' }).getByLabel('Format').selectOption('sequence')
-  await expect(page.getByRole('heading', { name: 'Put the maps in order' })).toBeVisible()
-  await expect(page.locator('.historical-sequence-list > li')).toHaveCount(3)
-  await expect.poll(() => page.locator('.historical-sequence-list .historical-map-image').evaluateAll((images: HTMLImageElement[]) => images.every((image) => image.naturalWidth > 100))).toBe(true)
-
-  const manifestResponse = await page.request.get('/data/historical/manifest.json')
-  expect(manifestResponse.ok()).toBe(true)
-  const manifest = await manifestResponse.json() as HistoricalManifest
-  const yearByUrl = new Map(manifest.maps.map((entry) => [entry.assetUrl, entry.depictedYear]))
-
-  async function visibleSequence() {
-    return page.locator('.historical-sequence-list > li').evaluateAll((items) => items.map((item) => {
-      const image = item.querySelector<HTMLImageElement>('.historical-map-image')
-      return image?.getAttribute('src') ?? ''
-    }))
-  }
-
-  const currentUrls = await visibleSequence()
-  const expectedUrls = [...currentUrls].sort((left, right) => (yearByUrl.get(left) ?? 0) - (yearByUrl.get(right) ?? 0))
-  const lastMapEarlier = page.locator('.historical-sequence-list > li').nth(2).getByRole('button', { name: /Move map .* earlier/ })
-  const lastMapEarlierLabel = await lastMapEarlier.getAttribute('aria-label')
-  expect(lastMapEarlierLabel).toBeTruthy()
-  const movedMap = lastMapEarlierLabel!.replace(/^Move map (.*) earlier$/, '$1')
-  const movedMapEarlier = page.getByRole('button', { name: lastMapEarlierLabel! })
-  await lastMapEarlier.focus()
-  await page.keyboard.press('Enter')
-  await expect.poll(visibleSequence).toEqual([currentUrls[0], currentUrls[2], currentUrls[1]])
-  await expect(movedMapEarlier).toBeFocused()
-  await page.keyboard.press('Enter')
-  await expect.poll(visibleSequence).toEqual([currentUrls[2], currentUrls[0], currentUrls[1]])
-  const movedMapLater = page.getByRole('button', { name: `Move map ${movedMap} later` })
-  await expect(movedMapLater).toBeFocused()
-  await page.keyboard.press('Enter')
-  await expect.poll(visibleSequence).toEqual([currentUrls[0], currentUrls[2], currentUrls[1]])
-  await expect(movedMapLater).toBeFocused()
-  for (let targetIndex = 0; targetIndex < expectedUrls.length; targetIndex += 1) {
-    let urls = await visibleSequence()
-    let currentIndex = urls.indexOf(expectedUrls[targetIndex]!)
-    while (currentIndex > targetIndex) {
-      await page.locator('.historical-sequence-list > li').nth(currentIndex).getByRole('button', { name: /Move map .* earlier/ }).click()
-      currentIndex -= 1
-      urls = await visibleSequence()
-    }
-    expect(urls[targetIndex]).toBe(expectedUrls[targetIndex])
-  }
-
+test('Historical Geography orders three maps with keyboard controls and restores the chosen order', async ({ page }) => {
+  await page.goto('/games/historical-geography?mode=freeplay')
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await page.getByRole('dialog').getByRole('button', { name: 'Order similar maps' }).click()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await expect(page.getByRole('heading', { name: /^Order the .+ maps$/ })).toBeVisible()
+  const rows = page.locator('.historical-sequence-list > li')
+  await expect(rows).toHaveCount(3)
+  const imageUrls = await rows.locator('img').evaluateAll((images) => images.map((image) => image.getAttribute('src')))
+  const later = rows.first().getByRole('button', { name: /Move map .* later/ })
+  await later.focus()
+  await expect(later).toBeFocused()
+  await page.keyboard.press('Space')
+  await expect.poll(() => rows.locator('img').evaluateAll((images) => images.map((image) => image.getAttribute('src')))).not.toEqual(imageUrls)
+  const savedOrder = await rows.locator('img').evaluateAll((images) => images.map((image) => image.getAttribute('src')))
+  const expectedOrderIds = savedOrder.map((url) => url?.slice(url.lastIndexOf('/') + 1).replace(/\.svg$/, ''))
   await expect.poll(() => page.evaluate(() => {
-    const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<{ gameId?: string; payload?: { format?: string; order?: string[] } }>
-    const session = sessions.find((item) => item.gameId === 'historical-geography')
-    return session?.payload?.format === 'sequence' && session.payload.order?.length === 3
-  })).toBe(true)
-
-  const savedOrder = await visibleSequence()
+    const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<{ gameId?: string; mode?: string; payload?: { order?: string[] } }>
+    return sessions.find((session) => session.gameId === 'historical-geography' && session.mode === 'freeplay')?.payload?.order ?? null
+  })).toEqual(expectedOrderIds)
   await page.reload()
   await page.getByRole('button', { name: 'Start free play' }).click()
-  await expect(page.locator('.game-setup-panel')).toBeHidden()
-  await expect(page.getByRole('heading', { name: 'Put the maps in order' })).toBeVisible()
-  await expect.poll(visibleSequence).toEqual(savedOrder)
-
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await expect(page.getByRole('heading', { name: /^Order the .+ maps$/ })).toBeVisible()
+  await expect.poll(() => rows.locator('img').evaluateAll((images) => images.map((image) => image.getAttribute('src')))).toEqual(savedOrder)
   await page.getByRole('button', { name: 'Check sequence' }).click()
   await expect(page.locator('.historical-sequence-answer > li')).toHaveCount(3)
-  for (const [index, url] of expectedUrls.entries()) {
-    await expect(page.locator('.historical-sequence-answer > li > strong').nth(index)).toContainText(yearByUrl.get(url)!.toLocaleString('en-US'))
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await page.screenshot({ path: `${screenshotDirectory}/historical-sequence-results-desktop.png`, fullPage: true })
+  await page.locator('.game-results-dialog').getByRole('button', { name: 'Order another set' }).click()
+  await expect(rows).toHaveCount(3)
+})
+
+test('Historical States & Empires saves an answered round, finishes a ten-map set and replays', async ({ page }) => {
+  await startGame(page, 'historical-states')
+  const manifest = await loadAtlas(page)
+
+  async function answerCurrentMap() {
+    const map = await currentAtlasMap(page, manifest)
+    expect(map.polities.length).toBeGreaterThan(0)
+    const answer = map.polities[0]!.name
+    await expect(page.locator('.historical-atlas-clue')).toContainText(map.region.name)
+    await expect(page.getByText('Source period:', { exact: false })).toHaveCount(0)
+    await page.getByRole('button', { name: answer, exact: true }).click()
+    await expect(page.locator('.historical-flag-reveal')).toContainText(answer)
+    await expect(page.locator('.historical-flag-reveal')).toContainText('Source period:')
+    return map
   }
-  await expect(page.getByRole('dialog')).toBeVisible()
-  await expect(page.getByRole('dialog')).toContainText('3 / 3 correct')
-  await expect(page.locator('.historical-sequence-attribution')).toContainText('non-commercial')
 
-  await page.getByRole('button', { name: 'Order another set' }).click()
-  await expect(page.locator('.historical-sequence-list > li')).toHaveCount(3)
-})
-
-test('historical sequence controls fit a dark, reduced-motion mobile screen', async ({ browser }) => {
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' })
-  const page = await context.newPage()
-  await startHistorical(page)
-  await page.getByRole('button', { name: 'Historical game settings' }).click()
-  await page.getByRole('group', { name: 'Historical game settings' }).getByLabel('Format').selectOption('sequence')
-  await expect(page.locator('.historical-sequence-list > li')).toHaveCount(3)
-  await page.getByRole('button', { name: 'Switch to dark appearance' }).click()
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-  const dimensions = await page.evaluate(() => ({
-    viewport: window.innerWidth,
-    document: document.documentElement.scrollWidth,
-    page: document.querySelector('.historical-geography-game')?.getBoundingClientRect().width ?? 0,
-    cards: [...document.querySelectorAll<HTMLElement>('.historical-sequence-item')].map((item) => item.getBoundingClientRect().width),
-    controls: [...document.querySelectorAll<HTMLElement>('.historical-sequence-controls .button')].map((button) => button.getBoundingClientRect().height),
-  }))
-  expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport)
-  expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport)
-  expect(dimensions.cards.length).toBe(3)
-  expect(dimensions.cards.every((width) => width > 250)).toBe(true)
-  expect(dimensions.controls.every((height) => height >= 42)).toBe(true)
-  await context.close()
-})
-
-test('a fetched historical map and unfinished guess reopen offline through the service worker', async ({ page, context }) => {
-  await startHistorical(page)
-  const map = await currentMap(page)
-  const yearInput = page.getByRole('spinbutton', { name: 'Your year guess' })
-  await yearInput.fill(String(map.depictedYear))
-  await expect(yearInput).toHaveValue(String(map.depictedYear))
-  await expect.poll(() => page.evaluate((year) => {
-    const sessions = JSON.parse(localStorage.getItem('maproom-sessions-v1') ?? '[]') as Array<{ gameId?: string; payload?: { guess?: string } }>
-    return sessions.some((session) => session.gameId === 'historical-geography' && session.payload?.guess === String(year))
-  }, map.depictedYear)).toBe(true)
-  await page.evaluate(async () => { await navigator.serviceWorker.ready })
-  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true)
-  const cachedAssets = await page.evaluate(async ({ manifestUrl, mapUrl }) => {
-    await Promise.all([fetch(manifestUrl), fetch(mapUrl)])
-    const cacheNames = await caches.keys()
-    const cached = await Promise.all(cacheNames.map(async (name) => {
-      const cache = await caches.open(name)
-      return [Boolean(await cache.match(manifestUrl)), Boolean(await cache.match(mapUrl))]
-    }))
-    return { manifest: cached.some(([manifest]) => manifest), map: cached.some(([, asset]) => asset) }
-  }, { manifestUrl: '/data/historical/manifest.json', mapUrl: map.assetUrl })
-  expect(cachedAssets).toEqual({ manifest: true, map: true })
-  await context.setOffline(true)
+  const firstMap = await answerCurrentMap()
+  await page.locator('.historical-source-details summary').click()
+  await expect(page.locator('.historical-source-details')).toContainText('Cliopatria v0.2.1 data and documentation')
   await page.reload()
-  await expect(page.getByRole('dialog')).toBeVisible()
   await page.getByRole('button', { name: 'Start free play' }).click()
-  await expect(page.locator('.game-setup-panel')).toBeHidden()
-  await expect(page.getByRole('spinbutton', { name: 'Your year guess' })).toHaveValue(String(map.depictedYear))
-  await expect.poll(() => page.locator('.historical-map-image').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(100)
+  await expect(page.locator('.historical-flag-reveal')).toContainText(firstMap.polities[0]!.name)
+  await page.getByRole('button', { name: 'Next map' }).click()
+
+  for (let index = 1; index < 10; index += 1) {
+    await answerCurrentMap()
+    await page.getByRole('button', { name: index === 9 ? 'Finish set' : 'Next map' }).click()
+  }
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-dialog .game-results-summary')).toContainText('10 / 10 correct')
+  await expect(page.locator('.game-results-dialog .game-results-score')).toContainText('1,000')
+  await page.screenshot({ path: `${screenshotDirectory}/historical-states-results-desktop.png`, fullPage: true })
+  await page.locator('.game-results-dialog').getByRole('button', { name: 'Study another set' }).click()
+  await expect(page.locator('.historical-round-heading .eyebrow')).toContainText('map 1 of 10')
 })
 
-test('the historical game stays readable on a dark reduced-motion phone viewport', async ({ browser }) => {
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' })
-  const page = await context.newPage()
-  await startHistorical(page)
-  const theme = page.getByRole('button', { name: 'Switch to dark appearance' })
-  await theme.click()
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  const dimensions = await page.evaluate(() => ({
-    viewport: window.innerWidth,
-    document: document.documentElement.scrollWidth,
-    page: document.querySelector('.historical-geography-game')?.getBoundingClientRect().width ?? 0,
-    input: document.querySelector<HTMLInputElement>('#historical-year-guess')?.getBoundingClientRect().width ?? 0,
-  }))
+test('Historical Flags restores an answered question, shows its source and completes a set', async ({ page }) => {
+  await startGame(page, 'historical-flags')
+  const response = await page.request.get('/data/historical/flags/v1/manifest.json')
+  expect(response.ok()).toBe(true)
+  const manifest = await response.json() as FlagsManifest
+
+  async function answerCurrentFlag() {
+    const assetUrl = await page.locator('.historical-flag-prompt img').getAttribute('src')
+    const flag = manifest.items.find((item) => item.assetUrl === assetUrl)
+    expect(flag, `flag manifest entry for ${assetUrl}`).toBeDefined()
+    await page.getByRole('button', { name: flag!.entity, exact: true }).click()
+    await expect(page.locator('.historical-flag-reveal h3')).toHaveText(flag!.entity)
+    return flag!
+  }
+
+  const firstFlag = await answerCurrentFlag()
+  await page.locator('.historical-source-details summary').click()
+  await expect(page.locator(`.historical-source-details a[href="${firstFlag.source.url}"]`)).toBeVisible()
+  await expect(page.locator(`.historical-source-details a[href="${firstFlag.artworkLicenseUrl}"]`)).toBeVisible()
+  await page.reload()
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.locator('.historical-flag-reveal h3')).toHaveText(firstFlag.entity)
+  await page.getByRole('button', { name: 'Next flag' }).click()
+
+  for (let index = 1; index < 10; index += 1) {
+    await answerCurrentFlag()
+    await page.getByRole('button', { name: index === 9 ? 'Finish set' : 'Next flag' }).click()
+  }
+  await expect(page.locator('.game-results-dialog')).toBeVisible()
+  await expect(page.locator('.game-results-dialog .game-results-summary')).toContainText('10 / 10 correct')
+  await page.screenshot({ path: `${screenshotDirectory}/historical-flags-results-desktop.png`, fullPage: true })
+  await page.locator('.game-results-dialog').getByRole('button', { name: 'Study another set' }).click()
+  await expect(page.locator('.historical-round-heading .eyebrow')).toContainText('question 1 of 10')
+  await page.getByRole('button', { name: 'Historical flag settings' }).click()
+  await page.getByRole('group', { name: 'Historical flag settings' }).getByLabel('Format').selectOption('polity-to-flag')
+  await expect(page.locator('.historical-flag-polity-prompt')).toBeVisible()
+  await expect(page.locator('.historical-flag-image-answers .historical-flag-image-answer')).toHaveCount(4)
+})
+
+test('historical games share the Explore grid and fit a narrow mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 })
+  await page.goto('/explore')
+  await expect(page.locator('.historical-explore-collection')).toHaveCount(0)
+  for (const gameId of ['historical-geography', 'historical-flags', 'historical-states']) {
+    await expect(page.locator(`.explore-grid .game-card-${gameId}`)).toBeVisible()
+  }
+  await page.getByRole('button', { name: 'Historical Geography', exact: true }).click()
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(3)
+  await page.screenshot({ path: `${screenshotDirectory}/historical-explore-desktop.png`, fullPage: true })
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  const dimensions = await page.evaluate(() => ({ viewport: window.innerWidth, document: document.documentElement.scrollWidth }))
   expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport)
-  expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport)
-  expect(dimensions.input).toBeGreaterThan(100)
-  await context.close()
+  await page.screenshot({ path: `${screenshotDirectory}/historical-explore-mobile.png`, fullPage: true })
 })

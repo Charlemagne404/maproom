@@ -335,11 +335,11 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await expect.poll(hoverLift).toBeLessThan(-2.8)
   await expect.poll(() => leadCard.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(leadCardBackground)
   await page.screenshot({ path: 'artifacts/qa/product-consistency/home-tile-hover-desktop.png', fullPage: true })
-  const countryMap = page.locator('.daily-grid .game-card-countries .art-world')
+  const countryMap = page.locator('.other-games-carousel .game-card-countries .art-world')
   await expect(countryMap).toHaveJSProperty('complete', true)
   await expect(countryMap).toHaveCSS('object-fit', 'contain')
-  await expect(page.locator('.daily-grid .game-card-routes .art-route img')).toHaveCount(1)
-  await expect(page.locator('.daily-grid .game-card-cities .art-city-target')).toHaveCount(1)
+  await expect(page.locator('.other-games-carousel .game-card-routes .art-route img')).toHaveCount(1)
+  await expect(page.locator('.other-games-carousel .game-card-cities .art-city-target')).toHaveCount(1)
   await page.mouse.move(0, 0)
   await page.screenshot({ path: 'artifacts/qa/product-consistency/home-desktop.png', fullPage: true })
   const keyboardPage = await page.context().newPage()
@@ -350,10 +350,10 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
 
   await page.goto('/explore')
   await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreGameCardCount)
-  const historicalCollection = page.locator('.historical-explore-collection')
-  await expect(historicalCollection).toBeVisible()
-  await expect(historicalCollection.locator('.historical-explore-license')).toContainText('non-commercial use')
-  await expect(historicalCollection.getByRole('link', { name: 'Play When Was This Map?' })).toHaveAttribute('href', '/games/historical-geography?mode=freeplay')
+  await expect(page.locator('.historical-explore-collection')).toHaveCount(0)
+  for (const gameId of ['historical-geography', 'historical-flags', 'historical-states']) {
+    await expect(page.locator(`.explore-grid .game-card-${gameId} .game-card-link`)).toHaveAttribute('href', `/games/${gameId}?mode=freeplay`)
+  }
   const formatFavorites = page.locator('.explore-grid .game-format-card .favorite-button')
   const formatFavoriteNames = await formatFavorites.evaluateAll((buttons) => buttons.map((button) => button.getAttribute('aria-label') ?? ''))
   expect(new Set(formatFavoriteNames).size).toBe(formatFavoriteNames.length)
@@ -383,10 +383,12 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
   await expect(page.locator('.explore-grid .game-card')).toHaveCount(4)
   await expect(page.locator('.explore-grid .game-card-cities')).toHaveCount(4)
   await page.getByLabel('Search games').fill('')
-  await page.getByRole('button', { name: 'Historical geography', exact: true }).click()
+  await page.getByRole('button', { name: 'Historical Geography', exact: true }).click()
   await expect(page.locator('.historical-explore-collection')).toHaveCount(0)
-  await expect(page.locator('.explore-grid .game-card-historical-geography .game-card-link'))
-    .toHaveAttribute('href', '/games/historical-geography?mode=freeplay')
+  await expect(page.locator('.explore-grid .game-card')).toHaveCount(3)
+  for (const gameId of ['historical-geography', 'historical-flags', 'historical-states']) {
+    await expect(page.locator(`.explore-grid .game-card-${gameId} .game-card-link`)).toHaveAttribute('href', `/games/${gameId}?mode=freeplay`)
+  }
 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
@@ -1462,7 +1464,9 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   await expect(page.locator('.other-games-carousel .game-card')).toHaveCount(freePlayCardCount)
   await page.goto('/explore')
   await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreGameCardCount)
-  await expect(page.locator('.historical-explore-collection')).toBeVisible()
+  await expect(page.locator('.historical-explore-collection')).toHaveCount(0)
+  await expect(page.locator('.explore-grid .game-card-historical-flags')).toBeVisible()
+  await expect(page.locator('.explore-grid .game-card-historical-states')).toBeVisible()
   await page.screenshot({ path: 'artifacts/qa/product-consistency/explore-desktop.png', fullPage: true })
 
   for (const [route, name] of [['/statistics', 'statistics'], ['/settings', 'settings'], ['/data', 'data'], ['/about', 'about'], ['/privacy', 'privacy']] as const) {
@@ -2078,5 +2082,5 @@ test('the production service worker reopens cached routes when offline', async (
   await page.goto('/explore')
   await expect(page.getByRole('heading', { name: 'Geography games' })).toBeVisible()
   await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreGameCardCount)
-  await expect(page.locator('.historical-explore-collection')).toBeVisible()
+  await expect(page.locator('.historical-explore-collection')).toHaveCount(0)
 })

@@ -14,6 +14,9 @@ const APP_FILES = [
   '/data/population-age-profiles.json',
   '/data/watershed-match.json',
   '/data/region-index.json',
+  '/data/historical/manifest.json',
+  '/data/historical/atlas/v2/manifest.json',
+  '/data/historical/flags/v1/manifest.json',
 ]
 
 self.addEventListener('install', (event) => {
@@ -27,6 +30,26 @@ self.addEventListener('install', (event) => {
       throw new Error('The offline asset manifest is invalid.')
     }
     await cache.addAll(manifest.assets)
+
+    const historicalCollections = [
+      { url: '/data/historical/manifest.json', key: 'maps' },
+      { url: '/data/historical/atlas/v2/manifest.json', key: 'maps' },
+      { url: '/data/historical/flags/v1/manifest.json', key: 'items' },
+    ]
+    const historicalAssets = []
+    for (const collection of historicalCollections) {
+      const response = await cache.match(collection.url)
+      if (!response) throw new Error(`The historical offline manifest is missing: ${collection.url}`)
+      const data = await response.json()
+      if (!Array.isArray(data[collection.key])) throw new Error(`The historical offline manifest is invalid: ${collection.url}`)
+      for (const item of data[collection.key]) {
+        if (typeof item?.assetUrl !== 'string' || !item.assetUrl.startsWith('/data/historical/')) {
+          throw new Error(`The historical offline asset path is invalid: ${collection.url}`)
+        }
+        historicalAssets.push(item.assetUrl)
+      }
+    }
+    await cache.addAll([...new Set(historicalAssets)])
   })())
   self.skipWaiting()
 })

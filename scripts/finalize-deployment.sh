@@ -130,16 +130,20 @@ grep -Fq 'id="root"' "$BUILD_SOURCE/index.html" || fail 'dist/index.html has no 
 [[ -d "$BUILD_SOURCE/assets" ]] || fail 'dist/assets is missing.'
 find "$BUILD_SOURCE/assets" -maxdepth 1 -type f -name '*.js' -print -quit | grep -q . || fail 'No compiled JavaScript bundle was found.'
 find "$BUILD_SOURCE/assets" -maxdepth 1 -type f -name '*.css' -print -quit | grep -q . || fail 'No compiled stylesheet was found.'
-for relative in manifest.webmanifest sw.js offline.html precache-manifest.json robots.txt sitemap.xml social/maproom-preview.png icons/maproom.svg data/countries.json data/countries.topo.json data/countries-outline.topo.json data/cities.json data/cities-major.json data/rivers.json data/population-age-profiles.json data/watershed-match.json data/data-manifest.json data/coverage.json data/region-index.json data/historical/manifest.json; do
+for relative in manifest.webmanifest sw.js offline.html precache-manifest.json robots.txt sitemap.xml social/maproom-preview.png icons/maproom.svg data/countries.json data/countries.topo.json data/countries-outline.topo.json data/cities.json data/cities-major.json data/rivers.json data/population-age-profiles.json data/watershed-match.json data/data-manifest.json data/coverage.json data/region-index.json data/historical/manifest.json data/historical/atlas/v2/manifest.json data/historical/flags/v1/manifest.json; do
   [[ -s "$BUILD_SOURCE/$relative" ]] || fail "Required production file is missing or empty: dist/$relative"
 done
-for relative in explore about data privacy statistics settings 404 games/countries games/outlines games/routes games/flags games/grid games/cities games/connections games/higher-lower games/neighbours games/distance games/rivers games/latitude-ladder games/historical-geography games/projection-match games/population-pyramid games/watershed-match; do
+for relative in explore about data privacy statistics settings 404 games/countries games/outlines games/routes games/flags games/grid games/cities games/connections games/higher-lower games/neighbours games/distance games/rivers games/latitude-ladder games/historical-geography games/historical-flags games/historical-states games/projection-match games/population-pyramid games/watershed-match; do
   [[ -s "$BUILD_SOURCE/$relative/index.html" ]] || fail "Required route snapshot is missing or empty: dist/$relative/index.html"
 done
 for map_number in {1..20}; do
   printf -v map_index '%02d' "$map_number"
   [[ -s "$BUILD_SOURCE/data/historical/maps/historical-map-$map_index.svg" ]] || fail "Required historical map is missing or empty: dist/data/historical/maps/historical-map-$map_index.svg"
 done
+atlas_map_count="$(find "$BUILD_SOURCE/data/historical/atlas/v2/maps" -maxdepth 1 -type f -name '*.svg' -print | awk 'END { print NR }')"
+[[ "$atlas_map_count" == 41 ]] || fail "Expected 41 expanded historical atlas maps; found $atlas_map_count."
+flag_art_count="$(find "$BUILD_SOURCE/data/historical/flags/v1/flags" -maxdepth 1 -type f -name '*.svg' -print | awk 'END { print NR }')"
+[[ "$flag_art_count" == 20 ]] || fail "Expected 20 historical flag illustrations; found $flag_art_count."
 [[ -d "$BUILD_SOURCE/data/regions" ]] || fail 'dist/data/regions is missing.'
 find "$BUILD_SOURCE/data/regions" -maxdepth 1 -type f -name '*.topo.json' -print -quit | grep -q . || fail 'No first-level boundary packages were found.'
 
@@ -219,7 +223,7 @@ maproom.continental-hub.com {
 	@revalidate path / /index.html /explore /explore/index.html /about /about/index.html /data /data/index.html /privacy /privacy/index.html /statistics /statistics/index.html /settings /settings/index.html /404 /404/index.html /games/* /sw.js /manifest.webmanifest /precache-manifest.json /data/*
 	header @revalidate Cache-Control "no-cache"
 
-	@spa path / /explore /about /data /privacy /statistics /settings /404 /games/countries /games/outlines /games/routes /games/flags /games/grid /games/cities /games/connections /games/higher-lower /games/neighbours /games/distance /games/rivers /games/latitude-ladder /games/historical-geography /games/projection-match /games/population-pyramid /games/watershed-match
+	@spa path / /explore /about /data /privacy /statistics /settings /404 /games/countries /games/outlines /games/routes /games/flags /games/grid /games/cities /games/connections /games/higher-lower /games/neighbours /games/distance /games/rivers /games/latitude-ladder /games/historical-geography /games/historical-flags /games/historical-states /games/projection-match /games/population-pyramid /games/watershed-match
 	handle @spa {
 		try_files {path}/index.html {path} /index.html
 		file_server

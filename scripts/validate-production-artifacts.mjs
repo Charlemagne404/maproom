@@ -45,7 +45,8 @@ const requiredFiles = [
   'robots.txt', 'sitemap.xml', 'social/maproom-preview.png', 'icons/maproom.svg',
   'data/countries.json', 'data/countries.topo.json', 'data/countries-outline.topo.json',
   'data/cities.json', 'data/cities-major.json', 'data/rivers.json', 'data/data-manifest.json',
-  'data/population-age-profiles.json', 'data/watershed-match.json', 'data/coverage.json', 'data/region-index.json', 'data/historical/manifest.json',
+  'data/population-age-profiles.json', 'data/watershed-match.json', 'data/coverage.json', 'data/region-index.json',
+  'data/historical/manifest.json', 'data/historical/atlas/v2/manifest.json', 'data/historical/flags/v1/manifest.json',
 ]
 for (const relative of requiredFiles) await requiredFile(relative)
 
@@ -56,7 +57,8 @@ const snapshotPaths = [
   'games/flags/index.html', 'games/grid/index.html', 'games/cities/index.html',
   'games/connections/index.html', 'games/higher-lower/index.html', 'games/neighbours/index.html',
   'games/distance/index.html', 'games/rivers/index.html', 'games/latitude-ladder/index.html',
-  'games/historical-geography/index.html', 'games/projection-match/index.html', 'games/population-pyramid/index.html', 'games/watershed-match/index.html',
+  'games/historical-geography/index.html', 'games/historical-flags/index.html', 'games/historical-states/index.html',
+  'games/projection-match/index.html', 'games/population-pyramid/index.html', 'games/watershed-match/index.html',
 ]
 for (const relative of snapshotPaths) {
   const html = await readFile(await requiredFile(relative), 'utf8')
@@ -70,7 +72,7 @@ if (allHtml.length !== snapshotPaths.length) fail(`expected ${snapshotPaths.leng
 
 const sitemap = await readFile(await requiredFile('sitemap.xml'), 'utf8')
 const sitemapUrls = sitemap.match(/<loc>/g) ?? []
-if (sitemapUrls.length !== 21) fail(`expected 21 indexable sitemap URLs, found ${sitemapUrls.length}`)
+if (sitemapUrls.length !== 23) fail(`expected 23 indexable sitemap URLs, found ${sitemapUrls.length}`)
 const deployment = await readFile(path.join(root, 'scripts/finalize-deployment.sh'), 'utf8')
 const domain = deployment.match(/^readonly DOMAIN='([^']+)'$/m)?.[1]
 if (!domain || !sitemap.includes(`<loc>https://${domain}/`)) fail('sitemap origin does not match the deployment hostname')
@@ -86,7 +88,7 @@ for (const asset of precache.assets) {
   await requiredFile(asset.slice(1))
 }
 const compiledFiles = await readdir(path.join(dist, 'assets'))
-for (const chunk of ['CountryIdentificationGame', 'OutlineGame', 'BorderRouteGame', 'FlagGame', 'GeographyGridGame', 'CitiesGame', 'ConnectionsGame', 'HigherLowerGame', 'NeighbourGame', 'DistanceGame', 'RiverwaysGame', 'LatitudeLadderGame', 'HistoricalGeographyGame', 'ProjectionMatchGame', 'PopulationPyramidGame', 'WatershedMatchGame']) {
+for (const chunk of ['CountryIdentificationGame', 'OutlineGame', 'BorderRouteGame', 'FlagGame', 'GeographyGridGame', 'CitiesGame', 'ConnectionsGame', 'HigherLowerGame', 'NeighbourGame', 'DistanceGame', 'RiverwaysGame', 'LatitudeLadderGame', 'HistoricalGeographyEntry', 'HistoricalFlagsGame', 'HistoricalStatesGame', 'ProjectionMatchGame', 'PopulationPyramidGame', 'WatershedMatchGame']) {
   if (!compiledFiles.some((file) => file.startsWith(`${chunk}-`) && file.endsWith('.js'))) fail(`lazy game chunk is missing for ${chunk}`)
 }
 const worker = await readFile(await requiredFile('sw.js'), 'utf8')
@@ -201,4 +203,44 @@ for (const map of historical.maps) {
   if (sha256(await readFile(await requiredFile(relative))) !== map.assetSha256) fail(`historical map checksum mismatch for dist/${relative}`)
 }
 
-console.log(`Validated ${snapshotPaths.length} route snapshots, ${sitemapUrls.length} sitemap URLs, ${precache.assets.length} precached assets, ${regionPackages.length} regional packages, 20 historical maps, and data/CSP hashes.`)
+const atlas = await json('data/historical/atlas/v2/manifest.json')
+if (atlas.schemaVersion !== 1 || atlas.source?.title !== 'Cliopatria' || atlas.source?.version !== 'v0.2.1'
+  || atlas.source?.license !== 'Creative Commons Attribution 4.0 International' || atlas.source?.licenseUrl !== 'https://creativecommons.org/licenses/by/4.0/'
+  || atlas.maps?.length !== 41 || new Set(atlas.maps.map((map) => map.id)).size !== 41) {
+  fail('expanded historical atlas manifest must contain 41 unique, attributed Cliopatria maps')
+}
+if (Math.min(...atlas.maps.map((map) => map.sampleYear)) > -3300 || Math.max(...atlas.maps.map((map) => map.sampleYear)) < 1900) {
+  fail('expanded historical atlas does not cover the curated BCE-to-modern span')
+}
+for (const map of atlas.maps) {
+  if (!Number.isInteger(map.sampleYear) || map.sampleYear === 0 || !Number.isInteger(map.acceptedFromYear)
+    || !Number.isInteger(map.acceptedToYear) || map.acceptedFromYear === 0 || map.acceptedToYear === 0
+    || map.acceptedFromYear > map.acceptedToYear || map.sampleYear < map.acceptedFromYear || map.sampleYear > map.acceptedToYear
+    || !/^\/data\/historical\/atlas\/v2\/maps\/[a-z0-9-]+\.svg$/.test(map.assetUrl) || !/^[a-f0-9]{64}$/.test(map.assetSha256)
+    || !Array.isArray(map.contextSources) || map.contextSources.length === 0 || !map.uncertainty || !map.historicalContext) {
+    fail(`expanded historical atlas metadata is incomplete for ${map.id}`)
+  }
+  const relative = map.assetUrl.slice(1)
+  if (sha256(await readFile(await requiredFile(relative))) !== map.assetSha256) fail(`expanded historical atlas checksum mismatch for dist/${relative}`)
+}
+
+const historicalFlags = await json('data/historical/flags/v1/manifest.json')
+if (historicalFlags.schemaVersion !== 1 || historicalFlags.contentVersion !== 'historical-flags-v1'
+  || historicalFlags.artworkLicense !== 'Creative Commons Attribution 4.0 International'
+  || historicalFlags.artworkLicenseUrl !== 'https://creativecommons.org/licenses/by/4.0/'
+  || historicalFlags.items?.length !== 20 || new Set(historicalFlags.items.map((item) => item.id)).size !== 20
+  || new Set(historicalFlags.items.map((item) => item.entity)).size < 19) {
+  fail('historical flag manifest must contain 20 unique and attributed entries from 19 political entities')
+}
+for (const item of historicalFlags.items) {
+  if (!item.entity || !item.periodLabel || !['documented', 'reconstructed'].includes(item.designStatus)
+    || !item.artworkNote || !item.explanation || !/^https:\/\//.test(item.source?.url ?? '')
+    || item.artworkLicense !== historicalFlags.artworkLicense || item.artworkLicenseUrl !== historicalFlags.artworkLicenseUrl
+    || !/^\/data\/historical\/flags\/v1\/flags\/[a-z0-9-]+\.svg$/.test(item.assetUrl) || !/^[a-f0-9]{64}$/.test(item.assetSha256)) {
+    fail(`historical flag source, period or artwork metadata is incomplete for ${item.id}`)
+  }
+  const relative = item.assetUrl.slice(1)
+  if (sha256(await readFile(await requiredFile(relative))) !== item.assetSha256) fail(`historical flag artwork checksum mismatch for dist/${relative}`)
+}
+
+console.log(`Validated ${snapshotPaths.length} route snapshots, ${sitemapUrls.length} sitemap URLs, ${precache.assets.length} precached assets, ${regionPackages.length} regional packages, 20 legacy maps, 41 expanded atlas maps, 20 historical flags, and data/CSP hashes.`)

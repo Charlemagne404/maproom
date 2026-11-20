@@ -26,6 +26,8 @@ const gameRoutes = [
   ['rivers', 'freeplay'],
   ['latitude-ladder', 'freeplay'],
   ['historical-geography', 'freeplay'],
+  ['historical-flags', 'freeplay'],
+  ['historical-states', 'freeplay'],
   ['projection-match', 'freeplay'],
   ['population-pyramid', 'freeplay'],
   ['watershed-match', 'freeplay'],
@@ -68,7 +70,7 @@ test('core pages fit phone and tablet viewports without horizontal overflow', as
   await context.close()
 })
 
-test('all sixteen games open and remain within narrow phone and tablet widths', async ({ browser, baseURL }) => {
+test('all eighteen games open and remain within narrow phone and tablet widths', async ({ browser, baseURL }) => {
   test.setTimeout(300_000)
   const context = await browser.newContext({
     viewport: { width: 320, height: 568 },

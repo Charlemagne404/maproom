@@ -20,6 +20,8 @@ const freePlayGames: Array<{ id: string; title: string; format?: string }> = [
   { id: 'rivers', title: 'Riverways' },
   { id: 'latitude-ladder', title: 'Latitude Ladder', format: '&format=west-east' },
   { id: 'historical-geography', title: 'When Was This Map?' },
+  { id: 'historical-flags', title: 'Historical Flags' },
+  { id: 'historical-states', title: 'Historical States & Empires' },
   { id: 'projection-match', title: 'Map Projection Match' },
   { id: 'population-pyramid', title: 'Population Pyramid Sort' },
   { id: 'watershed-match', title: 'Watershed Match' },
@@ -30,15 +32,13 @@ function secondsFromCssTime(value: string): number {
   return value.trim().endsWith('ms') ? amount / 1000 : amount
 }
 
-test('Explore setup starts all sixteen Free Play games', async ({ page }) => {
+test('Explore setup starts all eighteen Free Play games', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 960 })
 
   for (const game of freePlayGames) {
     await page.goto('/explore')
     const target = `/games/${game.id}?mode=freeplay${game.format ?? ''}`
-    const catalogueLink = game.id === 'historical-geography'
-      ? page.locator(`.historical-explore-link[href="${target}"]`)
-      : page.locator(`a.game-card-link[href="${target}"]`)
+    const catalogueLink = page.locator(`a.game-card-link[href="${target}"]`)
     await catalogueLink.click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()

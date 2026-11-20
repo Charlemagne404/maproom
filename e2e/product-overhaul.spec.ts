@@ -27,10 +27,10 @@ async function captureTheme(page: Page, viewport: 'desktop' | 'mobile', theme: '
 
   await page.goto('/explore')
   await expect(page.locator('.explore-grid .game-card')).toHaveCount(exploreGameCardCount)
-  const historicalCollection = page.locator('.historical-explore-collection')
-  await expect(historicalCollection).toBeVisible()
-  await expect(historicalCollection.locator('.historical-explore-license')).toContainText('non-commercial use')
-  await expect(historicalCollection.getByRole('link', { name: 'Play When Was This Map?' })).toHaveAttribute('href', '/games/historical-geography?mode=freeplay')
+  await expect(page.locator('.historical-explore-collection')).toHaveCount(0)
+  for (const gameId of ['historical-geography', 'historical-flags', 'historical-states']) {
+    await expect(page.locator(`.explore-grid .game-card-${gameId} .game-card-link`)).toHaveAttribute('href', `/games/${gameId}?mode=freeplay`)
+  }
   const exploreGrid = await page.locator('.game-grid.explore-grid[aria-label="Free play games and formats"]').boundingBox()
   for (const gameId of ['rivers', 'latitude-ladder']) {
     const cardWidths = await page.locator(`.game-card-${gameId}`).evaluateAll((cards) => cards.map((card) => card.getBoundingClientRect().width))
@@ -68,6 +68,7 @@ async function captureTheme(page: Page, viewport: 'desktop' | 'mobile', theme: '
       ['grid', 'daily'], ['cities', 'daily'], ['connections', 'freeplay'], ['higher-lower', 'freeplay'],
       ['neighbours', 'freeplay'], ['distance', 'freeplay'], ['rivers', 'daily'],
       ['latitude-ladder', 'daily'], ['historical-geography', 'freeplay'],
+      ['historical-flags', 'freeplay'], ['historical-states', 'freeplay'],
     ] as const
     for (const [gameId, mode] of gameModes) {
       await page.goto(`/games/${gameId}?mode=${mode}`)
