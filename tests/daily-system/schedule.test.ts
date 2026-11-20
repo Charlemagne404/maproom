@@ -81,12 +81,12 @@ describe('versioned Daily rotation', () => {
     expect(() => getDailyGameLineup('2026-11-18', DAILY_GAME_ELIGIBILITY.filter((entry) => !['cities', 'rivers', 'latitude-ladder'].includes(entry.gameId)))).toThrow(RangeError)
   })
 
-  it('keeps Historical Geography out unless it receives an explicit, reviewed eligibility entry', () => {
-    expect(isDailyEligible('historical-geography')).toBe(false)
-    expect(getEligibleDailyGameIds()).not.toContain('historical-geography')
-    expect(DAILY_GAME_ELIGIBILITY.find((entry) => entry.gameId === 'historical-geography')).toMatchObject({
-      eligible: false,
-      reason: expect.stringContaining('Excluded from Daily'),
-    })
+  it('keeps all historical games out of Daily until separately reviewed', () => {
+    for (const gameId of ['historical-geography', 'historical-flags', 'historical-states']) {
+      expect(isDailyEligible(gameId)).toBe(false)
+      expect(getEligibleDailyGameIds()).not.toContain(gameId)
+      expect(DAILY_GAME_ELIGIBILITY.find((entry) => entry.gameId === gameId)).toMatchObject({ eligible: false })
+    }
+    expect(DAILY_GAME_ELIGIBILITY.find((entry) => entry.gameId === 'historical-geography')?.reason).toContain('Excluded from Daily')
   })
 })

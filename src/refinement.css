@@ -2310,3 +2310,21 @@ html[data-theme='dark'] .setup-choice.is-selected { background: color-mix(in srg
 @media (max-width: 370px) {
   .game-card-rivers .game-card-art, .game-card-latitude-ladder .game-card-art, .game-card-projection-match .game-card-art, .game-card-watershed-match .game-card-art { height: 70px; }
 }
+.art-historical-flags,
+.art-historical-states { width: min(245px, 100%); height: 88px; margin: 8px auto 5px; }
+.art-historical-flags > svg,
+.art-historical-states > svg { width: 100%; height: 100%; overflow: visible; }
+.historical-art-card { fill: #f1e8d9; stroke: #bcad98; stroke-width: 1.5; }
+.historical-art-flag rect { stroke: rgba(41, 38, 34, .27); stroke-width: 1; }
+.historical-art-flag-left rect { fill: #23406f; }
+.historical-art-flag-left path { fill: none; stroke: #f8f6ef; stroke-width: 7; }
+.historical-art-flag-center rect { fill: #c83239; }
+.historical-art-flag-center circle { fill: #e9c64b; }
+.historical-art-flag-right rect { fill: #f8f6ef; }
+.historical-art-flag-right path { fill: none; stroke: #b83239; stroke-width: 5; }
+.historical-art-timeline { fill: none; stroke: #987c5e; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.art-historical-flags circle { fill: var(--accent); }
+.historical-state-grid { fill: none; stroke: rgba(106, 124, 111, .3); stroke-width: .9; }
+.historical-state-shape { fill: #b9cbb7; stroke: #728373; stroke-width: 1.5; stroke-linejoin: round; }
+.historical-state-route { fill: none; stroke: #cc8d62; stroke-width: 2; stroke-dasharray: 3 4; }
+.art-historical-states circle { fill: #f4eee5; stroke: var(--accent); stroke-width: 2; }

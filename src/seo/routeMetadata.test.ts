@@ -6,8 +6,10 @@ describe('route metadata', () => {
   it('covers each stable game route exactly once', () => {
     const gamePaths = allMetadataPages.filter((page) => page.kind === 'game').map((page) => page.path).sort()
     expect(gamePaths).toEqual(games.map((game) => game.path).sort())
-    expect(allMetadataPages).toHaveLength(24)
-    expect(resolvePageMetadata('/games/historical-geography').title).toBe('Historical map year guessing game | Maproom')
+    expect(allMetadataPages).toHaveLength(26)
+    expect(resolvePageMetadata('/games/historical-geography').title).toBe('Historical map year and era guessing game | Maproom')
+    expect(resolvePageMetadata('/games/historical-flags').title).toBe('Historical Flags quiz | Maproom')
+    expect(resolvePageMetadata('/games/historical-states').title).toBe('Historical States and Empires map quiz | Maproom')
     expect(resolvePageMetadata('/games/projection-match').title).toBe('Map projection quiz | Maproom')
     expect(resolvePageMetadata('/games/population-pyramid').title).toBe('Population Pyramid Sort | Maproom')
     expect(resolvePageMetadata('/games/watershed-match').title).toBe('Watershed Match | Maproom')

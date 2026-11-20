@@ -1,0 +1,229 @@
+.historical-flags-game,
+.historical-states-game {
+  gap: 16px;
+}
+
+.historical-flag-prompt,
+.historical-flag-polity-prompt {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  min-height: 176px;
+  margin: 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-raised);
+  text-align: center;
+}
+
+.historical-flag-prompt img {
+  display: block;
+  width: min(100%, 440px);
+  max-height: 230px;
+  object-fit: contain;
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  box-shadow: 0 5px 18px rgba(30, 28, 25, .1);
+}
+
+.historical-flag-prompt figcaption {
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.historical-flag-polity-prompt h3 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  line-height: 1.12;
+}
+
+.historical-flag-polity-prompt p {
+  max-width: 38em;
+  margin: 0;
+  color: var(--muted);
+}
+
+.historical-flag-answers,
+.historical-state-answers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.historical-flag-answer,
+.historical-state-answer {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface-raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 650;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease, transform .15s ease;
+}
+
+.historical-flag-answer:hover:not(:disabled),
+.historical-state-answer:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-ink);
+}
+
+.historical-flag-answer:focus-visible,
+.historical-state-answer:focus-visible,
+.historical-flag-image-answer:focus-visible,
+.historical-flag-continue:focus-visible {
+  outline: 3px solid var(--accent-ink);
+  outline-offset: 3px;
+}
+
+.historical-flag-answer.is-correct,
+.historical-state-answer.is-correct {
+  border-color: #2a7955;
+  background: color-mix(in srgb, #2a7955 12%, var(--surface-raised));
+}
+
+.historical-flag-answer.is-wrong,
+.historical-state-answer.is-wrong {
+  border-color: #b4473f;
+  background: color-mix(in srgb, #b4473f 10%, var(--surface-raised));
+}
+
+.historical-flag-answer:disabled {
+  color: var(--ink);
+  opacity: 1;
+  cursor: default;
+}
+
+.historical-flag-image-answers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.historical-flag-image-answer {
+  display: grid;
+  grid-template-rows: minmax(78px, 1fr) auto;
+  gap: 8px;
+  min-width: 0;
+  min-height: 132px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface-raised);
+  color: var(--muted);
+  font: inherit;
+  font-size: .75rem;
+  cursor: pointer;
+}
+
+.historical-flag-image-answer img {
+  width: 100%;
+  height: 100%;
+  max-height: 102px;
+  object-fit: contain;
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+.historical-flag-image-answer.is-correct {
+  border-color: #2a7955;
+  box-shadow: inset 0 0 0 1px #2a7955;
+}
+
+.historical-flag-image-answer.is-wrong {
+  border-color: #b4473f;
+  box-shadow: inset 0 0 0 1px #b4473f;
+}
+
+.historical-flag-image-answer:disabled {
+  color: var(--muted);
+  opacity: .78;
+  cursor: default;
+}
+
+.historical-flag-reveal {
+  display: grid;
+  gap: 8px;
+  padding: 17px 19px 15px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent-ink);
+  border-radius: 3px;
+  background: var(--surface-raised);
+}
+
+.historical-flag-reveal.is-correct {
+  border-left-color: #2a7955;
+}
+
+.historical-flag-reveal.is-wrong {
+  border-left-color: #b4473f;
+}
+
+.historical-flag-reveal h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.historical-flag-reveal p {
+  margin: 0;
+  color: var(--muted);
+  font-size: .87rem;
+  line-height: 1.55;
+}
+
+.historical-flag-reveal p strong {
+  color: var(--ink);
+}
+
+.historical-flag-clue,
+.historical-flag-reconstruction,
+.historical-state-guess {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.historical-flag-continue {
+  justify-self: center;
+  min-width: 160px;
+  justify-content: center;
+  gap: 7px;
+}
+
+.historical-states-game .historical-atlas-map-stage {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.historical-states-game .historical-atlas-map-image {
+  min-width: 100%;
+}
+
+@media (max-width: 680px) {
+  .historical-flag-answers,
+  .historical-state-answers {
+    grid-template-columns: 1fr;
+  }
+
+  .historical-flag-image-answers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .historical-flag-image-answer {
+    min-height: 116px;
+  }
+
+  .historical-flag-prompt,
+  .historical-flag-polity-prompt {
+    min-height: 150px;
+    padding: 14px;
+  }
+}

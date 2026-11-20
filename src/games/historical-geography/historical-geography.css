@@ -219,6 +219,118 @@
   object-fit: contain;
 }
 
+.historical-atlas-clue {
+  padding: 13px 16px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent-ink);
+  border-radius: 3px;
+  background: var(--surface-raised);
+}
+
+.historical-atlas-clue p {
+  margin: 5px 0 0;
+  line-height: 1.5;
+}
+
+.historical-atlas-frame {
+  display: grid;
+  grid-template-rows: minmax(240px, 1fr) auto;
+}
+
+.historical-atlas-map-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  min-height: 260px;
+  max-height: min(68vh, 680px);
+  aspect-ratio: 5 / 3;
+  background: #f3ede2;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+}
+
+.historical-atlas-map-image {
+  flex: none;
+  max-width: none;
+  height: auto;
+  aspect-ratio: 5 / 3;
+  object-fit: contain;
+  transition: width .18s ease;
+}
+
+.historical-atlas-zoom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  color: var(--muted);
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.historical-atlas-zoom .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 5px 9px;
+}
+
+.historical-atlas-zoom .button:focus-visible,
+.historical-era-guess-form select:focus-visible {
+  outline: 3px solid var(--accent-ink);
+  outline-offset: 3px;
+}
+
+.historical-era-guess-form .historical-year-entry select {
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface-raised);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+
+.historical-atlas-reveal .historical-reveal-result h3 {
+  font-size: clamp(1.2rem, 2.4vw, 1.8rem);
+}
+
+.historical-atlas-attribution {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 5px 14px;
+}
+
+@media (max-width: 640px) {
+  .historical-atlas-map-stage {
+    min-height: 200px;
+    max-height: 55vh;
+  }
+
+  .historical-atlas-frame .historical-map-caption {
+    flex-wrap: wrap;
+  }
+
+  .historical-era-guess-form .historical-year-entry {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .historical-era-guess-form .historical-year-entry input {
+    min-width: 0;
+  }
+
+  .historical-era-guess-form .historical-year-entry button {
+    grid-column: 1 / -1;
+  }
+}
+
 .historical-map-caption {
   position: absolute;
   right: 11px;

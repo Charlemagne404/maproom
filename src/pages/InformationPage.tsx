@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { ExternalLink, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PageHeading } from '../components/Kit'
+import { validateHistoricalAtlasManifest, validateHistoricalFlagsManifest } from '../geography/historical/loader'
+import type { HistoricalAtlasManifest, HistoricalFlagsManifest } from '../geography/historical/types'
+import { formatHistoricalYear } from '../puzzles/historical-geography'
 
 interface SourceManifest {
   sources: Array<{ name: string; source: string; version: string; retrievedAt: string; license: string; licenseUrl: string; attribution: string; transformations: string[]; includedPackages?: number }>
@@ -77,6 +80,8 @@ function DataPage() {
   const [failure, setFailure] = useState(false)
   const [manifestStatus, setManifestStatus] = useState('')
   const [coverageStatus, setCoverageStatus] = useState('')
+  const [historicalData, setHistoricalData] = useState<{ atlas: HistoricalAtlasManifest; flags: HistoricalFlagsManifest } | null>(null)
+  const [historicalSourceFailure, setHistoricalSourceFailure] = useState(false)
 
   useEffect(() => {
     const loadingAnnouncement = window.setTimeout(() => {
@@ -105,6 +110,21 @@ function DataPage() {
     return () => window.clearTimeout(loadingAnnouncement)
   }, [])
 
+  useEffect(() => {
+    let active = true
+    Promise.all([
+      fetch('/data/historical/atlas/v2/manifest.json').then(async (response) => {
+        if (!response.ok) throw new Error('The historical atlas manifest could not be loaded.')
+        return validateHistoricalAtlasManifest(await response.json())
+      }),
+      fetch('/data/historical/flags/v1/manifest.json').then(async (response) => {
+        if (!response.ok) throw new Error('The historical flag manifest could not be loaded.')
+        return validateHistoricalFlagsManifest(await response.json())
+      }),
+    ]).then(([atlas, flags]) => { if (active) setHistoricalData({ atlas, flags }) }).catch(() => { if (active) setHistoricalSourceFailure(true) })
+    return () => { active = false }
+  }, [])
+
   const filteredRegions = useMemo(() => regions.filter((region) => `${region.name} ${region.iso3}`.toLowerCase().includes(query.trim().toLowerCase())), [regions, query])
 
   return (
@@ -131,6 +151,28 @@ function DataPage() {
             {!manifest && !failure && <div className="loading-state" aria-hidden="true">Reading source manifest…</div>}
           </section>
       )}
+      <section className="source-list historical-source-list">
+        <div className="section-heading"><div><span className="eyebrow">Historical geography</span><h2>Reconstructed maps and flag research</h2></div></div>
+        {historicalData ? <>
+          <article className="source-card">
+            <div className="source-card-heading"><div><h3>{historicalData.atlas.source.title} {historicalData.atlas.source.version}</h3><span>{historicalData.atlas.source.license}</span></div><a href={historicalData.atlas.source.releasePageUrl} target="_blank" rel="noreferrer" aria-label="Open the Cliopatria release"><ExternalLink size={16} /></a></div>
+            <p>{historicalData.atlas.maps.length} curated regional map views covering {formatHistoricalYear(Math.min(...historicalData.atlas.maps.map((map) => map.sampleYear)))} to {formatHistoricalYear(Math.max(...historicalData.atlas.maps.map((map) => map.sampleYear)))}. Source intervals and uncertainty are disclosed with each answer. Maproom generated the SVGs from selected Cliopatria polity geometries; the raw GIS archive is not part of the application.</p>
+            <p>{historicalData.atlas.source.attribution}</p>
+            <a className="source-license-link" href={historicalData.atlas.source.licenseUrl} target="_blank" rel="noreferrer">Cliopatria reuse terms <ExternalLink size={13} aria-hidden="true" /></a>
+          </article>
+          <article className="source-card historical-flag-source-card">
+            <div className="source-card-heading"><div><h3>Historical flag set</h3><span>{historicalData.flags.items.length} entries · original vector redrawing · {historicalData.flags.artworkLicense}</span></div></div>
+            <p>Each flag entry has its own institutional or historical reference, period, artwork status and reconstruction note. Sources are linked below and from each game reveal.</p>
+            <details>
+              <summary>View the {historicalData.flags.items.length} flag sources</summary>
+              <ul>{historicalData.flags.items.map((item) => <li key={item.id}><strong>{item.flagName}</strong> · {item.entity} · {item.periodLabel} — <a href={item.source.url} target="_blank" rel="noreferrer">{item.source.title}</a>{item.additionalSources?.map((source) => <Fragment key={source.url}> · <a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></Fragment>)} <span>({item.designStatus})</span></li>)}</ul>
+            </details>
+            <a className="source-license-link" href={historicalData.flags.artworkLicenseUrl} target="_blank" rel="noreferrer">Historical flag artwork license <ExternalLink size={13} aria-hidden="true" /></a>
+          </article>
+        </> : historicalSourceFailure
+          ? <div className="inline-notice notice-warning" role="status">Historical source manifests could not be loaded. The game still shows source details for each opened map and flag.</div>
+          : <div className="loading-state" aria-hidden="true">Reading historical source manifests…</div>}
+      </section>
       <section className="region-coverage">
             <div className="section-heading"><div><span className="eyebrow">Administrative boundaries</span><h2>First-level divisions by country</h2></div><span className="muted-note">{regions.length} country packages</span></div>
             <p className="coverage-intro">Each package has its own release date, primary source and license. Maproom keeps the provider’s simplified geometry and lists its attribution below.</p>

@@ -148,9 +148,19 @@ const gameCopy = {
     summary: 'Arrange five cities by latitude or longitude in a quick world geography puzzle.',
   },
   'historical-geography': {
-    title: 'Historical map year guessing game',
-    description: 'Study a Maproom-generated snapshot of international boundaries from 1886 to 2011, then estimate the year depicted.',
-    summary: 'Read a generated historical political-boundary snapshot, enter its depicted year, and learn the context and sources behind it.',
+    title: 'Historical map year and era guessing game',
+    description: 'Date source-backed reconstructions of historical polities from ancient BCE periods to modern history, then explore their context and limits.',
+    summary: 'Estimate when a regional political map belongs, or order three source-backed maps, with BCE and CE dates and uncertainty explained.',
+  },
+  'historical-flags': {
+    title: 'Historical Flags quiz',
+    description: 'Match documented and reconstructed historical flags to the political entities and periods they represent, with sources and artwork notes.',
+    summary: 'Explore 20 sourced flags from 19 political entities, with their periods, historical clues and clearly labeled vector reconstructions.',
+  },
+  'historical-states': {
+    title: 'Historical States and Empires map quiz',
+    description: 'Identify ancient and historical states from regional map reconstructions, with source intervals, context and uncertainty disclosed.',
+    summary: 'Name the polity shown in a regional map drawn from Cliopatria, spanning 3400 BCE to 1900 CE in this curated learning set.',
   },
   'projection-match': {
     title: 'Map projection quiz',

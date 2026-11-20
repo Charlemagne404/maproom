@@ -4,13 +4,6 @@ import { useSearchParams } from 'react-router-dom'
 import { useAppData } from '../app/useAppData'
 import { GameCard, GameFormatCard, PageHeading } from '../components/Kit'
 import { categories, formatsForGame, games, type GameFormat, type GameInfo } from '../games/catalog'
-import { HistoricalExploreCollection } from '../games/historical-geography/HistoricalExploreCollection'
-
-const specializedGameIds = new Set<GameInfo['id']>([
-  'projection-match',
-  'population-pyramid',
-  'watershed-match',
-])
 
 export function ExplorePage() {
   const { state, toggleFavorite } = useAppData()
@@ -31,8 +24,8 @@ export function ExplorePage() {
   const filtered = experiences.filter((experience) => {
     const { game, format } = experience
     const needle = query.trim().toLocaleLowerCase()
-    const matchesSearch = !needle || `${game.title} ${game.shortTitle} ${game.category} ${game.description} ${format?.title ?? ''} ${format?.description ?? ''}`.toLocaleLowerCase().includes(needle)
-    const matchesCategory = category === 'All games' || game.category === category
+    const matchesSearch = !needle || `${game.title} ${game.shortTitle} ${game.categories.join(' ')} ${game.description} ${format?.title ?? ''} ${format?.description ?? ''}`.toLocaleLowerCase().includes(needle)
+    const matchesCategory = category === 'All games' || game.categories.includes(category)
     const matchesFavorite = !favoritesOnly || state.favorites.includes(game.id)
     return matchesSearch && matchesCategory && matchesFavorite
   }).sort((a, b) => {
@@ -43,13 +36,6 @@ export function ExplorePage() {
     if (bRecent >= 0) return 1
     return experiences.indexOf(a) - experiences.indexOf(b)
   })
-  const showHistoricalCollection = !query.trim() && category === 'All games' && !favoritesOnly
-  const mainExperiences = filtered.filter((experience) => (
-    !specializedGameIds.has(experience.game.id)
-    && !(showHistoricalCollection && experience.game.id === 'historical-geography')
-  ))
-  const specializedExperiences = filtered.filter((experience) => specializedGameIds.has(experience.game.id))
-
   function selectCategory(value: string) {
     const next = new URLSearchParams(params)
     if (value === 'All games') next.delete('category')
@@ -59,7 +45,7 @@ export function ExplorePage() {
 
   return (
     <div className="page explore-page">
-      <PageHeading eyebrow="Free play" title="Geography games" description="Country quizzes, capital-city challenges, map puzzles, flags and more. Choose a game and play at your own pace." />
+      <PageHeading eyebrow="Free play" title="Geography games" description="Browse countries, maps, history, physical and human geography, and puzzles in one catalogue. Choose a game and play at your own pace." />
       <div className="explore-controls">
         <label className="search-field">
           <Search size={18} aria-hidden="true" />
@@ -82,27 +68,13 @@ export function ExplorePage() {
       </div>
       {filtered.length ? (
         <>
-          {mainExperiences.length > 0 && <section className="game-grid explore-grid" aria-label="Free play games and formats">
-            {mainExperiences.map((game) => (
+          <section className="game-grid explore-grid" aria-label="Free play games and formats">
+            {filtered.map((game) => (
               game.format
                 ? <GameFormatCard key={game.key} game={game.game} format={game.format} favorite={state.favorites.includes(game.game.id)} onFavorite={(id) => { void toggleFavorite(id) }} />
                 : <GameCard key={game.key} game={game.game} mode="freeplay" favorite={state.favorites.includes(game.game.id)} onFavorite={(id) => { void toggleFavorite(id) }} />
             ))}
-          </section>}
-          {specializedExperiences.length > 0 && <section className="explore-experiments" aria-labelledby="explore-experiments-title">
-            <div className="explore-experiments-heading">
-              <span className="eyebrow">Focused Free Play</span>
-              <h2 id="explore-experiments-title">Specialized collections</h2>
-              <p>Focused Free Play for map projections, population profiles and watershed links, with a separate archive for historical boundaries. These games remain outside the Daily rotation.</p>
-            </div>
-            <div className="game-grid explore-grid" aria-label="Specialized and historical games">
-              {specializedExperiences.map((game) => (
-                game.format
-                  ? <GameFormatCard key={game.key} game={game.game} format={game.format} favorite={state.favorites.includes(game.game.id)} onFavorite={(id) => { void toggleFavorite(id) }} />
-                  : <GameCard key={game.key} game={game.game} mode="freeplay" favorite={state.favorites.includes(game.game.id)} onFavorite={(id) => { void toggleFavorite(id) }} />
-              ))}
-            </div>
-          </section>}
+          </section>
         </>
       ) : (
         <div className="empty-state">
@@ -112,7 +84,6 @@ export function ExplorePage() {
           {(favoritesOnly || query) && <button className="button button-outline" type="button" onClick={() => { setQuery(''); selectCategory('All games'); setParams({}, { replace: true }) }}>Show all games</button>}
         </div>
       )}
-      {showHistoricalCollection && <HistoricalExploreCollection />}
       <div className="explore-count">{filtered.length} {filtered.length === 1 ? 'experience' : 'experiences'} available</div>
     </div>
   )

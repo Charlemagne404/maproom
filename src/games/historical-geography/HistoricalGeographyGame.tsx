@@ -36,8 +36,7 @@ const historicalFormatOptions = [
   { value: 'sequence', label: 'Order three maps' },
 ]
 
-export function HistoricalGeographyGame({ mode, date, seed }: { mode: GameMode; date: string; seed: string }) {
-  const session = useGameSession('historical-geography', mode, date, seed)
+export function HistoricalGeographyLegacyGame({ mode, seed, session }: { mode: GameMode; seed: string; session: ReturnType<typeof useGameSession> }) {
   const saved = session.progress as SavedHistoricalProgress | null
   const savedFormat: HistoricalFormat = isHistoricalFormat(saved?.format) ? saved.format : 'year'
   const savedDifficulty = isHistoricalDifficulty(saved?.difficulty) ? saved.difficulty : 'medium'

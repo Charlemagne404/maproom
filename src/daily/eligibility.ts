@@ -21,6 +21,8 @@ export const DAILY_GAME_ELIGIBILITY: readonly DailyGameEligibility[] = [
   { gameId: 'rivers', eligible: true, reason: 'Seeded from a named river pool, with stable scoring and saved progress.' },
   { gameId: 'latitude-ladder', eligible: true, reason: 'Seeded five-city order, stable scoring, and saved progress.' },
   { gameId: 'historical-geography', eligible: false, reason: 'Excluded from Daily; its historical map deck and one-guess format have not been reviewed for the rotation.' },
+  { gameId: 'historical-flags', eligible: false, reason: 'Free Play only; the source-backed historical flag set has not been reviewed for the Daily rotation.' },
+  { gameId: 'historical-states', eligible: false, reason: 'Free Play only; the historical polity recognition set has not been reviewed for the Daily rotation.' },
   { gameId: 'projection-match', eligible: false, reason: 'Free Play only while the task prompts and four-round difficulty are evaluated.' },
   { gameId: 'population-pyramid', eligible: false, reason: 'Free Play only while the population-profile prompt and spacing bands are evaluated with players.' },
   { gameId: 'watershed-match', eligible: false, reason: 'Free Play only while the WBD sample, downstream wording and map choices are evaluated with players.' },
