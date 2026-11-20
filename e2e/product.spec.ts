@@ -7,6 +7,7 @@ import { isCurrentWholeSettlement } from '../src/geography/cityRecords'
 import { buildOutlineCandidateGroups, EMPTY_OUTLINE_PROGRESS, outlineQuestionAt } from '../src/games/outlines/questionPool'
 import { flagCountryPool } from '../src/games/flags/questionPool'
 import { gridCandidates, shortestPath, validGridPresets } from '../src/puzzles/engine'
+import { getDailyGameLineup } from '../src/daily/schedule'
 import { CONNECTIONS_PUZZLES } from '../src/puzzles/connections-content'
 import { exploreGameCardCount, freePlayCardCount } from './gameCatalogCounts'
 
@@ -425,6 +426,13 @@ test('daily home, library search, favorites, keyboard access and mobile layout',
 })
 
 test('daily completion appears as a green check on the puzzle tile', async ({ page }) => {
+  const firstTwentyEightDates = Array.from({ length: 28 }, (_, offset) => {
+    const date = new Date(Date.parse('2026-01-01T12:00:00.000Z') + offset * 86_400_000).toISOString().slice(0, 10)
+    return { date, lineup: getDailyGameLineup(date) }
+  })
+  const dateWithCountries = firstTwentyEightDates.find(({ lineup }) => lineup.includes('countries'))
+  expect(dateWithCountries).toBeDefined()
+  await page.clock.install({ time: new Date(`${dateWithCountries!.date}T12:00:00.000Z`) })
   await openGame(page, 'countries', 'daily')
   for (let index = 0; index < 8; index += 1) {
     const answer = await page.locator('.question-toolbar h2 em').innerText()
@@ -1476,13 +1484,13 @@ test('captures the redesigned desktop game stages and key mobile screens', async
   }
 
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
-    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily')
+    await openGame(page, id, id === 'cities' || ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily', id === 'cities' ? 'locate-city' : undefined)
     await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-desktop.png` })
   }
 
   await page.setViewportSize({ width: 1280, height: 800 })
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
-    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily')
+    await openGame(page, id, id === 'cities' || ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily', id === 'cities' ? 'locate-city' : undefined)
     await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-laptop.png` })
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `${id} laptop width overflow`).toBeLessThanOrEqual(0)
@@ -1490,7 +1498,7 @@ test('captures the redesigned desktop game stages and key mobile screens', async
 
   await page.setViewportSize({ width: 1024, height: 768 })
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
-    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily')
+    await openGame(page, id, id === 'cities' || ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily', id === 'cities' ? 'locate-city' : undefined)
     await page.screenshot({ path: `artifacts/qa/product-consistency/game-${id}-tablet.png` })
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `${id} tablet width overflow`).toBeLessThanOrEqual(0)
@@ -1504,7 +1512,7 @@ test('captures the redesigned desktop game stages and key mobile screens', async
 
   await page.setViewportSize({ width: 390, height: 844 })
   for (const id of ['countries', 'outlines', 'routes', 'flags', 'grid', 'cities', 'connections', 'higher-lower', 'neighbours', 'distance']) {
-    await openGame(page, id, ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily')
+    await openGame(page, id, id === 'cities' || ['connections', 'higher-lower', 'neighbours', 'distance'].includes(id) ? 'freeplay' : 'daily', id === 'cities' ? 'locate-city' : undefined)
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `${id} mobile width overflow`).toBeLessThanOrEqual(0)
     if (id === 'countries') {
@@ -2056,6 +2064,18 @@ test('the production service worker reopens cached routes when offline', async (
   await page.getByRole('button', { name: 'Start free play' }).click()
   await expect(page.getByLabel('Name the highlighted river')).toBeVisible()
 
+  const historicalAssetsCached = await page.evaluate(async () => {
+    const [legacy, atlas, flags] = await Promise.all([
+      fetch('/data/historical/manifest.json').then((response) => response.json()),
+      fetch('/data/historical/atlas/v2/manifest.json').then((response) => response.json()),
+      fetch('/data/historical/flags/v1/manifest.json').then((response) => response.json()),
+    ]) as [{ maps: Array<{ assetUrl: string }> }, { maps: Array<{ assetUrl: string }> }, { items: Array<{ assetUrl: string }> }]
+    const assets = [...legacy.maps, ...atlas.maps, ...flags.items].map((item) => item.assetUrl)
+    const cached = await Promise.all(assets.map(async (asset) => Boolean(await caches.match(asset))))
+    return { legacy: legacy.maps.length, atlas: atlas.maps.length, flags: flags.items.length, uncached: assets.filter((_, index) => !cached[index]) }
+  })
+  expect(historicalAssetsCached).toEqual({ legacy: 20, atlas: 41, flags: 20, uncached: [] })
+
   const openedDataWasCached = await page.evaluate(async () => {
     const files = [
       '/data/countries.topo.json',
@@ -2078,6 +2098,21 @@ test('the production service worker reopens cached routes when offline', async (
   await page.goto('/games/rivers?mode=freeplay')
   await expect(page.locator('.riverways-map-stage .geo-map path')).not.toHaveCount(0, { timeout: 30_000 })
   await expect(page.getByLabel('Name the highlighted river')).toBeVisible()
+
+  await page.goto('/games/historical-geography?mode=freeplay')
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.locator('.historical-atlas-map-image')).toBeVisible()
+  await expect.poll(() => page.locator('.historical-atlas-map-image').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(100)
+
+  await page.goto('/games/historical-flags?mode=freeplay')
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.locator('.historical-flag-prompt img')).toBeVisible()
+  await expect.poll(() => page.locator('.historical-flag-prompt img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(100)
+
+  await page.goto('/games/historical-states?mode=freeplay')
+  await page.getByRole('button', { name: 'Start free play' }).click()
+  await expect(page.locator('.historical-atlas-map-image')).toBeVisible()
+  await expect.poll(() => page.locator('.historical-atlas-map-image').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(100)
 
   await page.goto('/explore')
   await expect(page.getByRole('heading', { name: 'Geography games' })).toBeVisible()

@@ -156,7 +156,7 @@ function DataPage() {
         {historicalData ? <>
           <article className="source-card">
             <div className="source-card-heading"><div><h3>{historicalData.atlas.source.title} {historicalData.atlas.source.version}</h3><span>{historicalData.atlas.source.license}</span></div><a href={historicalData.atlas.source.releasePageUrl} target="_blank" rel="noreferrer" aria-label="Open the Cliopatria release"><ExternalLink size={16} /></a></div>
-            <p>{historicalData.atlas.maps.length} curated regional map views covering {formatHistoricalYear(Math.min(...historicalData.atlas.maps.map((map) => map.sampleYear)))} to {formatHistoricalYear(Math.max(...historicalData.atlas.maps.map((map) => map.sampleYear)))}. Source intervals and uncertainty are disclosed with each answer. Maproom generated the SVGs from selected Cliopatria polity geometries; the raw GIS archive is not part of the application.</p>
+            <p>{historicalData.atlas.maps.length} curated regional and global map views covering {formatHistoricalYear(Math.min(...historicalData.atlas.maps.map((map) => map.sampleYear)))} to {formatHistoricalYear(Math.max(...historicalData.atlas.maps.map((map) => map.sampleYear)))}. Source intervals and uncertainty are disclosed with each answer. Maproom generated the SVGs from selected Cliopatria polity geometries; the raw GIS archive is not part of the application.</p>
             <p>{historicalData.atlas.source.attribution}</p>
             <a className="source-license-link" href={historicalData.atlas.source.licenseUrl} target="_blank" rel="noreferrer">Cliopatria reuse terms <ExternalLink size={13} aria-hidden="true" /></a>
           </article>

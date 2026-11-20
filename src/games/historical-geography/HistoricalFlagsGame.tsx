@@ -151,7 +151,7 @@ export function HistoricalFlagsGame({ mode, date, seed }: { mode: GameMode; date
   const settings = mode === 'freeplay' && !finished && <GameSettingsMenu label="Historical flag settings"><div className="practice-config">
     <GameSettingSelect label="Format" value={format} options={formatOptions} onChange={changeFormat} />
     <GameSettingSelect label="Questions" value={questionCount} options={countOptions} onChange={changeQuestionCount} />
-    <p className="historical-settings-note">Every flag has an individual historical source and date range. Reconstructed details are labeled in the reveal.</p>
+    <p className="historical-settings-note">Every period design has a source and date range. Documented designs and illustrative reconstructions are labeled before each guess.</p>
   </div></GameSettingsMenu>
 
   if (!ready || (!items && !loadError)) return <div className="game-body historical-geography-game">{settings}<LoadingState label="Opening the historical flag collection…" /></div>
@@ -163,9 +163,9 @@ export function HistoricalFlagsGame({ mode, date, seed }: { mode: GameMode; date
   return <div className="game-body historical-geography-game historical-flags-game">
     {settings}
     <section className="historical-round" aria-labelledby="historical-flags-title">
-      <header className="historical-round-heading"><div><span className="eyebrow">Historical flags · question {index + 1} of {questions.length}</span><h2 id="historical-flags-title">{format === 'flag-to-polity' ? 'Who used this flag?' : 'Find the period flag'}</h2><p>Match a sourced flag to the polity and period it represents.</p></div><div className="historical-round-meta"><Flag size={15} aria-hidden="true" /><span>{score.toLocaleString('en-US')} points</span></div></header>
-      {format === 'flag-to-polity' ? <figure className="historical-flag-prompt"><img src={question.assetUrl} alt={`Historical flag: ${question.flagName}, used ${question.periodLabel}.`} /><figcaption>{question.periodLabel} · {question.region}</figcaption></figure>
-        : <div className="historical-flag-polity-prompt"><span className="eyebrow">{question.region} · {question.periodLabel}</span><h3>{question.entity}</h3><p>Choose the documented flag or standard associated with this political entity.</p></div>}
+      <header className="historical-round-heading"><div><span className="eyebrow">Historical flags · question {index + 1} of {questions.length}</span><h2 id="historical-flags-title">{format === 'flag-to-polity' ? 'Which polity is this design associated with?' : 'Find the period design'}</h2><p>Match a sourced period design to its polity and date range.</p></div><div className="historical-round-meta"><Flag size={15} aria-hidden="true" /><span>{score.toLocaleString('en-US')} points</span></div></header>
+      {format === 'flag-to-polity' ? <figure className="historical-flag-prompt"><img src={question.assetUrl} alt={`${designStatusLabel(question)}: ${question.flagName}, ${question.periodLabel}.`} /><figcaption>{question.periodLabel} · {question.region} · {designStatusLabel(question)}</figcaption>{question.designStatus === 'reconstructed' && <p className="historical-flag-artwork-note">{question.artworkNote}</p>}</figure>
+        : <div className="historical-flag-polity-prompt"><span className="eyebrow">{question.region} · {question.periodLabel}</span><h3>{question.entity}</h3><p>Choose the period flag or design associated with this polity. Each option states its artwork status.</p></div>}
       {format === 'flag-to-polity'
         ? <div className="historical-flag-answers" role="group" aria-label="Polity answer choices">{choices.map((choice) => {
           const correctChoice = choice.entity === question.entity
@@ -175,7 +175,7 @@ export function HistoricalFlagsGame({ mode, date, seed }: { mode: GameMode; date
         : <div className="historical-flag-image-answers" role="group" aria-label="Flag answer choices">{choices.map((choice, choiceIndex) => {
           const correctChoice = choice.entity === question.entity
           const selectedChoice = selectedId === choice.id
-          return <button key={choice.id} type="button" className={`historical-flag-image-answer${answered && correctChoice ? ' is-correct' : ''}${selectedChoice && !isCorrect ? ' is-wrong' : ''}`} aria-label={`Flag option ${choiceIndex + 1}`} disabled={answered} onClick={() => void choose(choice)}><img src={choice.assetUrl} alt={`Flag option ${choiceIndex + 1}`} loading="lazy" decoding="async" /><span>Option {choiceIndex + 1}</span></button>
+          return <button key={choice.id} type="button" className={`historical-flag-image-answer${answered && correctChoice ? ' is-correct' : ''}${selectedChoice && !isCorrect ? ' is-wrong' : ''}`} aria-label={`Flag option ${choiceIndex + 1}, ${designStatusLabel(choice)}`} disabled={answered} onClick={() => void choose(choice)}><img src={choice.assetUrl} alt={`${designStatusLabel(choice)} option ${choiceIndex + 1}`} loading="lazy" decoding="async" /><span>Option {choiceIndex + 1} · {designStatusLabel(choice)}</span></button>
         })}</div>}
       {answered && <>
         <section className={`historical-flag-reveal${isCorrect ? ' is-correct' : ' is-wrong'}`} aria-live="polite" aria-labelledby="historical-flag-reveal-title">
@@ -184,7 +184,7 @@ export function HistoricalFlagsGame({ mode, date, seed }: { mode: GameMode; date
           <p><strong>{question.flagName}</strong> · {question.periodLabel} · {question.entityType}</p>
           <p>{question.explanation}</p>
           <p className="historical-flag-clue"><strong>Visible clue:</strong> {question.visibleClue}</p>
-          {question.designStatus === 'reconstructed' && <p className="historical-flag-reconstruction"><strong>Reconstruction note:</strong> {question.artworkNote}</p>}
+          <p className="historical-flag-reconstruction"><strong>{designStatusLabel(question)}:</strong> {question.artworkNote}</p>
           <details className="historical-source-details"><summary>Sources and artwork attribution</summary><ul>{[question.source, ...(question.additionalSources ?? [])].map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul><p>{question.artworkAttribution} <a href={question.artworkLicenseUrl} target="_blank" rel="noreferrer">Artwork license</a>.</p></details>
         </section>
         <button className="button button-dark historical-flag-continue" type="button" onClick={() => void continueRound()}>{index + 1 < questions.length ? 'Next flag' : 'Finish set'} <Check size={16} aria-hidden="true" /></button>
@@ -197,3 +197,7 @@ export function HistoricalFlagsGame({ mode, date, seed }: { mode: GameMode; date
 
 function isFormat(value: unknown): value is Format { return value === 'flag-to-polity' || value === 'polity-to-flag' }
 function isQuestionCount(value: unknown): value is QuestionCount { return value === '10' || value === 'all' }
+
+function designStatusLabel(item: HistoricalFlagEntry): string {
+  return item.designStatus === 'reconstructed' ? 'Illustrative reconstruction' : 'Documented design'
+}

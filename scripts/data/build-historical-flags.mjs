@@ -97,7 +97,7 @@ function renderFlag(seed) {
       + royalShield(150, 200, 58, 72, c[0], c[1])
   } else if (seed.design === 'trigarante') body = trigarante(c)
   else if (seed.design === 'brazil-empire') body = brazilEmpire(c)
-  else if (seed.design === 'crescent-star') body = rect(0, 0, 600, 400, c[0]) + crescent(245, 200, 87, 72, c[1]) + star(355, 200, 54, 5, c[1])
+  else if (seed.design === 'crescent-star') body = rect(0, 0, 600, 400, c[0]) + crescent(245, 200, 87, 72, c[1], c[0]) + star(355, 200, 54, 5, c[1])
   else if (seed.design === 'italy-savoy') {
     body = c.slice(0, 3).map((color, index) => rect(index * 200, 0, 200, 400, color)).join('')
       + `<path d="${shieldPath(300, 188, 74, 98)}" fill="#b32932" stroke="#2d6191" stroke-width="8"/><path d="M300 119V247 M263 178H337" stroke="#fff" stroke-width="15"/>`
@@ -178,8 +178,10 @@ function shieldPath(cx, cy, width, height) {
   return `M${cx - width / 2} ${cy - height / 2}H${cx + width / 2}V${cy + height * .06}Q${cx + width * .42} ${cy + height * .36} ${cx} ${cy + height / 2}Q${cx - width * .42} ${cy + height * .36} ${cx - width / 2} ${cy + height * .06}Z`
 }
 
-function crescent(cx, cy, radius, cutout, fill) {
-  return `<path d="M${cx + radius * .1} ${cy - radius} A${radius} ${radius} 0 1 0 ${cx + radius * .1} ${cy + radius} A${radius * .72} ${radius * .72} 0 1 1 ${cx + radius * .1} ${cy - radius}Z" fill="${fill}"/>`
+function crescent(cx, cy, radius, cutout, fill, background) {
+  const innerRadius = radius * .72
+  const offset = radius - cutout + innerRadius * .28
+  return `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${fill}"/><circle cx="${cx + offset}" cy="${cy}" r="${innerRadius}" fill="${background}"/>`
 }
 
 function circleStars(cx, cy, radius, count, starRadius, fill) {

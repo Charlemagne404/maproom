@@ -2,13 +2,13 @@
 
 ## Current release boundary
 
-The integration candidate is on `codex/maproom-2.0-integration-20261118` in `/home/charlie/maproom-worktrees/integration`. Its canonical build and generated artifacts have been reviewed locally. The integration branch has not been activated or deployed. The production host, live Caddyfile, DNS and public endpoints were not inspected or changed during this work.
+The historical expansion release candidate is on `codex/maproom-historical-release-20261120` in `/home/charlie/maproom-worktrees/historical-release`, based on verified source commit `a316ebe4f674b066be2a51ac3e4b135730d02926`. It is a local candidate until its documented checks and branch handoff are complete. It has not been activated or deployed. The production host, live Caddyfile, DNS and public endpoints were not inspected or changed during this release-preparation work.
 
 The last recorded read-only host check was dated 17 November 2026. It found `/srv/maproom/current` pointing to `/srv/maproom/releases/1.2.0-dac85cc7b547`, with `1.1.0-cb626ad2bedd` retained for rollback. This is a historical observation, not a current production status.
 
 ## Build and artifacts
 
-Run the canonical pipeline from the reviewed checkout:
+Run the pipeline from the reviewed checkout:
 
 ```sh
 npm ci
@@ -19,9 +19,9 @@ npm run build
 npx playwright test --workers=1
 ```
 
-The build generates route HTML snapshots, `sitemap.xml`, `robots.txt`, and `precache-manifest.json`, then runs `scripts/validate-production-artifacts.mjs`. In the current product-quality worktree, validation checks required shell/data assets, all 24 route snapshots, 21 indexable sitemap routes, every precache reference and the matching service-worker build ID, lazy chunks for all sixteen games, source-data hashes, all 198 regional package hashes, all 20 historical SVG hashes, the viewport declaration, and the CSP hash. The deployment finalizer also has explicit required-file checks for route snapshots and the historical manifest/maps.
+The build generates route HTML snapshots, `sitemap.xml`, `robots.txt`, and `precache-manifest.json`, then runs `scripts/validate-production-artifacts.mjs`. For this candidate, validation checks required shell/data assets, 26 route snapshots, 23 sitemap URLs, every precache reference and the matching service-worker build ID, lazy chunks and stable routes for all 18 games, source-data hashes, all 198 regional package hashes, all 20 legacy CShapes maps, all 41 Cliopatria atlas maps, all 20 historical flag artworks, the viewport declaration, and the CSP hash. The deployment finalizer also has explicit required-file checks for route snapshots, historical manifests, maps and flags.
 
-The service worker precaches the compiled shell assets and a small set of core data on install. Successful same-origin `/data/` requests, including a historical map SVG, are cached after first online use. A fresh installation does not contain every optional game dataset or all historical maps.
+The service worker precaches compiled shell assets and all 20 legacy historical maps, 41 expanded atlas maps and 20 historical flags on install. Successful same-origin `/data/` requests are also cached after first online use. Other optional game data becomes available offline after it has been fetched online.
 
 ## Repository-owned Caddy template
 
@@ -38,16 +38,16 @@ If the production Caddyfile contains an older marked Maproom block, the finalize
 
 ## Operator handoff
 
-The finalizer expects the repository at `/home/charlie/maproom` and its build in that checkout's `dist/`. Bring the reviewed branch into that path and rerun the checks before considering activation. Only an operator should then choose whether to run:
+The finalizer expects the repository at `/home/charlie/maproom` and its build in that checkout's `dist/`. The release candidate was prepared in its separate worktree; an operator would need to place the reviewed branch in the expected checkout and rerun the checks before considering activation. The finalizer was not executed during this mission. It would change the live service and Caddy configuration, so deployment remains a separate operation.
 
 ```sh
 sudo /home/charlie/maproom/scripts/finalize-deployment.sh
 ```
 
-The script validates the existing host, prepares an immutable release under `/srv/maproom/releases/`, atomically switches `/srv/maproom/current`, validates Caddy as needed and checks the local/public origin. It reports a rollback command. It was not run during integration.
+The script validates the existing host, prepares an immutable release under `/srv/maproom/releases/`, atomically switches `/srv/maproom/current`, validates Caddy as needed and checks the local/public origin. It reports a rollback command. It was not run during release preparation.
 
 ## Licensing and remaining deployment limits
 
-Historical maps are generated from CShapes 2.1 and carry CC BY-NC-SA 4.0. Distribution and reuse are non-commercial only; attribution and ShareAlike terms apply. A commercial deployment or use requires separate rights or a replacement dataset reviewed under its own license.
+The 20 legacy CShapes 2.1 maps carry CC BY-NC-SA 4.0. Distribution and reuse are non-commercial only; attribution and ShareAlike terms apply. The 41 Cliopatria v0.2.1 maps and 20 original flag redraws carry CC BY 4.0 with per-source attribution. A commercial deployment of the legacy CShapes-derived assets requires separate rights or a replacement dataset reviewed under its own license.
 
-Production Caddy state, HTTPS certificates, public routing, DNS, public health checks, and hosted performance remain unverified. See [INTEGRATION_REPORT.md](parallel-development/INTEGRATION_REPORT.md) for integrated results and [the final handover](FINAL_HANDOVER.md) for the branch/push state.
+Production Caddy state, HTTPS certificates, public routing, DNS, public health checks and hosted performance remain unverified. This document records deployment compatibility checks only; it is not activation or public-release evidence.

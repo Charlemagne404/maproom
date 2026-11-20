@@ -234,6 +234,7 @@
 
 .historical-atlas-frame {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(240px, 1fr) auto;
 }
 
@@ -242,6 +243,8 @@
   align-items: center;
   justify-content: center;
   overflow: auto;
+  min-width: 0;
+  width: 100%;
   min-height: 260px;
   max-height: min(68vh, 680px);
   aspect-ratio: 5 / 3;

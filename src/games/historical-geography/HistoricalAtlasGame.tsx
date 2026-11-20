@@ -75,7 +75,7 @@ export function HistoricalAtlasGame({ mode, seed, session }: { mode: GameMode; s
   const [loadError, setLoadError] = useState('')
   const deck = useMemo(() => maps ? createHistoricalAtlasDeck(maps, seed, era) : [], [maps, seed, era])
   const sequenceDeck = useMemo(() => maps ? createHistoricalAtlasSequenceDeck(maps, seed) : [], [maps, seed])
-  const expectedMapId = saved?.version === 2 && saved?.round === round && saved?.format === format && typeof saved?.mapId === 'string' ? saved.mapId : null
+  const expectedMapId = saved?.version === 2 && saved?.round === round && saved?.format === format && saved?.era === era && typeof saved?.mapId === 'string' ? saved.mapId : null
   const map = deck.find((candidate) => candidate.id === expectedMapId) ?? (deck.length ? deck[round % deck.length] : undefined)
   const expectedSequenceId = saved?.version === 2 && saved?.round === round && saved?.format === format && typeof saved?.sequenceId === 'string' ? saved.sequenceId : null
   const sequence = sequenceDeck.find((candidate) => candidate.id === expectedSequenceId) ?? (sequenceDeck.length ? sequenceDeck[round % sequenceDeck.length] : undefined)
@@ -125,7 +125,7 @@ export function HistoricalAtlasGame({ mode, seed, session }: { mode: GameMode; s
         ? <>
           <GameSettingSelect label="Period" value={era} options={eraOptions} onChange={changeEra} />
           <GameSettingSelect label="Difficulty" value={difficulty} options={difficultyOptions} onChange={changeDifficulty} />
-          <p className="historical-settings-note">Each result uses the source’s inclusive date range. BCE and CE dates have no year zero.</p>
+          <p className="historical-settings-note">Each result uses the source’s inclusive date range. Wider source intervals cap precision credit. BCE and CE dates have no year zero.</p>
         </>
         : <p className="historical-settings-note">Order three maps of the same polity and region. The sequence set uses non-overlapping source periods.</p>}
     </div>
@@ -134,7 +134,8 @@ export function HistoricalAtlasGame({ mode, seed, session }: { mode: GameMode; s
   if (loadError) return <div className="game-body historical-geography-game">{settings}<InlineNotice title="The historical atlas could not open" tone="warning">{loadError} Reconnect and reopen the game so the maps can be cached for offline play.</InlineNotice></div>
   if (!maps || (format === 'year' ? !map : !sequence)) return <div className="game-body historical-geography-game">{settings}<LoadingState label="Opening the historical atlas…" /></div>
 
-  const savedForRound = saved?.version === 2 && saved.format === format && saved.round === round ? saved : null
+  const savedForRound = saved?.version === 2 && saved.format === format && saved.round === round
+    && (format === 'sequence' || (saved.era === era && saved.difficulty === difficulty)) ? saved : null
   return <div className="game-body historical-geography-game">
     {settings}
     {format === 'year' && map
@@ -243,7 +244,7 @@ function HistoricalAtlasYearRound({ map, mapNumber, mapsCount, mode, round, era,
       <div>
         <span className="eyebrow">Historical geography · map {mapNumber} of {mapsCount}</span>
         <h2 id="historical-atlas-round-title">When does this map belong?</h2>
-        <p>Read the regional outline and clue, then estimate the period it depicts.</p>
+        <p>Read the map frame and clue, then estimate the period it depicts.</p>
       </div>
       <div className="historical-round-meta" aria-label={`${difficulty} difficulty`}><Clock3 size={15} aria-hidden="true" /><span>{difficultyOptions.find((option) => option.value === difficulty)?.label.split(' · ')[0]}</span></div>
     </header>
@@ -256,7 +257,7 @@ function HistoricalAtlasYearRound({ map, mapNumber, mapsCount, mode, round, era,
           ? <div className="historical-map-fallback" role="img" aria-label="Historical map unavailable"><strong>The map could not be opened.</strong><span>Reconnect to load this map, then it will be available offline.</span></div>
           : <img className="historical-map-image historical-atlas-map-image" src={map.assetUrl} alt={`Unlabeled territorial outline in ${map.region.name}.`} loading="lazy" decoding="async" onError={() => setImageError(true)} style={{ width: `${zoom * 100}%` }} />}
       </div>
-      <figcaption className="historical-map-caption"><span>{map.region.name}</span><span>Maproom regional reconstruction</span></figcaption>
+      <figcaption className="historical-map-caption"><span>{map.region.name}</span><span>Maproom historical reconstruction</span></figcaption>
     </figure>
     <div className="historical-atlas-zoom" role="group" aria-label="Map zoom controls">
       <button className="button button-outline" type="button" aria-label="Zoom out" disabled={zoom <= 1} onClick={() => setZoom((value) => Math.max(1, value - 0.5))}><Minus size={15} aria-hidden="true" /></button>
@@ -311,6 +312,7 @@ function HistoricalAtlasReveal({ map, result, guessEra, guessInput, difficulty }
       <p className="historical-distance">{result.distance.toLocaleString('en-US')}<span>years from interval</span></p>
     </div>
     <p className="historical-range-note">Your answer: <strong>{guessYear === null ? '—' : formatHistoricalYear(guessYear)}</strong>. {difficulty} tolerance: <strong>±{result.tolerance.toLocaleString('en-US')} years</strong> beyond the source period. Score: <strong>{result.score.toLocaleString('en-US')}</strong> / 1,000.</p>
+    {result.scoreCeiling !== undefined && result.scoreCeiling < 1000 && <p className="historical-range-note">The broad source interval caps this round at <strong>{result.scoreCeiling.toLocaleString('en-US')}</strong> / 1,000 precision credit.</p>}
     <p className="historical-range-note">The visible clue was: <strong>{map.visibleClue}</strong></p>
     <p className="historical-context">{map.historicalContext}</p>
     <p className="historical-range-note">Selected polity: {entities}.</p>
@@ -318,7 +320,7 @@ function HistoricalAtlasReveal({ map, result, guessEra, guessInput, difficulty }
       <summary>Dates, reconstruction limits and sources</summary>
       <p>Sample frame: <strong>{formatHistoricalYear(map.sampleYear)}</strong>. The accepted period is the inclusive Cliopatria interval <strong>{acceptedRange}</strong>; it is not an exact archival date.</p>
       <p>{map.uncertainty}</p>
-      <p>This is a Maproom-generated regional outline derived from a scholarly reconstruction, not a contemporary historical map. A blank area means the selected source did not draw this polity there, not that no society existed.</p>
+      <p>This is a Maproom-generated view derived from a scholarly reconstruction, not a contemporary historical map. A blank area means the selected source did not draw this polity there, not that no society existed.</p>
       <ul>{map.contextSources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}<li><a href="https://github.com/Seshat-Global-History-Databank/cliopatria/releases/tag/v0.2.1" target="_blank" rel="noreferrer">Cliopatria v0.2.1 data and documentation</a></li></ul>
       <p>Attribution: Cliopatria v0.2.1 by the Seshat Global History Databank, CC BY 4.0. Maproom clipped, oriented, simplified and rendered these source polygons. <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">License terms</a>.</p>
     </details>
@@ -396,7 +398,7 @@ function HistoricalAtlasSequenceRound({ sequence, sequenceNumber, sequenceCount,
   }
 
   return <section className="historical-round historical-sequence-round" aria-labelledby="historical-atlas-sequence-title">
-    <header className="historical-round-heading"><div><span className="eyebrow">Historical geography · sequence {sequenceNumber} of {sequenceCount}</span><h2 id="historical-atlas-sequence-title">Order the {polity} maps</h2><p>Compare outlines from the same regional frame, then arrange them from earliest to latest.</p></div><div className="historical-round-meta"><Clock3 size={15} aria-hidden="true" /><span>Oldest → newest</span></div></header>
+    <header className="historical-round-heading"><div><span className="eyebrow">Historical geography · sequence {sequenceNumber} of {sequenceCount}</span><h2 id="historical-atlas-sequence-title">Order the {polity} maps</h2><p>Compare outlines from the same frame, then arrange them from earliest to latest.</p></div><div className="historical-round-meta"><Clock3 size={15} aria-hidden="true" /><span>Oldest → newest</span></div></header>
     <ol className="historical-sequence-list" aria-label="Your current map order">
       {order.map((map, index) => {
         const label = labels.get(map.id) ?? 'Map'

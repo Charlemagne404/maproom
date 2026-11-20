@@ -6,7 +6,7 @@ import { InlineNotice, LoadingState } from '../../components/Kit'
 import { loadHistoricalAtlasMaps } from '../../geography/historical/loader'
 import type { HistoricalAtlasMap } from '../../geography/historical/types'
 import type { GameMode } from '../../geography/types'
-import { formatHistoricalDateRange, formatHistoricalYear } from '../../puzzles/historical-geography'
+import { formatHistoricalDateRange, formatHistoricalYear, historicalEraForYear } from '../../puzzles/historical-geography'
 import { createHistoricalStateChoices, createHistoricalStatesDeck, historicalPolityName } from '../../puzzles/historical-states'
 import { useGameSession } from '../session'
 import './historical-geography.css'
@@ -128,7 +128,7 @@ export function HistoricalStatesGame({ mode, date, seed }: { mode: GameMode; dat
 
   const settings = mode === 'freeplay' && !finished && <GameSettingsMenu label="Historical states settings"><div className="practice-config">
     <GameSettingSelect label="Set length" value={questionCount} options={questionCountOptions} onChange={changeQuestionCount} />
-    <p className="historical-settings-note">The map shows one selected polity in a regional frame. It is not a complete partition of the world or a statement that unshown societies did not exist.</p>
+    <p className="historical-settings-note">Each map shows one selected polity in a regional or global frame. It is not a complete partition of the world or a statement that unshown societies did not exist.</p>
   </div></GameSettingsMenu>
 
   if (!maps && !loadError) return <div className="game-body historical-geography-game">{settings}<LoadingState label="Opening the historical atlas…" /></div>
@@ -139,11 +139,14 @@ export function HistoricalStatesGame({ mode, date, seed }: { mode: GameMode; dat
   const isCorrect = selectedId !== '' && choices.some((choice) => choice.id === selectedId && historicalPolityName(choice) === historicalPolityName(map))
   const answer = historicalPolityName(map)
   const selected = choices.find((choice) => choice.id === selectedId)
+  const period = historicalEraForYear(map.sampleYear)
+  const periodLabel = period === 'early-modern' ? 'Early modern' : `${period[0]!.toUpperCase()}${period.slice(1)}`
   return <div className="game-body historical-geography-game historical-states-game">
     {settings}
     <section className="historical-round" aria-labelledby="historical-states-title">
-      <header className="historical-round-heading"><div><span className="eyebrow">Historical states · map {index + 1} of {questions.length}</span><h2 id="historical-states-title">Which polity is shown?</h2><p>Use the regional outline, period and location clue to identify the selected state.</p></div><div className="historical-round-meta"><Globe2 size={15} aria-hidden="true" /><span>{score.toLocaleString('en-US')} points</span></div></header>
-      <div className="historical-atlas-clue"><span className="eyebrow">{map.region.name}</span><p>{map.visibleClue}</p></div>
+      <header className="historical-round-heading"><div><span className="eyebrow">Historical states · {periodLabel} · map {index + 1} of {questions.length}</span><h2 id="historical-states-title">Which polity is shown?</h2><p>Use the era, outline and location clue to identify the selected state.</p></div><div className="historical-round-meta"><Globe2 size={15} aria-hidden="true" /><span>{score.toLocaleString('en-US')} points</span></div></header>
+      <div className="historical-atlas-clue"><span className="eyebrow">{periodLabel} · {map.region.name}</span><p>{map.visibleClue}</p></div>
+      <p className="historical-state-frame-note">This frame shows only the territory mapped by the source; it does not show the polity’s full historical extent.</p>
       <StateMapFrame map={map} revealed={answered} />
       {!answered
         ? <div className="historical-state-answers" role="group" aria-label="Polity choices">{choices.map((choice) => {
@@ -179,7 +182,7 @@ function StateMapFrame({ map, revealed }: { map: HistoricalAtlasMap; revealed: b
           ? <div className="historical-map-fallback" role="img" aria-label="Historical map unavailable"><strong>The map could not be opened.</strong><span>Reconnect to load this map, then it will be available offline.</span></div>
           : <img className="historical-map-image historical-atlas-map-image" src={map.assetUrl} alt={`Unlabeled territorial outline in ${map.region.name}.`} loading="lazy" decoding="async" onError={() => setImageError(true)} style={{ width: `${zoom * 100}%` }} />}
       </div>
-      <figcaption className="historical-map-caption"><span>{map.region.name}</span><span>Maproom regional reconstruction</span></figcaption>
+      <figcaption className="historical-map-caption"><span>{map.region.name}</span><span>Maproom historical reconstruction</span></figcaption>
     </figure>
     <div className="historical-atlas-zoom" role="group" aria-label="Map zoom controls">
       <button className="button button-outline" type="button" aria-label="Zoom out" disabled={zoom <= 1} onClick={() => setZoom((value) => Math.max(1, value - 0.5))}><Minus size={15} aria-hidden="true" /></button>

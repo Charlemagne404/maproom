@@ -150,7 +150,7 @@ const gameCopy = {
   'historical-geography': {
     title: 'Historical map year and era guessing game',
     description: 'Date source-backed reconstructions of historical polities from ancient BCE periods to modern history, then explore their context and limits.',
-    summary: 'Estimate when a regional political map belongs, or order three source-backed maps, with BCE and CE dates and uncertainty explained.',
+    summary: 'Estimate when a regional or global political map belongs, or order three source-backed maps, with BCE and CE dates and uncertainty explained.',
   },
   'historical-flags': {
     title: 'Historical Flags quiz',
@@ -159,8 +159,8 @@ const gameCopy = {
   },
   'historical-states': {
     title: 'Historical States and Empires map quiz',
-    description: 'Identify ancient and historical states from regional map reconstructions, with source intervals, context and uncertainty disclosed.',
-    summary: 'Name the polity shown in a regional map drawn from Cliopatria, spanning 3400 BCE to 1900 CE in this curated learning set.',
+    description: 'Identify ancient and historical states from regional and global map reconstructions, with source intervals, context and uncertainty disclosed.',
+    summary: 'Name the polity shown in a regional or global frame drawn from Cliopatria, spanning 3400 BCE to 1900 CE in this curated learning set.',
   },
   'projection-match': {
     title: 'Map projection quiz',

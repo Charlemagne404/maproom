@@ -41,6 +41,8 @@ export interface HistoricalAtlasGuessResult {
   tolerance: number
   withinAcceptedInterval: boolean
   withinTolerance: boolean
+  /** Missing on completed rounds saved before precision caps were added. */
+  scoreCeiling?: number
   score: number
 }
 
@@ -134,7 +136,7 @@ export function compareHistoricalYears(left: number, right: number): number {
 
 export function historicalEraForYear(year: number): Exclude<HistoricalEra, 'all'> {
   if (!isHistoricalYear(year)) throw new RangeError('A historical year must be a whole BCE or CE year; there is no year zero.')
-  if (year <= -500) return 'ancient'
+  if (year < -500) return 'ancient'
   if (year < 500) return 'classical'
   if (year < 1500) return 'medieval'
   if (year < 1800) return 'early-modern'
@@ -170,7 +172,10 @@ export function evaluateHistoricalAtlasGuess(map: HistoricalAtlasMap, guessYear:
   const distinctivenessAdjustment = map.visualDistinctiveness === 1 ? 10 : map.visualDistinctiveness === 2 ? 4 : 0
   const tolerance = Math.max(1, Math.round((eraBase + sourcePrecisionBonus + distinctivenessAdjustment)
     * HISTORICAL_DIFFICULTY_MULTIPLIERS[difficulty]))
-  const score = distance === 0 ? 1000 : Math.max(0, 1000 - Math.round(distance * 1000 / (tolerance + 1)))
+  const scoreCeiling = supportedYears <= 10
+    ? 1000
+    : Math.max(500, Math.round(1000 - 125 * Math.log2(supportedYears / 10)))
+  const score = distance === 0 ? scoreCeiling : Math.max(0, scoreCeiling - Math.round(distance * scoreCeiling / (tolerance + 1)))
   return {
     guessYear,
     acceptedFromYear: map.acceptedFromYear,
@@ -179,6 +184,7 @@ export function evaluateHistoricalAtlasGuess(map: HistoricalAtlasMap, guessYear:
     tolerance,
     withinAcceptedInterval,
     withinTolerance: distance <= tolerance,
+    scoreCeiling,
     score,
   }
 }

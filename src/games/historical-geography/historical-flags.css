@@ -31,6 +31,14 @@
   font-size: .82rem;
 }
 
+.historical-flag-artwork-note {
+  max-width: 52em;
+  margin: 0;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
 .historical-flag-polity-prompt h3 {
   margin: 0;
   font-size: clamp(1.35rem, 3vw, 2rem);
@@ -121,7 +129,9 @@
   background: var(--surface-raised);
   color: var(--muted);
   font: inherit;
-  font-size: .75rem;
+  font-size: .7rem;
+  line-height: 1.35;
+  text-align: left;
   cursor: pointer;
 }
 
@@ -205,6 +215,13 @@
 
 .historical-states-game .historical-atlas-map-image {
   min-width: 100%;
+}
+
+.historical-state-frame-note {
+  margin: -8px 0 0;
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.45;
 }
 
 @media (max-width: 680px) {

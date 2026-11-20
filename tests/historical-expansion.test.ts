@@ -55,6 +55,10 @@ describe('expanded historical sources and games', () => {
       const bytes = readFileSync(join(root, 'public', item.assetUrl.slice(1)))
       expect(createHash('sha256').update(bytes).digest('hex')).toBe(item.assetSha256)
     }
+    const ottomanArtwork = readFileSync(join(root, 'public', flags.items.find((item) => item.id === 'ottoman-1844')!.assetUrl.slice(1)), 'utf8')
+    expect(ottomanArtwork.match(/<circle\b/g)).toHaveLength(2)
+    expect(ottomanArtwork).toContain('r="87" fill="#f8f6ef"')
+    expect(ottomanArtwork).toContain('r="62.64" fill="#c52d38"')
   })
 
   it('parses BCE and CE without a year zero and keeps the transition one year apart', () => {
@@ -69,6 +73,13 @@ describe('expanded historical sources and games', () => {
     expect(formatHistoricalYear(-1)).toBe('1 BCE')
     expect(formatHistoricalDateRange(-2, 3)).toBe('2 BCE–3 CE')
     expect(() => formatHistoricalYear(0)).toThrow(RangeError)
+  })
+
+  it('uses non-overlapping era boundaries at the displayed 500 BCE and 500 CE cutoffs', () => {
+    expect(historicalEraForYear(-501)).toBe('ancient')
+    expect(historicalEraForYear(-500)).toBe('classical')
+    expect(historicalEraForYear(499)).toBe('classical')
+    expect(historicalEraForYear(500)).toBe('medieval')
   })
 
   it('builds deterministic era pools and same-polity, same-region sequences with non-overlapping dates', () => {
@@ -89,10 +100,18 @@ describe('expanded historical sources and games', () => {
     }
   })
 
-  it('scores a source interval as correct and distinguishes difficulty for a near miss', () => {
-    const map = atlas.maps.find((item) => item.sampleYear === -1000)!
+  it('scores source intervals with a width-based precision ceiling and distinguishes difficulty for a near miss', () => {
+    const map = atlas.maps.find((item) => historicalYearDistance(item.acceptedFromYear, item.acceptedToYear) + 1 >= 200)!
     const inPeriod = evaluateHistoricalAtlasGuess(map, map.acceptedFromYear, 'medium')
-    expect(inPeriod).toMatchObject({ withinAcceptedInterval: true, distance: 0, score: 1000 })
+    const supportedYears = historicalYearDistance(map.acceptedFromYear, map.acceptedToYear) + 1
+    expect(supportedYears).toBeGreaterThanOrEqual(200)
+    expect(inPeriod).toMatchObject({ withinAcceptedInterval: true, distance: 0, scoreCeiling: 500, score: 500 })
+    const narrowMap = atlas.maps.find((item) => historicalYearDistance(item.acceptedFromYear, item.acceptedToYear) + 1 <= 10)!
+    expect(evaluateHistoricalAtlasGuess(narrowMap, narrowMap.acceptedFromYear, 'medium')).toMatchObject({
+      withinAcceptedInterval: true,
+      scoreCeiling: 1000,
+      score: 1000,
+    })
     const missYear = map.acceptedFromYear - 1
     const scores = difficulties.map((difficulty) => evaluateHistoricalAtlasGuess(map, missYear, difficulty).score)
     expect(scores[0]).toBeGreaterThan(scores[1]!)
@@ -134,7 +153,9 @@ describe('expanded historical sources and games', () => {
         expect(choices).toHaveLength(4)
         expect(choices.filter((choice) => choice.id === question.id)).toHaveLength(1)
         expect(new Set(choices.map(historicalPolityName)).size).toBe(4)
+        expect(choices.every((choice) => historicalEraForYear(choice.sampleYear) === historicalEraForYear(question.sampleYear))).toBe(true)
         const near = new Set(maps.filter((candidate) => historicalPolityName(candidate) !== historicalPolityName(question)
+          && historicalEraForYear(candidate.sampleYear) === historicalEraForYear(question.sampleYear)
           && (candidate.region.id === question.region.id || historicalYearDistance(candidate.sampleYear, question.sampleYear) <= 250)).map(historicalPolityName))
         if (near.size >= 3) expect(choices.filter((choice) => choice.id !== question.id).every((choice) => near.has(historicalPolityName(choice)))).toBe(true)
       }

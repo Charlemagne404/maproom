@@ -13,7 +13,7 @@
     "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
     "attribution": "Cliopatria v0.2.1 by the Seshat Global History Databank, CC BY 4.0. Maproom clipped, oriented, simplified and rendered these source polygons for a historical geography game."
   },
-  "snapshotConvention": "Each asset is a Maproom-generated regional view of one selected POLITY at sampleYear. Its accepted date interval is the inclusive source interval shared by every displayed geometry. The map has no labels before a guess and is not an archival map or a complete inventory of historical societies.",
+  "snapshotConvention": "Each asset is a Maproom-generated view of one selected POLITY, framed to its curated regional or global window at sampleYear. Its accepted date interval is the inclusive source interval shared by every displayed geometry. The map has no labels before a guess and is not an archival map or a complete inventory of historical societies.",
   "maps": [
     {
       "id": "sumer-3400-bce",
@@ -293,7 +293,7 @@
       "acceptedFromYear": -500,
       "acceptedToYear": -481,
       "assetUrl": "/data/historical/atlas/v2/maps/achaemenid-500-bce.svg",
-      "assetSha256": "fc8abad08187fcb62b634d948eff937922f4b1845e8d5dc984b4a86eb2b0d703",
+      "assetSha256": "82cc11310ac42ff71dfd030e201308da0ec9595a201aad9be2bd2b15313c79c3",
       "region": {
         "id": "iranian-plateau",
         "name": "Iranian Plateau and West Asia",
@@ -327,7 +327,7 @@
       "acceptedFromYear": -256,
       "acceptedToYear": -248,
       "assetUrl": "/data/historical/atlas/v2/maps/maurya-250-bce.svg",
-      "assetSha256": "5d1379eab29990482dc1f596c54f7283500ca61980a2f00441a8508329d2817c",
+      "assetSha256": "60d804620fcbb60e8a6459a2e11f1457ac5e4755b991b63722b5b969eb868756",
       "region": {
         "id": "north-india",
         "name": "Northern India",
@@ -361,7 +361,7 @@
       "acceptedFromYear": -36,
       "acceptedToYear": 5,
       "assetUrl": "/data/historical/atlas/v2/maps/han-1-ce.svg",
-      "assetSha256": "b3db5e8465eede193fe7b44f65bbbd0ed153030be22677f99d851724798edd4c",
+      "assetSha256": "ab0529595746de8d4e59220dff626f7b2bd55d667e8851d558d0e2f6e6dfcd1b",
       "region": {
         "id": "east-asia",
         "name": "East Asia",
@@ -463,7 +463,7 @@
       "acceptedFromYear": 387,
       "acceptedToYear": 409,
       "assetUrl": "/data/historical/atlas/v2/maps/gupta-400-ce.svg",
-      "assetSha256": "b1ffc3857d12265bbb52a8ad8807176566eac7cdebc2d3474cceab00ef91e9be",
+      "assetSha256": "06d33b30bea04398e164f2f039ee682257f5776c7e2080472bdba71c09a2158f",
       "region": {
         "id": "north-india",
         "name": "Northern India",
@@ -565,7 +565,7 @@
       "acceptedFromYear": 692,
       "acceptedToYear": 704,
       "assetUrl": "/data/historical/atlas/v2/maps/tang-700-ce.svg",
-      "assetSha256": "47314a9f4f4a072566dcebd3a1f8ba433c8b33ee67b660dd2c3cbdf2864c4963",
+      "assetSha256": "d70f00a0ad5a854b92614909a2708b3c34d3718eae853e7d75c0f453fe9cc9a1",
       "region": {
         "id": "east-asia",
         "name": "East Asia",
@@ -701,7 +701,7 @@
       "acceptedFromYear": 1250,
       "acceptedToYear": 1259,
       "assetUrl": "/data/historical/atlas/v2/maps/mongol-1250-ce.svg",
-      "assetSha256": "8f13825033aacf8e0e1af975ce425587ca8f635cd82a58fb66670da1fc61ecb9",
+      "assetSha256": "6e0a414e34a035a3e1866b3672a0b7478bc001965bea971e3ddfe36345a3a4ae",
       "region": {
         "id": "eurasian-steppe",
         "name": "Eurasian Steppe",
@@ -905,7 +905,7 @@
       "acceptedFromYear": 1600,
       "acceptedToYear": 1611,
       "assetUrl": "/data/historical/atlas/v2/maps/mughal-1600-ce.svg",
-      "assetSha256": "cc2df90ea0bf8bfdccc0903051ab0cd7280218d73bf3e1bac34ecdaab4aba23d",
+      "assetSha256": "d2e315af684fd265de5b0b87fe271d7ed0bcbdfd11766b5e4d479a12881b9c6a",
       "region": {
         "id": "north-india",
         "name": "Northern India",
@@ -973,7 +973,7 @@
       "acceptedFromYear": 1700,
       "acceptedToYear": 1701,
       "assetUrl": "/data/historical/atlas/v2/maps/qing-1700-ce.svg",
-      "assetSha256": "37423210070c358b9fcc3a12b28b4adfd504c5a6c98a5d60de91512b24cde793",
+      "assetSha256": "851a39601b91559783d0d281892da6c71976835d2d85697e2c27f48fb4ea2a53",
       "region": {
         "id": "east-asia",
         "name": "East Asia",
@@ -1007,7 +1007,7 @@
       "acceptedFromYear": 1700,
       "acceptedToYear": 1705,
       "assetUrl": "/data/historical/atlas/v2/maps/mughal-1700-ce.svg",
-      "assetSha256": "46798792604e5f480036092ad49d5b6f4884f5dafb55afa180520db72a37b27b",
+      "assetSha256": "b14397fc39cb9e28622333fcd601f31b98ad86e658927d3241550891308570ac",
       "region": {
         "id": "north-india",
         "name": "Northern India",
@@ -1041,7 +1041,7 @@
       "acceptedFromYear": 1700,
       "acceptedToYear": 1705,
       "assetUrl": "/data/historical/atlas/v2/maps/ottoman-1700-ce.svg",
-      "assetSha256": "b5223e36e855727234c4b0949ab279b1fe7c3cd0ccb7a9f84fb27a104829e18b",
+      "assetSha256": "04b2b453877dff1faf1572291339b76ae251d7e4206ba89bf4f996ce09f00b9f",
       "region": {
         "id": "eastern-mediterranean",
         "name": "Eastern Mediterranean",
@@ -1109,7 +1109,7 @@
       "acceptedFromYear": 1797,
       "acceptedToYear": 1804,
       "assetUrl": "/data/historical/atlas/v2/maps/qing-1800-ce.svg",
-      "assetSha256": "4e7f48ad0c94d324a5a838678ecf87d1252813ab3cca708e8d8faef0da8020cc",
+      "assetSha256": "6904998ef25b20afa97063eeed17ffbb3d193fe1afa415876711f33d49d6ee37",
       "region": {
         "id": "east-asia",
         "name": "East Asia",
@@ -1143,7 +1143,7 @@
       "acceptedFromYear": 1799,
       "acceptedToYear": 1802,
       "assetUrl": "/data/historical/atlas/v2/maps/russian-1800-ce.svg",
-      "assetSha256": "e5af9d048816d65e716afc71e72182bbe67b5c79b67621af59c7e22bab34b080",
+      "assetSha256": "407f72945df1f7a98beed51deb1eff3b70f2be36f2013783e96b7168f44048ae",
       "region": {
         "id": "eurasian-russia",
         "name": "Northern Eurasia",
@@ -1177,7 +1177,7 @@
       "acceptedFromYear": 1848,
       "acceptedToYear": 1852,
       "assetUrl": "/data/historical/atlas/v2/maps/qing-1850-ce.svg",
-      "assetSha256": "9954bcae79b32fa40f283ab7cc254451407bd59623a7c0907bd881101ddc0c3c",
+      "assetSha256": "da6b3f498365d509c54f5cf9256170e7d21d979c8a8f54b1cc56c1ebcbb994d7",
       "region": {
         "id": "east-asia",
         "name": "East Asia",
@@ -1211,7 +1211,7 @@
       "acceptedFromYear": 1849,
       "acceptedToYear": 1852,
       "assetUrl": "/data/historical/atlas/v2/maps/russian-1850-ce.svg",
-      "assetSha256": "e5402af8d5fd006b9a10e203b9540f319d0e35ab338d66dc6c575bc44f696527",
+      "assetSha256": "d82a330db89dbafd85c848003c9fcab83bef25c747b74c2f97f4fb3fcbd8aa39",
       "region": {
         "id": "eurasian-russia",
         "name": "Northern Eurasia",
@@ -1245,7 +1245,7 @@
       "acceptedFromYear": 1849,
       "acceptedToYear": 1852,
       "assetUrl": "/data/historical/atlas/v2/maps/ottoman-1850-ce.svg",
-      "assetSha256": "860e1e19f19826b9c82bd07e8037af4d95991ce73ad62dc5278719cec1f71a92",
+      "assetSha256": "6a8f21ed3d3e76bf357a9d607979d6e45ae5f65504897b7d3d7c16afb17e280e",
       "region": {
         "id": "eastern-mediterranean",
         "name": "Eastern Mediterranean",
@@ -1279,7 +1279,7 @@
       "acceptedFromYear": 1900,
       "acceptedToYear": 1904,
       "assetUrl": "/data/historical/atlas/v2/maps/qing-1900-ce.svg",
-      "assetSha256": "738174f78b35bc7c2c90229c9a80c82e2b04a0839cc2a50d84c1c32279e12de0",
+      "assetSha256": "b1eecdbb67a196a354beee17c24d468584f41dbdcf1c9dff4a17b389649341e9",
       "region": {
         "id": "east-asia",
         "name": "East Asia",
@@ -1313,7 +1313,7 @@
       "acceptedFromYear": 1900,
       "acceptedToYear": 1904,
       "assetUrl": "/data/historical/atlas/v2/maps/russian-1900-ce.svg",
-      "assetSha256": "c40fe289000584c8abeabbe9e64a9ae8be6455de71f805c34f4ea2b874412538",
+      "assetSha256": "cf09e4c18a6ca53f274c2ed5b9da9f378a9c2bfecb7a1e44c09b4b0148bb201c",
       "region": {
         "id": "eurasian-russia",
         "name": "Northern Eurasia",
@@ -1347,7 +1347,7 @@
       "acceptedFromYear": 1900,
       "acceptedToYear": 1904,
       "assetUrl": "/data/historical/atlas/v2/maps/ottoman-1900-ce.svg",
-      "assetSha256": "7671fb1abf1e98351f7c989900e7cac3f56f484b8122e433dc0680fc9d4d5b5a",
+      "assetSha256": "19cb474bcc5d9f0daceccd290980f23691e3f9dc371938b4c497bfe8ad34674e",
       "region": {
         "id": "eastern-mediterranean",
         "name": "Eastern Mediterranean",

@@ -8,6 +8,8 @@ export function useGameSession(gameId: GameId, mode: GameMode, date: string, see
   const { state, completeGame, saveSession, deleteSession } = useAppData()
   const session = useRef<SessionIdentity | null>(null)
   const saved = useRef(false)
+  const sessionGeneration = useRef(0)
+  const progressQueue = useRef<Promise<void>>(Promise.resolve())
   const [saveErrorState, setSaveErrorState] = useState({ puzzleId: '', message: '' })
   const existingSession = useMemo(() => state.sessions
     .filter((item) => item.gameId === gameId && item.mode === mode && item.date === date && (mode === 'daily' || item.seed === seed))
@@ -22,10 +24,15 @@ export function useGameSession(gameId: GameId, mode: GameMode, date: string, see
   const progress = compatibleSession?.payload ?? null
 
   const resetSession = useCallback(() => {
+    sessionGeneration.current += 1
     session.current = createSessionIdentity()
     saved.current = false
     setSaveErrorState({ puzzleId, message: '' })
-    void deleteSession(gameId, mode, date)
+    const deletion = progressQueue.current.catch(() => undefined).then(() => deleteSession(gameId, mode, date))
+    progressQueue.current = deletion
+    void deletion.catch((error: unknown) => {
+      setSaveErrorState({ puzzleId, message: error instanceof Error ? error.message : 'Your progress could not be reset.' })
+    })
   }, [deleteSession, date, gameId, mode, puzzleId])
 
   useEffect(() => {
@@ -43,6 +50,7 @@ export function useGameSession(gameId: GameId, mode: GameMode, date: string, see
 
   const saveProgress = useCallback(async (payload: Record<string, unknown>) => {
     if (saved.current) return
+    const generation = sessionGeneration.current
     const identity = session.current ?? createSessionIdentity()
     const snapshot: GameSessionSnapshot = {
       id: mode === 'daily' ? `${gameId}:${date}` : `${gameId}:${date}:${seed}`,
@@ -56,11 +64,16 @@ export function useGameSession(gameId: GameId, mode: GameMode, date: string, see
       version: 1,
       payload,
     }
-    try {
-      await saveSession(snapshot)
-    } catch (error) {
-      setSaveErrorState({ puzzleId, message: error instanceof Error ? error.message : 'Your progress could not be saved.' })
-    }
+    const saving = progressQueue.current.catch(() => undefined).then(async () => {
+      if (generation !== sessionGeneration.current) return
+      try {
+        await saveSession(snapshot)
+      } catch (error) {
+        setSaveErrorState({ puzzleId, message: error instanceof Error ? error.message : 'Your progress could not be saved.' })
+      }
+    })
+    progressQueue.current = saving
+    await saving
   }, [date, gameId, mode, puzzleId, saveSession, seed, storedSeed])
 
   const clearProgress = useCallback(async () => {

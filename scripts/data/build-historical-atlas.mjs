@@ -117,7 +117,7 @@ for (const file of await readdir(mapDirectory)) {
 const manifest = {
   schemaVersion: 1,
   source,
-  snapshotConvention: 'Each asset is a Maproom-generated regional view of one selected POLITY at sampleYear. Its accepted date interval is the inclusive source interval shared by every displayed geometry. The map has no labels before a guess and is not an archival map or a complete inventory of historical societies.',
+  snapshotConvention: 'Each asset is a Maproom-generated view of one selected POLITY, framed to its curated regional or global window at sampleYear. Its accepted date interval is the inclusive source interval shared by every displayed geometry. The map has no labels before a guess and is not an archival map or a complete inventory of historical societies.',
   maps,
 }
 await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
@@ -125,7 +125,7 @@ console.log(`Generated ${maps.length} curated maps from Cliopatria ${source.vers
 
 function createProjection(region) {
   const extent = [[35, 36], [965, 524]]
-  if (region.id === 'global-empire') return geoEqualEarth().fitExtent(extent, { type: 'Sphere' }).precision(0.7)
+  if (region.id === 'global-empire') return geoEqualEarth().fitExtent(extent, { type: 'Sphere' }).clipExtent(extent).precision(0.7)
   const box = orientFeatureForD3({
     type: 'Feature',
     properties: {},
@@ -134,7 +134,7 @@ function createProjection(region) {
       [region.west, region.north], [region.west, region.south],
     ]] },
   })
-  return geoEquirectangular().fitExtent(extent, box).precision(0.7)
+  return geoEquirectangular().fitExtent(extent, box).clipExtent(extent).precision(0.7)
 }
 
 function validateGeometry(feature, id) {
