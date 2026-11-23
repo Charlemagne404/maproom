@@ -65,7 +65,7 @@ test('Watershed Match reveals ToHUC answers, saves a round, scores five question
   seenRegions.add((await page.locator('.watershed-match-heading .eyebrow').innerText()).split('·')[1]?.trim().toLowerCase() ?? '')
   for (let round = 1; round < 5; round += 1) {
     await page.getByRole('button', { name: 'Next watershed' }).click()
-    await expect(page.locator('.watershed-match-heading .eyebrow')).toContainText(`${round + 1} of 5`)
+    await expect(page.getByRole('progressbar', { name: 'watershed questions progress' })).toHaveAttribute('aria-valuenow', String(round + 1))
     seenRegions.add((await page.locator('.watershed-match-heading .eyebrow').innerText()).split('·')[1]?.trim().toLowerCase() ?? '')
     await page.locator('.watershed-choice').nth(round % 3).click()
     await page.getByRole('button', { name: 'Check destination' }).click()
@@ -75,7 +75,7 @@ test('Watershed Match reveals ToHUC answers, saves a round, scores five question
   await expect(page.locator('.game-results-dialog .game-results-summary')).toContainText('/ 5 correct')
   await expect(page.locator('.game-results-dialog .game-results-message')).toContainText('500 points')
   await page.locator('.game-results-dialog').getByRole('button', { name: 'Follow another set' }).click()
-  await expect(page.locator('.watershed-match-heading .eyebrow')).toContainText('1 of 5')
+  await expect(page.getByRole('progressbar', { name: 'watershed questions progress' })).toHaveAttribute('aria-valuenow', '1')
 
   for (let round = 0; round < 5; round += 1) {
     await page.locator('.watershed-choice').nth((round + 1) % 3).click()

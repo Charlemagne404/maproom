@@ -7,10 +7,35 @@
   gap: 12px;
 }
 
+@media (min-width: 961px) {
+  .watershed-match-game {
+    grid-template-columns: minmax(0, 1.55fr) minmax(300px, .85fr);
+    grid-template-areas:
+      'heading heading'
+      'task task'
+      'map choices'
+      'map controls'
+      'map error'
+      'source source';
+    align-items: start;
+    column-gap: 20px;
+  }
+  .watershed-match-heading { grid-area: heading; }
+  .watershed-match-task { grid-area: task; }
+  .watershed-map-figure { grid-area: map; }
+  .watershed-choice-list { grid-area: choices; grid-template-columns: 1fr; }
+  .watershed-match-controls { grid-area: controls; align-items: stretch; flex-direction: column; }
+  .watershed-match-game > .form-message { grid-area: error; }
+  .watershed-match-source { grid-area: source; }
+  .watershed-match-heading > div:first-child { min-width: 0; }
+}
+
 .watershed-match-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .watershed-match-heading h2 { margin: 0 0 4px; font-size: clamp(1.45rem, 2.4vw, 1.9rem); font-weight: 700; letter-spacing: -.035em; }
 .watershed-match-heading p { max-width: 720px; color: var(--muted); font-size: .78rem; line-height: 1.45; }
 .watershed-match-heading .eyebrow { margin-bottom: 4px; }
+.watershed-match-metrics { display: flex; align-items: center; gap: 9px; }
+.watershed-match-metrics .round-progress { width: 92px; }
 .watershed-match-score { min-width: 86px; padding: 9px 12px; border: 1px solid var(--border); color: var(--muted); text-align: center; font-size: .8rem; white-space: nowrap; }
 .watershed-match-score strong { color: var(--ink); font-size: 1.2rem; }
 .watershed-match-task { padding: 11px 15px; border-left: 3px solid var(--accent); background: var(--surface-raised); }
@@ -63,9 +88,14 @@
 .watershed-match-source a { color: inherit; text-underline-offset: 2px; }
 
 @media (max-width: 720px) {
+  .watershed-match-metrics { flex-direction: column-reverse; align-items: flex-end; gap: 3px; }
   .watershed-choice-list { grid-template-columns: 1fr; }
   .watershed-choice-result { max-width: none; margin-left: auto; }
   .watershed-match-controls { align-items: stretch; flex-direction: column; }
+}
+
+@media (max-width: 960px) {
+  .watershed-match-game { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 520px) {

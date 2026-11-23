@@ -130,12 +130,14 @@
 
 @media (max-width: 760px) {
   .find-country-game-body > .question-toolbar {
-    min-height: 104px;
-    padding: 8px 56px 8px 4px;
+    min-height: 0;
+    flex-direction: column;
+    gap: 7px;
+    padding: 7px 0;
   }
 
   .find-country-game-body > .question-toolbar h2 {
-    font-size: clamp(1.8rem, 8.5vw, 2.7rem);
+    font-size: clamp(1.5rem, 7.4vw, 2.05rem);
   }
 
   .find-country-game-body > .question-toolbar .eyebrow {
@@ -143,12 +145,21 @@
   }
 
   .find-country-game-body > .question-toolbar > .question-toolbar-tools {
-    right: 0;
+    position: static;
+    transform: none;
   }
 
   .find-country-game-body .find-country-map-stage {
-    height: clamp(470px, 69svh, 700px);
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1.5 / 1;
     border-radius: 9px;
+  }
+
+  .find-country-game-body .map-tools {
+    top: 7px;
+    right: 7px;
+    flex-direction: row;
   }
 
   .find-country-game-body > .country-practice-status {

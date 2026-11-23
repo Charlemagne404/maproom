@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { GameResultsDialog } from '../../components/GameResults'
 import { InlineNotice, LoadingState } from '../../components/Kit'
+import { RoundProgress } from '../../components/RoundProgress'
 import type { GeographyData, GameMode } from '../../geography/types'
 import { useGameSession } from '../session'
 import { loadWatershedMatchData, type WatershedMatchData } from './data'
@@ -102,11 +103,14 @@ function WatershedMatchRound({ data, mode, date, seed }: { data: WatershedMatchD
     <div className="game-body watershed-match-game">
       <header className="watershed-match-heading">
         <div>
-          <span className="eyebrow">Recorded downstream link · {question.region} · {Math.min(round + 1, WATERSHED_MATCH_ROUNDS)} of {WATERSHED_MATCH_ROUNDS}</span>
+          <span className="eyebrow">Recorded downstream link · {question.region}</span>
           <h2>Match the recorded link</h2>
           <p>Choose the neighboring HUC12 unit that the USGS Watershed Boundary Dataset lists as this area’s downstream destination.</p>
         </div>
-        <div className="watershed-match-score" aria-label={`${correctCount} correct out of ${answers.length} answered`}><strong>{score}</strong><span> / 500</span></div>
+        <div className="watershed-match-metrics">
+          <RoundProgress current={Math.min(round + 1, WATERSHED_MATCH_ROUNDS)} total={WATERSHED_MATCH_ROUNDS} label="watershed questions" />
+          <div className="watershed-match-score" aria-label={`${correctCount} correct out of ${answers.length} answered`}><strong>{score}</strong><span> / 500</span></div>
+        </div>
       </header>
 
       <section className="watershed-match-task" aria-labelledby="watershed-task-title">
