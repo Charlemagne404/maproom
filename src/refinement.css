@@ -4,8 +4,10 @@
   --serif: var(--sans);
   --content: 1280px;
   --play-content: 1680px;
-  --radius-soft: 9px;
-  --radius-control: 6px;
+  --radius-soft: 10px;
+  --radius-card: 12px;
+  --radius-panel: 10px;
+  --radius-control: 8px;
   font-family: var(--sans);
   color: var(--ink);
   background: var(--paper);
@@ -125,20 +127,20 @@ button, input, select { font-family: var(--sans); }
 .streak-shortcut svg { color: var(--accent-ink); }
 .favorite-shortcut.is-active { color: var(--accent-ink); }
 .daily-page .continue-strip {
-  min-height: 74px;
+  min-height: 82px;
   margin: 19px 0 0;
-  padding: 12px 2px 13px;
-  border: 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  background: transparent;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-panel);
+  background: var(--surface-raised);
 }
 .continue-strip > div { min-width: 0; }
 .continue-strip h2 { font-size: 1.08rem; letter-spacing: -.025em; }
 .continue-strip p { margin: 3px 0 0; font-size: .72rem; }
-.continue-action { min-height: 42px; display: inline-flex; align-items: center; gap: 9px; padding: 0 4px 0 12px; color: var(--ink); font-size: .75rem; font-weight: 750; text-decoration: none; }
-.continue-action svg { color: var(--accent-ink); transition: transform .18s ease; }
-.continue-action:hover { color: var(--accent-ink); }
+.continue-action { min-height: 44px; display: inline-flex; align-items: center; gap: 9px; padding: 0 14px; border-radius: var(--radius-control); background: var(--ink); color: var(--paper); font-size: .78rem; font-weight: 750; text-decoration: none; transition: background-color .18s ease, transform .18s ease; }
+.continue-action svg { color: var(--accent); transition: transform .18s ease; }
+.continue-action:hover { background: var(--surface-strong); color: var(--surface-strong-text); }
 .continue-action:hover svg { transform: translateX(3px); }
 .daily-page .other-games-section {
   width: 100vw;
@@ -162,8 +164,8 @@ button, input, select { font-family: var(--sans); }
 .map-country.is-active.is-map-destination { fill: var(--accent); }
 
 @media (max-width: 760px) {
-  .daily-page .continue-strip { align-items: flex-start; flex-direction: column; gap: 8px; padding: 12px 0; }
-  .continue-action { min-height: 40px; align-self: flex-start; padding-left: 0; }
+  .daily-page .continue-strip { align-items: flex-start; flex-direction: column; gap: 10px; padding: 12px 14px; }
+  .continue-action { min-height: 44px; align-self: flex-start; padding-inline: 14px; }
   .daily-page .other-games-section {
     margin-top: 27px;
     padding-top: 18px;
@@ -2328,3 +2330,70 @@ html[data-theme='dark'] .setup-choice.is-selected { background: color-mix(in srg
 .historical-state-shape { fill: #b9cbb7; stroke: #728373; stroke-width: 1.5; stroke-linejoin: round; }
 .historical-state-route { fill: none; stroke: #cc8d62; stroke-width: 2; stroke-dasharray: 3 4; }
 .art-historical-states circle { fill: #f4eee5; stroke: var(--accent); stroke-width: 2; }
+
+/* Final library and play-surface balance pass. */
+.nav-link::after { transform-origin: center; }
+.header-tools :is(.theme-toggle, .streak-shortcut, .favorite-shortcut, .settings-shortcut):hover {
+  border-color: transparent;
+  background: transparent;
+  color: var(--accent-ink);
+}
+.header-tools :is(.theme-toggle, .streak-shortcut, .favorite-shortcut, .settings-shortcut):hover svg { transform: scale(1.06); }
+.filter-chip {
+  min-height: 38px;
+  padding-inline: 14px;
+  border-radius: 999px;
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease;
+}
+.filter-chip:hover:not(.is-selected) { border-color: var(--control-border); background: var(--surface-raised); }
+.filter-chip:active { transform: translateY(1px); }
+
+@media (min-width: 1240px) {
+  .explore-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .explore-grid .game-card { grid-column: span 1; }
+  .explore-grid .game-card-countries { grid-column: 1 / -1; }
+}
+
+.cities-game-body:not(:has(.city-map-stage)) {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'question' 'status' 'answer' 'feedback' 'note' 'result';
+  align-content: center;
+  gap: 14px;
+  padding-block: clamp(20px, 7svh, 76px);
+}
+.cities-game-body:not(:has(.city-map-stage)) > .question-toolbar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 11px;
+  margin: 0;
+  text-align: center;
+}
+.cities-game-body:not(:has(.city-map-stage)) > .question-toolbar > div:first-child { width: min(820px, 100%); }
+.cities-game-body:not(:has(.city-map-stage)) > .question-toolbar h2 { font-size: clamp(1.7rem, 3.8vw, 2.65rem); line-height: 1.12; }
+.cities-game-body:not(:has(.city-map-stage)) .question-toolbar-tools { justify-content: center; }
+.cities-game-body:not(:has(.city-map-stage)) > .city-practice-status { justify-self: center; }
+.cities-game-body:not(:has(.city-map-stage)) .capital-choice-grid { width: min(960px, 100%); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 auto; }
+.cities-game-body:not(:has(.city-map-stage)) .capital-choice-grid .answer-choice { min-height: 108px; align-items: center; border-radius: var(--radius-panel); text-align: center; }
+.cities-game-body:not(:has(.city-map-stage)) > .answer-form { width: min(620px, 100%); justify-self: center; }
+.daily-page .continue-strip p { display: block; margin: 4px 0 0; color: var(--muted); font-size: .76rem; }
+
+.distance-game-body .distance-choices { min-height: clamp(330px, 43svh, 440px); }
+.distance-game-body .distance-city-choice { min-height: 100%; border-radius: var(--radius-card); }
+
+@media (max-width: 760px) {
+  .cities-game-body:not(:has(.city-map-stage)) { gap: 12px; padding-block: 18px; }
+  .cities-game-body:not(:has(.city-map-stage)) > .question-toolbar { flex-direction: column; gap: 9px; }
+  .cities-game-body:not(:has(.city-map-stage)) .question-toolbar-tools { align-self: center; }
+  .cities-game-body:not(:has(.city-map-stage)) > .question-toolbar h2 { font-size: clamp(1.45rem, 6.3vw, 2rem); }
+  .cities-game-body:not(:has(.city-map-stage)) .capital-choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .cities-game-body:not(:has(.city-map-stage)) .capital-choice-grid .answer-choice { min-height: 74px; padding: 10px; }
+  .distance-game-body .distance-choices { min-height: 0; }
+  .distance-game-body .distance-city-choice { min-height: 156px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter-chip { transition: none; }
+}
