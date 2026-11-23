@@ -1,5 +1,7 @@
 # Maproom Alpha Candidate
 
+> **Historical candidate report, superseded.** This report preserves the 19 November 2026 alpha state. The current catalogue, branch recommendation, production comparison, and validation are in the [current final handover](../FINAL_HANDOVER.md).
+
 Prepared 19 November 2026 on `codex/maproom-alpha-candidate-20261119`.
 
 ## Candidate basis

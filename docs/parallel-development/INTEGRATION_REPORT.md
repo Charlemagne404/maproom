@@ -1,5 +1,7 @@
 # Maproom 2.0 integration report
 
+> **Historical integration snapshot.** Counts and branch state below describe the 19 November 2026 integration. Current release information is in the [current final handover](../FINAL_HANDOVER.md).
+
 **Date:** 19 November 2026
 
 **Integration branch:** `codex/maproom-2.0-integration-20261118`

@@ -156,6 +156,60 @@ test('touch pointers pan and pinch without turning controls into map gestures', 
   }
 })
 
+test('Find the Country mobile map uses the available viewport and keeps map controls reachable', async ({ browser, baseURL }) => {
+  const viewports = [
+    { width: 390, height: 844, minimumMapHeight: 460, name: '390x844' },
+    { width: 320, height: 568, minimumMapHeight: 270, name: '320x568' },
+  ]
+
+  for (const viewport of viewports) {
+    const context = await browser.newContext({
+      viewport: { width: viewport.width, height: viewport.height },
+      deviceScaleFactor: 1,
+      isMobile: true,
+      hasTouch: true,
+    })
+    const page = await context.newPage()
+    try {
+      await page.goto(new URL('/games/countries?mode=daily', baseURL ?? 'http://127.0.0.1:4173').toString())
+      const stage = page.locator('.find-country-map-stage')
+      await expect(stage).toBeVisible()
+      const stageBounds = await stage.boundingBox()
+      if (!stageBounds) throw new Error('The Find the Country map should have a visible viewport.')
+      expect(stageBounds.height).toBeGreaterThanOrEqual(viewport.minimumMapHeight)
+      expect(stageBounds.y + stageBounds.height).toBeLessThanOrEqual(viewport.height)
+
+      const controls = page.getByRole('group', { name: 'Map controls' })
+      await expect(controls).toBeVisible()
+      const zoomIn = page.getByRole('button', { name: 'Zoom in' })
+      const reset = page.getByRole('button', { name: 'Reset map view' })
+      for (const control of [zoomIn, page.getByRole('button', { name: 'Zoom out' }), reset]) {
+        const bounds = await control.boundingBox()
+        if (!bounds) throw new Error('Each map control should have a visible touch target.')
+        expect(bounds.width).toBeGreaterThanOrEqual(44)
+        expect(bounds.height).toBeGreaterThanOrEqual(44)
+        expect(bounds.x).toBeGreaterThanOrEqual(0)
+        expect(bounds.y).toBeGreaterThanOrEqual(0)
+        expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width)
+        expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height)
+      }
+
+      const map = stage.locator('.geo-map')
+      const beforeZoom = await map.locator('.map-transform-layer').getAttribute('transform')
+      await zoomIn.tap()
+      await expect.poll(() => map.locator('.map-transform-layer').getAttribute('transform')).not.toBe(beforeZoom)
+      await reset.tap()
+      await expect.poll(() => map.locator('.map-transform-layer').getAttribute('transform')).toBe(beforeZoom)
+
+      const documentHeight = await page.evaluate(() => document.documentElement.scrollHeight)
+      expect(documentHeight).toBeLessThanOrEqual(viewport.height + 120)
+      await page.screenshot({ path: `${screenshotDirectory}/find-country-mobile-${viewport.name}-light.png`, animations: 'disabled' })
+    } finally {
+      await context.close()
+    }
+  }
+})
+
 test('small island hit areas remain selectable and unknown map features stay gray', async ({ page }) => {
   await openFreePlay(page, 'countries')
   const map = page.locator('.find-country-map-stage .geo-map')

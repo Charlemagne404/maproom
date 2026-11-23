@@ -1,5 +1,7 @@
 # Maproom Final UI Polish
 
+> **Historical UI handover, superseded by the maintenance pass.** This report preserves the 23 November 2026 UI-polish state and screenshots. Current code, branch status, and validation are recorded in the [current final handover](../FINAL_HANDOVER.md).
+
 **Date:** 2026-11-23  
 **Branch:** `codex/maproom-final-ui-polish-20261123`  
 **Verified deployed source:** `70f0458420628e09697fe31168a6b3ed748d6965` (`/srv/maproom/current` pointed to release `1.2.0-70f045842062` when this work began.)
@@ -27,7 +29,7 @@ The overview sheets show all 23 playable formats in both themes at desktop and p
 - [Daily with a saved session](assets/final-ui-polish/home-resume-light-desktop.png)
 - [Explore, light](assets/final-ui-polish/explore-light-desktop.png) · [Explore, dark](assets/final-ui-polish/explore-dark-desktop.png)
 - [Find the Country, mobile light](assets/final-ui-polish/find-country-mobile-light.png) · [mobile dark](assets/final-ui-polish/find-country-mobile-dark.png)
-- [Capitals & Cities](assets/final-ui-polish/capitals-desktop-light.png) · [Watershed Match](assets/final-ui-polish/watershed-desktop-light.png) · [Settings, mobile dark](assets/final-ui-polish/settings-mobile-dark.png)
+- [Capitals & Cities, mobile light (390×844)](assets/final-ui-polish/capitals-mobile-390x844-light.png) · [Watershed Match, mobile light (390×844)](assets/final-ui-polish/watershed-mobile-390x844-light.png) · [Settings, mobile dark](assets/final-ui-polish/settings-mobile-dark.png)
 
 The complete Chromium viewport capture set was also reviewed locally at `artifacts/qa/final-ui-polish/`: 23 formats at seven requested viewport sizes, both themes, plus dialogs, supporting pages, Daily with saved progress, and tablet portrait/landscape samples.
 

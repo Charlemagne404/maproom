@@ -2,9 +2,13 @@
 
 ## Current release boundary
 
-The historical expansion release candidate is on `codex/maproom-historical-release-20261120` in `/home/charlie/maproom-worktrees/historical-release`, based on verified source commit `a316ebe4f674b066be2a51ac3e4b135730d02926`. It is a local candidate until its documented checks and branch handoff are complete. It has not been activated or deployed. The production host, live Caddyfile, DNS and public endpoints were not inspected or changed during this release-preparation work.
+The recommended release source is `codex/maproom-final-ui-polish-20261123`, currently at source commit `9ff3859d0ef54013dc766232386bc84959803fdd` plus the uncommitted maintenance changes recorded in the [current final handover](FINAL_HANDOVER.md). On 23 November, the remote default branch resolved to `codex/maproom-2.0-baseline-20261118` at `749047b3e17e306df0f9b7674e32a12e0df841e2`; the candidate is 82 commits ahead. Local `main` is a separate older ref at `d63f2dd9e7c88a04ca642c9cb2e9f849e6a4312b`, with its upstream gone; the candidate is 92 commits ahead of it. No merge, push, force-push, or GitHub default-branch change was performed.
 
-The last recorded read-only host check was dated 17 November 2026. It found `/srv/maproom/current` pointing to `/srv/maproom/releases/1.2.0-dac85cc7b547`, with `1.1.0-cb626ad2bedd` retained for rollback. This is a historical observation, not a current production status.
+The public HTTPS site was reachable. All 23 routes in its sitemap returned HTTP 200 with a title and heading. The deployed `/precache-manifest.json` reports build `6324042ecb9d4d5c` and 210 assets. The public manifest does not expose a Git SHA, so the precise deployed source commit cannot be established from the endpoint. The preceding [UI handover](releases/MAPROOM_FINAL_UI_POLISH.md) recorded release `1.2.0-70f045842062` as deployed when that work began; treat this as the last documented source identification, not a fresh SHA verification.
+
+The locally built candidate reports build `aeb67635b3a41d85`, also with 210 assets. Its build ID differs from production. In mobile Chromium, production's Find the Country stage measured 582px at 390×844 and 470px at 320×568, with vertically stacked controls and document heights of 983px and 871px. The candidate's game-specific layout measures 480px and 280px, keeps the horizontal 44px controls and map in the first viewport, and has short overall page overrun for the footer (64px and 105px). Production therefore does not yet contain the candidate's mobile layout. These checks did not inspect the production host, Caddy configuration, or DNS.
+
+The latest recorded host-side symlink check was dated 17 November 2026. It found `/srv/maproom/current` pointing to `/srv/maproom/releases/1.2.0-dac85cc7b547`, with `1.1.0-cb626ad2bedd` retained for rollback. This remains historical host evidence, not a current production status.
 
 ## Build and artifacts
 
@@ -50,4 +54,4 @@ The script validates the existing host, prepares an immutable release under `/sr
 
 The 20 legacy CShapes 2.1 maps carry CC BY-NC-SA 4.0. Distribution and reuse are non-commercial only; attribution and ShareAlike terms apply. The 41 Cliopatria v0.2.1 maps and 20 original flag redraws carry CC BY 4.0 with per-source attribution. A commercial deployment of the legacy CShapes-derived assets requires separate rights or a replacement dataset reviewed under its own license.
 
-Production Caddy state, HTTPS certificates, public routing, DNS, public health checks and hosted performance remain unverified. This document records deployment compatibility checks only; it is not activation or public-release evidence.
+The current read-only check confirmed public HTTPS delivery for all 23 sitemap routes and all 210 deployed asset URLs. Production Caddy state, DNS, hosted performance, and physical-device behavior remain unverified. Public availability does not mean this candidate was activated; this document records deployment compatibility and read-only checks only.

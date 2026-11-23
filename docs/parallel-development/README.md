@@ -1,5 +1,7 @@
 # Maproom 2.0 parallel development
 
+> **Historical coordination archive.** These workstreams and their reports describe the November 2026 Maproom 2.0 integration, not the current catalogue or release branch. See the [current final handover](../FINAL_HANDOVER.md) for the current status.
+
 This directory defines the boundaries for six independent workstreams. Each worktree starts from the same clean baseline commit and has its own branch. Work only in the assigned worktree and branch; do not merge into `main` or another workstream branch. The coordinator will integrate the completed branches after review.
 
 ## Start one session per worktree

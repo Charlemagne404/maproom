@@ -1,5 +1,7 @@
 # Maproom expansion mission progress
 
+> **Chronological record.** Entries capture the repository and validation status at the date shown; their counts and branch references are historical snapshots. For the current catalogue and release state, see [GAME_RULES.md](GAME_RULES.md) and [FINAL_HANDOVER.md](FINAL_HANDOVER.md).
+
 Updated 19 November 2026. Work was performed in `/home/charlie/maproom-worktrees/product-quality` on `codex/maproom-product-quality-20261119`; authorized checkpoints have been pushed to that branch. No deployment, publishing, infrastructure or production-data action was performed.
 
 ## Baseline and preserved workspace

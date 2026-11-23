@@ -1,5 +1,7 @@
 # Website Fundamentals review
 
+> **Historical review snapshot.** Route and game counts below describe the 19 November integration, not the current 18-game catalogue. See the [current final handover](../FINAL_HANDOVER.md).
+
 Date: 18 November 2026
 Worktree: `/home/charlie/maproom-worktrees/web`
 Branch: `codex/maproom-2.0-web-20261118`

@@ -1,5 +1,7 @@
 # Historical expansion report
 
+> **Historical feature report.** This records the 20 November 2026 expansion. For the current catalogue, branch, and release status, see the [current final handover](../FINAL_HANDOVER.md).
+
 Completed on 20 November 2026 on `codex/maproom-historical-expansion`.
 
 ## Delivered

@@ -1,5 +1,7 @@
 # Maproom Historical Release Candidate
 
+> **Historical candidate report, superseded.** This report preserves the 20 November 2026 historical release state. The current catalogue, branch recommendation, production comparison, and validation are in the [current final handover](../FINAL_HANDOVER.md).
+
 Validated 20 November 2026. This is a release-preparation handover, not deployment approval.
 
 ## Release identity

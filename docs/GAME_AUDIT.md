@@ -1,6 +1,6 @@
-# Maproom game audit
+# Maproom game audit — 18–19 November snapshot
 
-Audit started 18 November 2026 and updated 19 November across all sixteen registered game implementations, shared components, data limits, browser checks and documented manual play. This is an engineering and interaction review, not a player study or formal assistive-technology audit.
+> **Historical scope:** This audit records the 16-game catalogue available on 18–19 November 2026. It does not cover Historical Flags or Historical States & Empires, which were added later. Use [GAME_RULES.md](GAME_RULES.md) for the current 18-game catalogue and [FINAL_HANDOVER.md](FINAL_HANDOVER.md) for the current release status. The findings below are an engineering and interaction review, not a player study or formal assistive-technology audit.
 
 ## Game-by-game review
 
